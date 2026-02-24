@@ -1,0 +1,22 @@
+plugins {
+    id 'java-gradle-plugin'
+}
+
+dependencies {
+    implementation project(':ai-docs-core')
+
+    testImplementation platform('org.junit:junit-bom:5.14.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.assertj:assertj-core:3.27.7'
+}
+
+gradlePlugin {
+    plugins {
+        aiDocs {
+            id = 'one.jpro.platform.ai-docs'
+            implementationClass = 'one.jpro.platform.aidocs.gradle.AiDocsPlugin'
+            displayName = 'AI Docs Plugin'
+            description = 'Collects DOCUMENTATION.md artifacts from dependencies and makes them accessible to AI coding assistants.'
+        }
+    }
+}

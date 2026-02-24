@@ -2,11 +2,23 @@ plugins {
     id 'java-gradle-plugin'
 }
 
+sourceSets {
+    functionalTest {
+        java.srcDir 'src/functionalTest/java'
+    }
+}
+
+configurations {
+    functionalTestImplementation.extendsFrom testImplementation
+    functionalTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
 dependencies {
     implementation project(':ai-docs-core')
 
     testImplementation platform('org.junit:junit-bom:5.14.3')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'org.assertj:assertj-core:3.27.7'
 }
 
@@ -19,4 +31,16 @@ gradlePlugin {
             description = 'Collects DOCUMENTATION.md artifacts from dependencies and makes them accessible to AI coding assistants.'
         }
     }
+
+    testSourceSets sourceSets.functionalTest
+}
+
+tasks.register('functionalTest', Test) {
+    testClassesDirs = sourceSets.functionalTest.output.classesDirs
+    classpath = sourceSets.functionalTest.runtimeClasspath
+    useJUnitPlatform()
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('functionalTest')
 }

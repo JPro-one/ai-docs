@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+    id 'one.jpro.platform.ai-docs' version '0.1.0-SNAPSHOT'
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://sandec.jfrog.io/artifactory/repo"
+    }
+}
+
+dependencies {
+    implementation 'one.jpro.platform:jpro-routing-core:0.5.8'
+    implementation 'one.jpro.platform:jpro-file:0.5.8'
+    implementation 'one.jpro.platform:jpro-media:0.5.8'
+    implementation 'one.jpro:jpro-webapi:2025.3.1'
+}

@@ -96,9 +96,11 @@ public class OverviewGenerator {
     private static void appendChapter(StringBuilder sb, String heading, int depth, int minDepth,
                                        int startLine, int endLine, String summary) {
         int indent = depth - minDepth;
+        int lineCount = endLine - startLine + 1;
         sb.append("  ".repeat(indent));
         sb.append("- ").append(heading)
-                .append(" (lines ").append(startLine).append("-").append(endLine).append(")");
+                .append(" (").append(lineCount).append(lineCount == 1 ? " line " : " lines ")
+                .append(startLine).append("-").append(endLine).append(")");
         if (summary != null) {
             sb.append(" — ").append(summary);
         }

@@ -31,11 +31,9 @@ class OverviewGeneratorTest {
 
         assertThat(result).contains("# my-lib (1.0.0)");
         assertThat(result).contains("Full documentation: DOCUMENTATION.md");
-        // Top-level heading spans entire document (encompasses sub-chapters)
-        assertThat(result).contains("- My Library (lines 1-9) — Some intro text.");
-        // Sub-headings indented 2 spaces, Getting Started ends where API Reference starts
-        assertThat(result).contains("  - Getting Started (lines 4-7) — Step 1: add dependency.");
-        assertThat(result).contains("  - API Reference (lines 8-9) — The main class is Foo.");
+        assertThat(result).contains("- My Library (9 lines 1-9) — Some intro text.");
+        assertThat(result).contains("  - Getting Started (4 lines 4-7) — Step 1: add dependency.");
+        assertThat(result).contains("  - API Reference (2 lines 8-9) — The main class is Foo.");
     }
 
     @Test
@@ -48,7 +46,7 @@ class OverviewGeneratorTest {
 
         String result = OverviewGenerator.generate(lines, entry);
 
-        assertThat(result).contains("- Overview (lines 1-2) — This is the only chapter.");
+        assertThat(result).contains("- Overview (2 lines 1-2) — This is the only chapter.");
     }
 
     @Test
@@ -93,14 +91,10 @@ class OverviewGeneratorTest {
 
         String result = OverviewGenerator.generate(lines, entry);
 
-        // Top Level (depth 1) spans entire doc including all sub-chapters
-        assertThat(result).contains("- Top Level (lines 1-8) — Intro.");
-        // Section A (depth 2) spans through its child Subsection A1, up to Section B
-        assertThat(result).contains("  - Section A (lines 3-6) — Content A.");
-        // Subsection A1 (depth 3) ends at Section B boundary
-        assertThat(result).contains("    - Subsection A1 (lines 5-6) — Detail.");
-        // Section B (depth 2) has no following sibling, goes to end
-        assertThat(result).contains("  - Section B (lines 7-8) — Content B.");
+        assertThat(result).contains("- Top Level (8 lines 1-8) — Intro.");
+        assertThat(result).contains("  - Section A (4 lines 3-6) — Content A.");
+        assertThat(result).contains("    - Subsection A1 (2 lines 5-6) — Detail.");
+        assertThat(result).contains("  - Section B (2 lines 7-8) — Content B.");
     }
 
     @Test
@@ -115,9 +109,8 @@ class OverviewGeneratorTest {
 
         String result = OverviewGenerator.generate(lines, entry);
 
-        // Same depth siblings don't encompass each other
-        assertThat(result).contains("- Chapter One (lines 1-2) — Content one.");
-        assertThat(result).contains("- Chapter Two (lines 3-4) — Content two.");
+        assertThat(result).contains("- Chapter One (2 lines 1-2) — Content one.");
+        assertThat(result).contains("- Chapter Two (2 lines 3-4) — Content two.");
     }
 
     @Test
@@ -149,11 +142,22 @@ class OverviewGeneratorTest {
 
         String result = OverviewGenerator.generate(lines, entry);
 
-        // Title encompasses all sub-chapters
-        assertThat(result).contains("- Title (lines 1-6)");
-        assertThat(result).doesNotContain("- Title (lines 1-6) —");
-        assertThat(result).contains("  - Empty Section (lines 3-4)");
-        assertThat(result).contains("  - Next Section (lines 5-6) — Has content.");
+        assertThat(result).contains("- Title (6 lines 1-6)");
+        assertThat(result).doesNotContain("- Title (6 lines 1-6) —");
+        assertThat(result).contains("  - Empty Section (2 lines 3-4)");
+        assertThat(result).contains("  - Next Section (2 lines 5-6) — Has content.");
+    }
+
+    @Test
+    void singleLineChapter() {
+        var lines = List.of(
+                "# Only Heading"
+        );
+        var entry = new DocEntry("org.example", "single-line", "1.0.0");
+
+        String result = OverviewGenerator.generate(lines, entry);
+
+        assertThat(result).contains("- Only Heading (1 line 1-1)");
     }
 
     @Test
@@ -174,15 +178,11 @@ class OverviewGeneratorTest {
 
         String result = OverviewGenerator.generate(lines, entry);
 
-        // Getting Started spans all sub-chapters
-        assertThat(result).contains("- Getting Started (lines 1-10) — Overview.");
-        // Creating a project spans its children, ends at API Reference
-        assertThat(result).contains("  - Creating a project (lines 3-8) — Project setup.");
-        // Leaf sub-sections end at siblings
-        assertThat(result).contains("    - From index.html (lines 5-6) — HTML approach.");
-        assertThat(result).contains("    - From Gradle (lines 7-8) — Gradle approach.");
-        // API Reference goes to end
-        assertThat(result).contains("  - API Reference (lines 9-10) — API docs.");
+        assertThat(result).contains("- Getting Started (10 lines 1-10) — Overview.");
+        assertThat(result).contains("  - Creating a project (6 lines 3-8) — Project setup.");
+        assertThat(result).contains("    - From index.html (2 lines 5-6) — HTML approach.");
+        assertThat(result).contains("    - From Gradle (2 lines 7-8) — Gradle approach.");
+        assertThat(result).contains("  - API Reference (2 lines 9-10) — API docs.");
     }
 
     @Test

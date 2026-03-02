@@ -1,26 +1,25 @@
 # AI Docs Example
 
-Standalone example project to manually test the ai-docs Gradle plugin.
+Demonstrates how an AI agent can build a real application using frameworks it has never seen before — by reading the collected documentation.
 
-## Usage
-
-1. First, publish the plugin to your local Maven repository:
+## Setup
 
 ```bash
-cd ..
+# From the root project
 ./gradlew publishToMavenLocal
-```
 
-2. Then run the collectDocs task:
-
-```bash
-cd example
+# From this directory
 gradle collectDocs
 ```
 
-3. Inspect the output:
+## Prompt
 
-```bash
-ls build/ai-docs/
-cat build/ai-docs/index.md
+Open this directory in Claude Code and use the following prompt:
+
 ```
+Build an Expense Tracker web application using JavaFX and JPro.
+Use jpro-routing for multi-page navigation and jpro-auth-routing for Google login.
+Read the documentation in build/ai-docs/ to understand the frameworks.
+```
+
+The agent will discover the available libraries, learn their APIs from the collected docs, and generate the application.

@@ -65,6 +65,12 @@ public abstract class CollectDocsTask extends DefaultTask {
         }
 
         DocsCollector.generateIndex(outputDir, entries);
+
+        Path skillDir = getProject().getRootDir().toPath().resolve(".claude/skills/docs");
+        String relativeDocsDir = getProject().getRootDir().toPath().relativize(outputDir).toString();
+        DocsCollector.generateSkill(skillDir, relativeDocsDir);
+        getLogger().lifecycle("Generated AI skill at .claude/skills/docs/SKILL.md");
+
         getLogger().lifecycle("Collected documentation for {} libraries into {}", entries.size(), outputDir);
     }
 }

@@ -51,6 +51,16 @@ public class DocsCollector {
     }
 
     /**
+     * Generates the SKILL.md file that tells AI agents about the documentation system.
+     *
+     * @param skillDir the directory to write SKILL.md into (e.g. .claude/skills/docs)
+     * @param docsOutputDir the relative path to the docs output directory (e.g. "build/ai-docs")
+     */
+    public static void generateSkill(Path skillDir, String docsOutputDir) throws IOException {
+        SkillGenerator.generate(skillDir.resolve("SKILL.md"), docsOutputDir);
+    }
+
+    /**
      * Cleans the output directory.
      */
     public static void cleanOutputDir(Path outputDir) throws IOException {

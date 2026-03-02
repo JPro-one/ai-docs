@@ -81,6 +81,16 @@ class CollectDocsFunctionalTest {
         assertThat(index).contains("# AI Documentation Index");
         // No library entries
         assertThat(index.lines().filter(l -> l.startsWith("- ")).count()).isZero();
+
+        // SKILL.md should be generated
+        Path skillFile = projectDir.resolve(".claude/skills/docs/SKILL.md");
+        assertThat(skillFile).exists();
+        String skill = Files.readString(skillFile);
+        assertThat(skill).contains("build/ai-docs/");
+        assertThat(skill).contains("index.md");
+        assertThat(skill).contains("overview.md");
+        assertThat(skill).contains("DOCUMENTATION.md");
+        assertThat(result.getOutput()).contains("Generated AI skill at .claude/skills/docs/SKILL.md");
     }
 
     @Test

@@ -2,6 +2,19 @@ plugins {
     id 'java-library'
 }
 
+def generatedResources = layout.buildDirectory.dir('generated-resources/skill')
+
+tasks.register('copySkillTemplate', Copy) {
+    from rootProject.file('SKILL.md')
+    into generatedResources.map { it.dir('one/jpro/platform/aidocs/core') }
+}
+
+sourceSets.main.resources.srcDir generatedResources
+
+tasks.named('processResources') {
+    dependsOn 'copySkillTemplate'
+}
+
 publishing {
     publications {
         maven(MavenPublication) {

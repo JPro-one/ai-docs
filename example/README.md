@@ -9,7 +9,7 @@ Demonstrates how an AI agent can build a real application using frameworks it ha
 ./gradlew publishToMavenLocal
 
 # From this directory
-gradle collectDocs
+./gradlew collectDocs
 ```
 
 ## Prompt

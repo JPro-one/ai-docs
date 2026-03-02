@@ -11,7 +11,7 @@ When an AI agent works on a Java project with many dependencies, it either loads
 **AI Docs** introduces a simple convention:
 
 1. **Library authors** publish a `DOCUMENTATION.md` alongside their jar (as a Maven artifact with classifier `DOCUMENTATION`)
-2. **Projects** apply this plugin and run `gradle collectDocs`
+2. **Projects** apply this plugin and run `./gradlew collectDocs`
 3. **AI agents** navigate the output efficiently: index → overview → specific lines
 
 Three small reads instead of dumping everything into context.
@@ -41,7 +41,7 @@ plugins {
 ### 2. Collect Documentation
 
 ```bash
-gradle collectDocs
+./gradlew collectDocs
 ```
 
 This collects all dependency docs into `build/ai-docs/` and installs a skill file at `.claude/skills/docs/SKILL.md` so AI agents automatically know the documentation is available.
@@ -97,7 +97,15 @@ Libraries that don't publish this artifact are silently skipped — no errors, n
 
 ## Try It
 
-The [`example/`](example/) directory is a project with JPro dependencies. After collecting docs, open it in Claude Code and prompt:
+The [`example/`](example/) directory is a project with JPro dependencies. Set it up and let an AI agent build a full app:
+
+```bash
+./gradlew publishToMavenLocal   # from root
+cd example
+./gradlew collectDocs           # collect dependency docs
+```
+
+Then open the `example/` directory in Claude Code and prompt:
 
 ```
 Build an Expense Tracker web application using JavaFX and JPro.
@@ -120,7 +128,7 @@ The agent discovers the available libraries, learns their APIs from the collecte
 
 # Try the example project
 cd example
-gradle collectDocs
+./gradlew collectDocs
 cat build/ai-docs/index.md
 ```
 

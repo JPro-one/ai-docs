@@ -13,6 +13,11 @@ import java.util.List;
  */
 public class OverviewGenerator {
 
+    /** Sub-chapters shorter than this are omitted from overview.md */
+    static final int OVERVIEW_MIN_LINES = 3;
+    /** Sub-chapters shorter than this are omitted from context.md */
+    static final int CONTEXT_MIN_LINES = 30;
+
     /**
      * Generates an overview.md file from a DOCUMENTATION.md file.
      *
@@ -26,26 +31,60 @@ public class OverviewGenerator {
         Files.writeString(overviewPath, content);
     }
 
-    private record Heading(String title, int depth, int startLine, String summary) {}
+    record ChapterInfo(String title, int depth, int startLine, int endLine, String summary) {
+        int lineCount() { return endLine - startLine + 1; }
+    }
 
     /**
-     * Generates overview content from documentation lines.
+     * Generates overview content from documentation lines (uses OVERVIEW_MIN_LINES threshold).
      */
     static String generate(List<String> lines, DocEntry entry) {
+        return generateChapterListing(lines, entry, OVERVIEW_MIN_LINES);
+    }
+
+    /**
+     * Generates chapter listing with a configurable minimum line threshold for sub-chapters.
+     */
+    static String generateChapterListing(List<String> lines, DocEntry entry, int minLineCount) {
         var sb = new StringBuilder();
         sb.append("# ").append(entry.name()).append(" (").append(entry.version()).append(")\n");
         sb.append("Full documentation: DOCUMENTATION.md\n\n");
         sb.append("## Chapters\n");
 
+        List<ChapterInfo> chapters = parseChapters(lines);
+        if (chapters.isEmpty()) return sb.toString();
+
+        int minDepth = chapters.stream().mapToInt(ChapterInfo::depth).min().orElse(1);
+
+        for (ChapterInfo ch : chapters) {
+            // Always keep top-level chapters; skip sub-chapters below the threshold
+            if (ch.depth() > minDepth && ch.lineCount() < minLineCount) continue;
+            appendChapter(sb, ch.title(), ch.depth(), minDepth, ch.startLine(), ch.endLine(), ch.summary());
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Parses documentation lines into a list of chapters with computed line ranges.
+     */
+    static List<ChapterInfo> parseChapters(List<String> lines) {
         // First pass: collect all headings with their metadata
+        record Heading(String title, int depth, int startLine, String summary) {}
         List<Heading> headings = new ArrayList<>();
         String currentHeading = null;
         int currentDepth = 0;
         int currentStart = -1;
         String currentSummary = null;
 
+        boolean inCodeBlock = false;
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i);
+            if (line.startsWith("```")) {
+                inCodeBlock = !inCodeBlock;
+                continue;
+            }
+            if (inCodeBlock) continue;
             if (line.startsWith("#")) {
                 if (currentHeading != null) {
                     headings.add(new Heading(currentHeading, currentDepth, currentStart, currentSummary));
@@ -62,27 +101,22 @@ public class OverviewGenerator {
             headings.add(new Heading(currentHeading, currentDepth, currentStart, currentSummary));
         }
 
-        if (headings.isEmpty()) return sb.toString();
-
-        // Find minimum depth for indentation
-        int minDepth = headings.stream().mapToInt(Heading::depth).min().orElse(1);
-
-        // Second pass: compute end lines and emit.
+        // Second pass: compute end lines.
         // A heading's end line = the line before the next heading at the same or shallower depth,
         // or the end of the document if no such heading exists.
+        List<ChapterInfo> chapters = new ArrayList<>();
         for (int i = 0; i < headings.size(); i++) {
             Heading h = headings.get(i);
-            int endLine = lines.size(); // default: end of document
+            int endLine = lines.size();
             for (int j = i + 1; j < headings.size(); j++) {
                 if (headings.get(j).depth() <= h.depth()) {
-                    endLine = headings.get(j).startLine() - 1; // line before that heading's # line
+                    endLine = headings.get(j).startLine() - 1;
                     break;
                 }
             }
-            appendChapter(sb, h.title(), h.depth(), minDepth, h.startLine(), endLine, h.summary());
+            chapters.add(new ChapterInfo(h.title(), h.depth(), h.startLine(), endLine, h.summary()));
         }
-
-        return sb.toString();
+        return chapters;
     }
 
     private static int headingDepth(String line) {

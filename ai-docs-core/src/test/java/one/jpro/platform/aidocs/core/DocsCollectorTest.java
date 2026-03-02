@@ -22,6 +22,8 @@ class DocsCollectorTest {
 
                 ## Getting Started
                 Step 1.
+                Step 2.
+                Step 3.
                 """);
 
         var entry = new DocEntry("com.example", "my-lib", "1.0.0");

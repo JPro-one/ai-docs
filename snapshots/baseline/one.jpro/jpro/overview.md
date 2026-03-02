@@ -2,13 +2,11 @@
 Full documentation: DOCUMENTATION.md
 
 ## Chapters
-- Getting Started (40 lines 1-40)
-  - Overview (38 lines 3-40) — JPro allows you to run your JavaFX applications directly in the browser - no rewriting required. Your app runs on the...
+- Getting Started (299 lines 1-299)
+  - Overview (48 lines 3-50) — JPro allows you to run your JavaFX applications directly in the browser - no rewriting required. Your app runs on the...
     - Key Points (14 lines 11-24) — > **Server-side runtime**
     - Prerequisites (11 lines 25-35) — Before you start, ensure you have:
-    - Hello World (5 lines 36-40) — The quickest way to get started is the [Hello World for Gradle](https://github.com/JPro-one/HelloJPro) or [Maven](htt...
-- Gradle (3 lines 41-43) — ./gradlew jproRun
-- Maven (256 lines 44-299) — mvn jpro:run
+    - Hello World (15 lines 36-50) — The quickest way to get started is the [Hello World for Gradle](https://github.com/JPro-one/HelloJPro) or [Maven](htt...
   - Gradle setup (99 lines 51-149) — The simplest way to begin is by using **Gradle** as your build tool.
     - `1` Set up Gradle (12 lines 58-69) — We generally recommend adding a Gradle wrapper for your project to keep version management simple for all developers.
     - `2` Create the Gradle scripts (70 lines 70-139) — Create the file `settings.gradle` and put it into your **project’s root directory**.
@@ -60,32 +58,24 @@ Full documentation: DOCUMENTATION.md
     - Using the WebAPI with JPro (8 lines 915-922) — There are two ways to get access to the WebAPI:
     - Using the WebAPI without JPro (29 lines 923-951) — The WebAPI can be imported as a jar without requiring JPro.
     - Downloading the WebAPI Jar (4 lines 952-955) — If you need access to the WebAPI without Maven or Gradle, it can be downloaded from our [repository](https://sandec.j...
-- Deployment (52 lines 956-1007)
+- Deployment (200 lines 956-1155)
   - Deploying on Linux (33 lines 958-990)
     - Deployment Requirements (9 lines 960-968) — JPro can run on any server with a JVM. In most cases, Linux is used for production backends, and is thus also our go-...
     - `1` Prepare your server (9 lines 969-977) — To run JPro on linux, the server must be configured correctly:
     - `2` Create the binary (9 lines 978-986) — From your terminal, create a release ZIP containing your application. You can then copy the file to your server and u...
     - `3` Run JPro (4 lines 987-990) — In the unzipped folder you can find a start-script: `bin/start.sh`. Run this to start your JPro server.
-  - Docker templates (17 lines 991-1007) — The following templates can be used as a reference and adjusted to your needs.
-    - Ubuntu 24.04 (11 lines 997-1007) — (22.04 and 20.04 also work)
-- Add the Adoptium (Eclipse Temurin) APT repository and import the GPG key (4 lines 1008-1011) — RUN wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | apt-key add - && \
-- Install Temurin 21 JDK (17 lines 1012-1028) — RUN apt-get update && \
-    - Debian Bookworm (10 lines 1019-1028) — ```docker
-- Add the Adoptium (Eclipse Temurin) APT repository and import the GPG key (4 lines 1029-1032) — RUN apt-get install -y wget apt-transport-https gnupg
-- RUN wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | apt-key add - && \ (1 line 1033-1033)
-- add-apt-repository --yes https://packages.adoptium.net/artifactory/deb/ (2 lines 1034-1035)
-- Install Temurin 21 JDK (120 lines 1036-1155) — RUN apt-get update && \
-    - Fedora 39 (22 lines 1043-1064) — ```docker
+  - Docker templates (74 lines 991-1064) — The following templates can be used as a reference and adjusted to your needs.
+    - Ubuntu 24.04 (22 lines 997-1018) — (22.04 and 20.04 also work)
+    - Debian Bookworm (24 lines 1019-1042)
+    - Fedora 39 (22 lines 1043-1064)
   - Nginx (48 lines 1065-1112) — In order to configure nginx for JPro, create & add the following content to `/etc/nginx/sites-enabled/jproconf.nginx....
     - SSL certificates & guides (4 lines 1109-1112) — You can get free guides & SSL certificates from [Let’s encrypt / Certbot](https://certbot.eff.org/).
   - Apache2 (43 lines 1113-1155) — While we typically recommend using nginx, JPro can also be used with Apache. In this case, Apache is used as a revers...
     - SSL certificates & guides (4 lines 1152-1155) — You can get free guides & SSL certificates from [Let’s encrypt / Certbot](https://certbot.eff.org/).
-- JPro Loadbalancer (32 lines 1156-1187)
-  - Overview & usage (30 lines 1158-1187) — The JPro Loadbalancer allows you to run multiple JPro Servers in parallel.
+- JPro Loadbalancer (183 lines 1156-1338)
+  - Overview & usage (62 lines 1158-1219) — The JPro Loadbalancer allows you to run multiple JPro Servers in parallel.
     - Prerequisites (6 lines 1171-1176) — Make sure you already have a JPro project and a zip file, created with
-    - Configure external servers (11 lines 1177-1187) — When configuring the `external servers` setup, ensure to set the `one.jpro.loadbalancer.localServerCount` property to 0.
-- Set the count of local servers to 0 (2 lines 1188-1189) — one.jpro.loadbalancer.localServerCount=0
-- Configure external servers (149 lines 1190-1338) — one.jpro.loadbalancer.externalServer1=http://server1.example.com:9101
+    - Configure external servers (21 lines 1177-1197) — When configuring the `external servers` setup, ensure to set the `one.jpro.loadbalancer.localServerCount` property to 0.
     - Running your app with the loadbalancer (14 lines 1198-1211) — 1. Create a new folder F and download the [JPro Loadbalancer](https://sandec.jfrog.io/artifactory/repo/one/jpro/jpro-...
     - Enforce single Instance per JVM (8 lines 1212-1219) — With the JPro Loadbalancer you have the choice to set the ***maximum sessions to be accepted per JPro Server*** to 1....
   - Configuration (80 lines 1220-1299)

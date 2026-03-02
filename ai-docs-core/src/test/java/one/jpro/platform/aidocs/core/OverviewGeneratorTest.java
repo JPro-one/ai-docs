@@ -23,7 +23,9 @@ class OverviewGeneratorTest {
                 "Step 2: use it.",
                 "",
                 "## API Reference",
-                "The main class is Foo."
+                "The main class is Foo.",
+                "More API details.",
+                "Even more details."
         );
         var entry = new DocEntry("com.example", "my-lib", "1.0.0");
 
@@ -31,9 +33,9 @@ class OverviewGeneratorTest {
 
         assertThat(result).contains("# my-lib (1.0.0)");
         assertThat(result).contains("Full documentation: DOCUMENTATION.md");
-        assertThat(result).contains("- My Library (9 lines 1-9) — Some intro text.");
+        assertThat(result).contains("- My Library (11 lines 1-11) — Some intro text.");
         assertThat(result).contains("  - Getting Started (4 lines 4-7) — Step 1: add dependency.");
-        assertThat(result).contains("  - API Reference (2 lines 8-9) — The main class is Foo.");
+        assertThat(result).contains("  - API Reference (4 lines 8-11) — The main class is Foo.");
     }
 
     @Test
@@ -46,6 +48,7 @@ class OverviewGeneratorTest {
 
         String result = OverviewGenerator.generate(lines, entry);
 
+        // Top-level chapters are always kept regardless of size
         assertThat(result).contains("- Overview (2 lines 1-2) — This is the only chapter.");
     }
 
@@ -82,19 +85,63 @@ class OverviewGeneratorTest {
                 "Intro.",
                 "## Section A",
                 "Content A.",
+                "More content A.",
+                "Even more A.",
                 "### Subsection A1",
-                "Detail.",
+                "Detail line 1.",
+                "Detail line 2.",
+                "Detail line 3.",
                 "## Section B",
-                "Content B."
+                "Content B.",
+                "More B.",
+                "Even more B."
         );
         var entry = new DocEntry("org.example", "nested", "1.0.0");
 
         String result = OverviewGenerator.generate(lines, entry);
 
-        assertThat(result).contains("- Top Level (8 lines 1-8) — Intro.");
-        assertThat(result).contains("  - Section A (4 lines 3-6) — Content A.");
-        assertThat(result).contains("    - Subsection A1 (2 lines 5-6) — Detail.");
-        assertThat(result).contains("  - Section B (2 lines 7-8) — Content B.");
+        assertThat(result).contains("- Top Level (14 lines 1-14) — Intro.");
+        assertThat(result).contains("  - Section A (8 lines 3-10) — Content A.");
+        assertThat(result).contains("    - Subsection A1 (4 lines 7-10) — Detail line 1.");
+        assertThat(result).contains("  - Section B (4 lines 11-14) — Content B.");
+    }
+
+    @Test
+    void shortSubChaptersFilteredFromOverview() {
+        var lines = List.of(
+                "# Top Level",
+                "Intro.",
+                "## Big Section",
+                "Line 1.",
+                "Line 2.",
+                "Line 3.",
+                "## Tiny Section",
+                "Brief."
+        );
+        var entry = new DocEntry("org.example", "filtered", "1.0.0");
+
+        String result = OverviewGenerator.generate(lines, entry);
+
+        // Top-level always kept
+        assertThat(result).contains("- Top Level (8 lines 1-8)");
+        // Big Section has 4 lines (>= 3), kept
+        assertThat(result).contains("  - Big Section (4 lines 3-6)");
+        // Tiny Section has 2 lines (< 3), filtered
+        assertThat(result).doesNotContain("Tiny Section");
+    }
+
+    @Test
+    void topLevelChaptersAlwaysKeptRegardlessOfSize() {
+        var lines = List.of(
+                "# Short Chapter",
+                "Brief."
+        );
+        var entry = new DocEntry("org.example", "short-top", "1.0.0");
+
+        String result = OverviewGenerator.generate(lines, entry);
+
+        // Top-level chapters are never filtered even if short
+        assertThat(result).contains("- Short Chapter (2 lines 1-2) — Brief.");
     }
 
     @Test
@@ -109,6 +156,7 @@ class OverviewGeneratorTest {
 
         String result = OverviewGenerator.generate(lines, entry);
 
+        // All at min depth — always kept regardless of size
         assertThat(result).contains("- Chapter One (2 lines 1-2) — Content one.");
         assertThat(result).contains("- Chapter Two (2 lines 3-4) — Content two.");
     }
@@ -129,26 +177,6 @@ class OverviewGeneratorTest {
     }
 
     @Test
-    void headingWithNoSummaryText() {
-        var lines = List.of(
-                "# Title",
-                "",
-                "## Empty Section",
-                "",
-                "## Next Section",
-                "Has content."
-        );
-        var entry = new DocEntry("org.example", "sparse", "1.0.0");
-
-        String result = OverviewGenerator.generate(lines, entry);
-
-        assertThat(result).contains("- Title (6 lines 1-6)");
-        assertThat(result).doesNotContain("- Title (6 lines 1-6) —");
-        assertThat(result).contains("  - Empty Section (2 lines 3-4)");
-        assertThat(result).contains("  - Next Section (2 lines 5-6) — Has content.");
-    }
-
-    @Test
     void singleLineChapter() {
         var lines = List.of(
                 "# Only Heading"
@@ -163,26 +191,95 @@ class OverviewGeneratorTest {
     @Test
     void deeplyNestedHierarchy() {
         var lines = List.of(
-                "# Getting Started",
-                "Overview.",
-                "## Creating a project",
-                "Project setup.",
-                "### From index.html",
-                "HTML approach.",
-                "### From Gradle",
-                "Gradle approach.",
-                "## API Reference",
-                "API docs."
+                "# Getting Started",       // 1
+                "Overview.",                // 2
+                "## Creating a project",    // 3
+                "Project setup.",           // 4
+                "More setup details.",      // 5
+                "### From index.html",      // 6
+                "HTML approach line 1.",    // 7
+                "HTML approach line 2.",    // 8
+                "HTML approach line 3.",    // 9
+                "### From Gradle",          // 10
+                "Gradle approach line 1.", // 11
+                "Gradle approach line 2.", // 12
+                "Gradle approach line 3.", // 13
+                "## API Reference",         // 14
+                "API docs.",                // 15
+                "More API docs.",           // 16
+                "Even more API."            // 17
         );
         var entry = new DocEntry("org.example", "deep", "1.0.0");
 
         String result = OverviewGenerator.generate(lines, entry);
 
-        assertThat(result).contains("- Getting Started (10 lines 1-10) — Overview.");
-        assertThat(result).contains("  - Creating a project (6 lines 3-8) — Project setup.");
-        assertThat(result).contains("    - From index.html (2 lines 5-6) — HTML approach.");
-        assertThat(result).contains("    - From Gradle (2 lines 7-8) — Gradle approach.");
-        assertThat(result).contains("  - API Reference (2 lines 9-10) — API docs.");
+        assertThat(result).contains("- Getting Started (17 lines 1-17) — Overview.");
+        assertThat(result).contains("  - Creating a project (11 lines 3-13) — Project setup.");
+        assertThat(result).contains("    - From index.html (4 lines 6-9) — HTML approach line 1.");
+        assertThat(result).contains("    - From Gradle (4 lines 10-13) — Gradle approach line 1.");
+        assertThat(result).contains("  - API Reference (4 lines 14-17) — API docs.");
+    }
+
+    @Test
+    void hashInsideCodeBlocksIgnored() {
+        var lines = List.of(
+                "# Deployment",
+                "How to deploy.",
+                "",
+                "## Docker",
+                "Use this Dockerfile:",
+                "",
+                "```docker",
+                "FROM ubuntu:24.04",
+                "# Install dependencies",
+                "RUN apt-get update",
+                "# Configure the server",
+                "RUN echo done",
+                "```",
+                "",
+                "## Configuration",
+                "Set these properties:",
+                "",
+                "```properties",
+                "# Set the server count",
+                "server.count=1",
+                "```",
+                "",
+                "After configuration, restart."
+        );
+        var entry = new DocEntry("org.example", "deploy", "1.0.0");
+
+        String result = OverviewGenerator.generate(lines, entry);
+
+        // Real headings should be present
+        assertThat(result).contains("- Deployment");
+        assertThat(result).contains("Docker");
+        assertThat(result).contains("Configuration");
+        // Comments inside code blocks must NOT appear as chapters
+        assertThat(result).doesNotContain("Install dependencies");
+        assertThat(result).doesNotContain("Configure the server");
+        assertThat(result).doesNotContain("Set the server count");
+    }
+
+    @Test
+    void codeBlockDoesNotLeakSummary() {
+        var lines = List.of(
+                "# Setup",
+                "",
+                "```bash",
+                "# This is a bash comment",
+                "echo hello",
+                "```",
+                "",
+                "Real description here."
+        );
+        var entry = new DocEntry("org.example", "setup", "1.0.0");
+
+        String result = OverviewGenerator.generate(lines, entry);
+
+        // The summary should be the real text, not the bash comment
+        assertThat(result).contains("— Real description here.");
+        assertThat(result).doesNotContain("bash comment");
     }
 
     @Test
@@ -205,6 +302,5 @@ class OverviewGeneratorTest {
         String content = Files.readString(overviewFile);
         assertThat(content).contains("# my-lib (1.0.0)");
         assertThat(content).contains("- My Library");
-        assertThat(content).contains("- Usage");
     }
 }

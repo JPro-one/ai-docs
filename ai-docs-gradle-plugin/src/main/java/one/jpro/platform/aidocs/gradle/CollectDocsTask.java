@@ -4,6 +4,7 @@ import one.jpro.platform.aidocs.core.DocEntry;
 import one.jpro.platform.aidocs.core.DocsCollector;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.ResolvedDependency;
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.tasks.OutputDirectory;
@@ -12,8 +13,12 @@ import org.gradle.api.tasks.TaskAction;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Gradle task that resolves DOCUMENTATION.md classifier artifacts from all dependencies
@@ -30,22 +35,26 @@ public abstract class CollectDocsTask extends DefaultTask {
         DocsCollector.cleanOutputDir(outputDir);
 
         List<DocEntry> entries = new ArrayList<>();
+        Set<String> seenCoordinates = new HashSet<>();
 
         for (Configuration config : getProject().getConfigurations()) {
             if (!config.isCanBeResolved()) continue;
             if (!config.getName().toLowerCase().contains("classpath")) continue;
 
-            for (var artifact : config.getResolvedConfiguration().getResolvedArtifacts()) {
-                if (!(artifact.getId().getComponentIdentifier() instanceof ModuleComponentIdentifier id)) continue;
+            // Walk the full dependency graph to discover all modules, including POM-only ones
+            // that have no jar artifact but may publish DOCUMENTATION.md
+            Deque<ResolvedDependency> queue = new ArrayDeque<>(
+                    config.getResolvedConfiguration().getFirstLevelModuleDependencies());
+            while (!queue.isEmpty()) {
+                ResolvedDependency dep = queue.poll();
+                String group = dep.getModuleGroup();
+                String name = dep.getModuleName();
+                String version = dep.getModuleVersion();
 
-                String group = id.getGroup();
-                String name = id.getModule();
-                String version = id.getVersion();
+                String coordinate = group + ":" + name + ":" + version;
+                if (!seenCoordinates.add(coordinate)) continue;
 
-                // Skip if we already collected this dependency
                 var entry = new DocEntry(group, name, version);
-                if (entries.contains(entry)) continue;
-
                 try {
                     var docDep = getProject().getDependencies().create(
                             group + ":" + name + ":" + version + ":DOCUMENTATION@md"
@@ -54,17 +63,20 @@ public abstract class CollectDocsTask extends DefaultTask {
                     detached.setTransitive(false);
 
                     for (File docFile : detached.resolve()) {
-                        DocsCollector.collectDoc(outputDir, docFile.toPath(), entry);
-                        entries.add(entry);
+                        DocEntry enriched = DocsCollector.collectDoc(outputDir, docFile.toPath(), entry);
+                        entries.add(enriched);
                         getLogger().lifecycle("Collected docs: {}:{}", group, name);
                     }
                 } catch (Exception e) {
                     getLogger().debug("No DOCUMENTATION.md for {}:{}:{}", group, name, version);
                 }
+
+                queue.addAll(dep.getChildren());
             }
         }
 
         DocsCollector.generateIndex(outputDir, entries);
+        DocsCollector.generateContext(outputDir, entries);
 
         Path skillDir = getProject().getRootDir().toPath().resolve(".claude/skills/docs");
         String relativeDocsDir = getProject().getRootDir().toPath().relativize(outputDir).toString();

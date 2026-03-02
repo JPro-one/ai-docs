@@ -31,9 +31,11 @@ class OverviewGeneratorTest {
 
         assertThat(result).contains("# my-lib (1.0.0)");
         assertThat(result).contains("Full documentation: DOCUMENTATION.md");
-        assertThat(result).contains("- My Library (lines 1-3)");
-        assertThat(result).contains("- Getting Started (lines 4-7)");
-        assertThat(result).contains("- API Reference (lines 8-9)");
+        // Top-level heading spans entire document (encompasses sub-chapters)
+        assertThat(result).contains("- My Library (lines 1-9) — Some intro text.");
+        // Sub-headings indented 2 spaces, Getting Started ends where API Reference starts
+        assertThat(result).contains("  - Getting Started (lines 4-7) — Step 1: add dependency.");
+        assertThat(result).contains("  - API Reference (lines 8-9) — The main class is Foo.");
     }
 
     @Test
@@ -46,7 +48,7 @@ class OverviewGeneratorTest {
 
         String result = OverviewGenerator.generate(lines, entry);
 
-        assertThat(result).contains("- Overview (lines 1-2)");
+        assertThat(result).contains("- Overview (lines 1-2) — This is the only chapter.");
     }
 
     @Test
@@ -72,12 +74,11 @@ class OverviewGeneratorTest {
         String result = OverviewGenerator.generate(lines, entry);
 
         assertThat(result).contains("## Chapters");
-        // No chapter entries since there are no headings
-        assertThat(result.lines().filter(l -> l.startsWith("- ")).count()).isZero();
+        assertThat(result.lines().filter(l -> l.stripLeading().startsWith("- ")).count()).isZero();
     }
 
     @Test
-    void nestedHeadings() {
+    void parentChapterEncompassesChildren() {
         var lines = List.of(
                 "# Top Level",
                 "Intro.",
@@ -92,10 +93,96 @@ class OverviewGeneratorTest {
 
         String result = OverviewGenerator.generate(lines, entry);
 
-        assertThat(result).contains("- Top Level (lines 1-2)");
-        assertThat(result).contains("- Section A (lines 3-4)");
-        assertThat(result).contains("- Subsection A1 (lines 5-6)");
-        assertThat(result).contains("- Section B (lines 7-8)");
+        // Top Level (depth 1) spans entire doc including all sub-chapters
+        assertThat(result).contains("- Top Level (lines 1-8) — Intro.");
+        // Section A (depth 2) spans through its child Subsection A1, up to Section B
+        assertThat(result).contains("  - Section A (lines 3-6) — Content A.");
+        // Subsection A1 (depth 3) ends at Section B boundary
+        assertThat(result).contains("    - Subsection A1 (lines 5-6) — Detail.");
+        // Section B (depth 2) has no following sibling, goes to end
+        assertThat(result).contains("  - Section B (lines 7-8) — Content B.");
+    }
+
+    @Test
+    void allSameLevelHeadings() {
+        var lines = List.of(
+                "## Chapter One",
+                "Content one.",
+                "## Chapter Two",
+                "Content two."
+        );
+        var entry = new DocEntry("org.example", "flat", "1.0.0");
+
+        String result = OverviewGenerator.generate(lines, entry);
+
+        // Same depth siblings don't encompass each other
+        assertThat(result).contains("- Chapter One (lines 1-2) — Content one.");
+        assertThat(result).contains("- Chapter Two (lines 3-4) — Content two.");
+    }
+
+    @Test
+    void summaryTruncation() {
+        String longLine = "A".repeat(200);
+        var lines = List.of(
+                "# Title",
+                longLine
+        );
+        var entry = new DocEntry("org.example", "long", "1.0.0");
+
+        String result = OverviewGenerator.generate(lines, entry);
+
+        assertThat(result).contains("...");
+        assertThat(result).doesNotContain(longLine);
+    }
+
+    @Test
+    void headingWithNoSummaryText() {
+        var lines = List.of(
+                "# Title",
+                "",
+                "## Empty Section",
+                "",
+                "## Next Section",
+                "Has content."
+        );
+        var entry = new DocEntry("org.example", "sparse", "1.0.0");
+
+        String result = OverviewGenerator.generate(lines, entry);
+
+        // Title encompasses all sub-chapters
+        assertThat(result).contains("- Title (lines 1-6)");
+        assertThat(result).doesNotContain("- Title (lines 1-6) —");
+        assertThat(result).contains("  - Empty Section (lines 3-4)");
+        assertThat(result).contains("  - Next Section (lines 5-6) — Has content.");
+    }
+
+    @Test
+    void deeplyNestedHierarchy() {
+        var lines = List.of(
+                "# Getting Started",
+                "Overview.",
+                "## Creating a project",
+                "Project setup.",
+                "### From index.html",
+                "HTML approach.",
+                "### From Gradle",
+                "Gradle approach.",
+                "## API Reference",
+                "API docs."
+        );
+        var entry = new DocEntry("org.example", "deep", "1.0.0");
+
+        String result = OverviewGenerator.generate(lines, entry);
+
+        // Getting Started spans all sub-chapters
+        assertThat(result).contains("- Getting Started (lines 1-10) — Overview.");
+        // Creating a project spans its children, ends at API Reference
+        assertThat(result).contains("  - Creating a project (lines 3-8) — Project setup.");
+        // Leaf sub-sections end at siblings
+        assertThat(result).contains("    - From index.html (lines 5-6) — HTML approach.");
+        assertThat(result).contains("    - From Gradle (lines 7-8) — Gradle approach.");
+        // API Reference goes to end
+        assertThat(result).contains("  - API Reference (lines 9-10) — API docs.");
     }
 
     @Test

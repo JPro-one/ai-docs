@@ -24,20 +24,44 @@ public class DocsCollector {
 
     /**
      * Writes a single documentation file into the output structure and generates its overview.
+     * Returns the entry enriched with a description extracted from the documentation.
      *
      * @param outputDir the root output directory (e.g. build/ai-docs)
      * @param sourceFile the resolved DOCUMENTATION.md file
      * @param entry metadata about the dependency
+     * @return the entry with description populated from the documentation
      */
-    public static void collectDoc(Path outputDir, Path sourceFile, DocEntry entry) throws IOException {
+    public static DocEntry collectDoc(Path outputDir, Path sourceFile, DocEntry entry) throws IOException {
         Path libDir = outputDir.resolve(entry.group()).resolve(entry.name());
         Files.createDirectories(libDir);
 
         Path docTarget = libDir.resolve("DOCUMENTATION.md");
         Files.copy(sourceFile, docTarget, StandardCopyOption.REPLACE_EXISTING);
 
+        List<String> lines = Files.readAllLines(docTarget);
+        String description = extractDescription(lines);
+        DocEntry enriched = entry.withDescription(description);
+
         Path overviewTarget = libDir.resolve("overview.md");
-        OverviewGenerator.generate(overviewTarget, docTarget, entry);
+        OverviewGenerator.generate(overviewTarget, docTarget, enriched);
+
+        return enriched;
+    }
+
+    /**
+     * Extracts the first non-empty, non-heading line from the documentation as a description.
+     */
+    static String extractDescription(List<String> lines) {
+        for (String line : lines) {
+            if (!line.isBlank() && !line.startsWith("#")) {
+                String trimmed = line.strip();
+                if (trimmed.length() > 150) {
+                    return trimmed.substring(0, 147) + "...";
+                }
+                return trimmed;
+            }
+        }
+        return null;
     }
 
     /**
@@ -48,6 +72,16 @@ public class DocsCollector {
      */
     public static void generateIndex(Path outputDir, List<DocEntry> entries) throws IOException {
         IndexGenerator.generate(outputDir.resolve("index.md"), entries);
+    }
+
+    /**
+     * Generates the context.md file combining all library information.
+     *
+     * @param outputDir the root output directory
+     * @param entries all collected documentation entries (with descriptions)
+     */
+    public static void generateContext(Path outputDir, List<DocEntry> entries) throws IOException {
+        ContextGenerator.generate(outputDir.resolve("context.md"), outputDir, entries);
     }
 
     /**

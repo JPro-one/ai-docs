@@ -76,11 +76,15 @@ class CollectDocsFunctionalTest {
 
         Path aiDocs = projectDir.resolve("build/ai-docs");
         assertThat(aiDocs.resolve("index.md")).exists();
+        assertThat(aiDocs.resolve("context.md")).exists();
 
         String index = Files.readString(aiDocs.resolve("index.md"));
         assertThat(index).contains("# AI Documentation Index");
         // No library entries
         assertThat(index.lines().filter(l -> l.startsWith("- ")).count()).isZero();
+
+        String context = Files.readString(aiDocs.resolve("context.md"));
+        assertThat(context).contains("# Project Documentation Context");
 
         // SKILL.md should be generated
         Path skillFile = projectDir.resolve(".claude/skills/docs/SKILL.md");
@@ -116,10 +120,12 @@ class CollectDocsFunctionalTest {
 
         Path aiDocs = projectDir.resolve("build/ai-docs");
 
-        // index.md should list the library
+        // index.md should list the library exactly once (no duplicates from multiple classpath configs)
         String index = Files.readString(aiDocs.resolve("index.md"));
         assertThat(index).contains("one.jpro.platform:jpro-routing-core");
         assertThat(index).contains("[overview]");
+        long indexCount = index.lines().filter(l -> l.contains("jpro-routing-core")).count();
+        assertThat(indexCount).isEqualTo(1);
 
         // DOCUMENTATION.md should be collected with real content
         Path docFile = aiDocs.resolve("one.jpro.platform/jpro-routing-core/DOCUMENTATION.md");
@@ -136,6 +142,15 @@ class CollectDocsFunctionalTest {
         assertThat(overview).contains("jpro-routing-core");
         assertThat(overview).contains("## Chapters");
         assertThat(overview).contains("lines");
+        // Should have summaries (at least one line with " — ")
+        assertThat(overview).contains(" — ");
+
+        // context.md should exist and contain the library
+        Path contextFile = aiDocs.resolve("context.md");
+        assertThat(contextFile).exists();
+        String context = Files.readString(contextFile);
+        assertThat(context).contains("one.jpro.platform:jpro-routing-core");
+        assertThat(context).contains("Chapters");
     }
 
     @Test

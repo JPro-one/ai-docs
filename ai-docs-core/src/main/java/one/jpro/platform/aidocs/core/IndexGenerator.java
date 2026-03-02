@@ -36,6 +36,9 @@ public class IndexGenerator {
                     String overviewPath = entry.relativePath() + "/overview.md";
                     sb.append("- ").append(entry.coordinate())
                             .append(" — [overview](").append(overviewPath).append(")\n");
+                    if (entry.description() != null) {
+                        sb.append("  ").append(entry.description()).append("\n");
+                    }
                 });
 
         return sb.toString();

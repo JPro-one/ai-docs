@@ -15,9 +15,9 @@ class IndexGeneratorTest {
     @Test
     void multipleEntries() {
         var entries = List.of(
-                new DocEntry("one.jpro.platform", "jpro-file", "0.5.8"),
-                new DocEntry("one.jpro.platform", "jpro-routing-core", "0.5.8"),
-                new DocEntry("com.example", "other-lib", "2.0.0")
+                new DocEntry("one.jpro.platform", "jpro-file", "0.5.8", "File handling library."),
+                new DocEntry("one.jpro.platform", "jpro-routing-core", "0.5.8", "Routing framework."),
+                new DocEntry("com.example", "other-lib", "2.0.0", "Another library.")
         );
 
         String result = IndexGenerator.generate(entries);
@@ -30,6 +30,35 @@ class IndexGeneratorTest {
         // Should have overview links
         assertThat(result).contains("[overview](com.example/other-lib/overview.md)");
         assertThat(result).contains("[overview](one.jpro.platform/jpro-file/overview.md)");
+        // Should have descriptions indented below each entry
+        assertThat(result).contains("  File handling library.");
+        assertThat(result).contains("  Routing framework.");
+        assertThat(result).contains("  Another library.");
+    }
+
+    @Test
+    void entryWithoutDescription() {
+        var entries = List.of(
+                new DocEntry("org.example", "no-desc", "1.0.0")
+        );
+
+        String result = IndexGenerator.generate(entries);
+
+        assertThat(result).contains("- org.example:no-desc:1.0.0 — [overview](org.example/no-desc/overview.md)");
+        // No description line
+        assertThat(result).doesNotContain("  ");
+    }
+
+    @Test
+    void entryWithDescription() {
+        var entries = List.of(
+                new DocEntry("org.example", "my-lib", "1.0.0", "A useful library.")
+        );
+
+        String result = IndexGenerator.generate(entries);
+
+        assertThat(result).contains("- org.example:my-lib:1.0.0 — [overview](org.example/my-lib/overview.md)");
+        assertThat(result).contains("  A useful library.");
     }
 
     @Test
@@ -55,8 +84,8 @@ class IndexGeneratorTest {
     @Test
     void writeToFile(@TempDir Path tempDir) throws IOException {
         var entries = List.of(
-                new DocEntry("com.example", "lib-a", "1.0.0"),
-                new DocEntry("com.example", "lib-b", "2.0.0")
+                new DocEntry("com.example", "lib-a", "1.0.0", "Library A."),
+                new DocEntry("com.example", "lib-b", "2.0.0", "Library B.")
         );
 
         Path indexFile = tempDir.resolve("index.md");
@@ -66,5 +95,7 @@ class IndexGeneratorTest {
         String content = Files.readString(indexFile);
         assertThat(content).contains("lib-a");
         assertThat(content).contains("lib-b");
+        assertThat(content).contains("  Library A.");
+        assertThat(content).contains("  Library B.");
     }
 }

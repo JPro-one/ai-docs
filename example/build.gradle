@@ -13,5 +13,6 @@ repositories {
 dependencies {
     implementation 'one.jpro.platform:jpro-routing-core:0.5.8'
     implementation 'one.jpro.platform:jpro-file:0.5.8'
-    implementation 'one.jpro:jpro-webapi:2025.3.1'
+    implementation 'one.jpro:jpro-webapi:2026.1.1'
+    implementation 'one.jpro:jpro:2026.1.1'
 }

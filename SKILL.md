@@ -4,17 +4,19 @@ This project uses the **AI Docs** Gradle plugin, which collects `DOCUMENTATION.m
 
 ## What's Available
 
-When `gradle collectDocs` has been run, the `build/ai-docs/` directory contains documentation for the project's dependencies, organized in three layers:
+When `gradle collectDocs` has been run, the `build/ai-docs/` directory contains documentation for the project's dependencies, organized in four layers:
 
-- **`build/ai-docs/index.md`** — A small file listing every library that has documentation, with links to each library's overview. This is the cheapest way to see what's available.
+- **`build/ai-docs/context.md`** — A single combined file with all library names, descriptions, and chapter listings. This is the best starting point — read this one file to get a complete picture of all available documentation.
 
-- **`build/ai-docs/{group}/{artifact}/overview.md`** — A per-library summary showing chapter titles and their line ranges in the full documentation. Useful for understanding the structure of a library's docs without reading everything.
+- **`build/ai-docs/index.md`** — A small file listing every library that has documentation, with one-line descriptions and links to each library's overview.
+
+- **`build/ai-docs/{group}/{artifact}/overview.md`** — A per-library summary showing chapter titles with hierarchy, line ranges, and one-line summaries. Useful for finding the right section to read.
 
 - **`build/ai-docs/{group}/{artifact}/DOCUMENTATION.md`** — The full documentation for a library. The line ranges from `overview.md` can be used to read only specific chapters instead of the entire file.
 
 ## How This Helps
 
-The three-layer structure allows for efficient, incremental reading. The index is always small. The overviews provide chapter structure with line numbers. The full documentation can be read selectively by line range. This avoids loading large amounts of documentation into context when only a specific topic is needed.
+The four-layer structure allows for efficient, incremental reading. Start with `context.md` for the full picture. Use overviews to find specific chapters. Read full documentation selectively by line range. This avoids loading large amounts of documentation into context when only a specific topic is needed.
 
 ## If Documentation Hasn't Been Collected Yet
 

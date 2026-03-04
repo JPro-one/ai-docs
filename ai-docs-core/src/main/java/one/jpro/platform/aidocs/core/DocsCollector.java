@@ -66,6 +66,25 @@ public class DocsCollector {
     }
 
     /**
+     * Copies a CHANGELOG.md into the output structure and generates its changelog-overview.md.
+     *
+     * @param outputDir the root output directory (e.g. build/ai-docs)
+     * @param changelogFile the resolved CHANGELOG.md file
+     * @param entry metadata about the dependency
+     * @param overviewMinLines sub-chapters shorter than this are omitted from changelog-overview.md
+     */
+    public static void collectChangelog(Path outputDir, Path changelogFile, DocEntry entry, int overviewMinLines) throws IOException {
+        Path libDir = outputDir.resolve(entry.group()).resolve(entry.name());
+        Files.createDirectories(libDir);
+
+        Path changelogTarget = libDir.resolve("CHANGELOG.md");
+        Files.copy(changelogFile, changelogTarget, StandardCopyOption.REPLACE_EXISTING);
+
+        Path overviewTarget = libDir.resolve("changelog-overview.md");
+        OverviewGenerator.generate(overviewTarget, changelogTarget, entry, overviewMinLines);
+    }
+
+    /**
      * Copies a sources jar into the output structure and generates its sources-index.md.
      *
      * @param outputDir the root output directory (e.g. build/ai-docs)

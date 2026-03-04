@@ -3,30 +3,34 @@ package one.jpro.platform.aidocs.core;
 /**
  * Represents a collected documentation artifact.
  */
-public record DocEntry(String group, String name, String version, String description, boolean hasSources, PomMetadata pomMetadata) {
+public record DocEntry(String group, String name, String version, String description, boolean hasSources, boolean hasChangelog, PomMetadata pomMetadata) {
 
     public DocEntry(String group, String name, String version) {
-        this(group, name, version, null, false, null);
+        this(group, name, version, null, false, false, null);
     }
 
     public DocEntry(String group, String name, String version, String description) {
-        this(group, name, version, description, false, null);
+        this(group, name, version, description, false, false, null);
     }
 
     public DocEntry(String group, String name, String version, String description, boolean hasSources) {
-        this(group, name, version, description, hasSources, null);
+        this(group, name, version, description, hasSources, false, null);
     }
 
     public DocEntry withDescription(String description) {
-        return new DocEntry(group, name, version, description, hasSources, pomMetadata);
+        return new DocEntry(group, name, version, description, hasSources, hasChangelog, pomMetadata);
     }
 
     public DocEntry withHasSources(boolean hasSources) {
-        return new DocEntry(group, name, version, description, hasSources, pomMetadata);
+        return new DocEntry(group, name, version, description, hasSources, hasChangelog, pomMetadata);
+    }
+
+    public DocEntry withHasChangelog(boolean hasChangelog) {
+        return new DocEntry(group, name, version, description, hasSources, hasChangelog, pomMetadata);
     }
 
     public DocEntry withPomMetadata(PomMetadata pomMetadata) {
-        return new DocEntry(group, name, version, description, hasSources, pomMetadata);
+        return new DocEntry(group, name, version, description, hasSources, hasChangelog, pomMetadata);
     }
 
     /**

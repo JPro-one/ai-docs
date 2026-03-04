@@ -164,6 +164,21 @@ class CollectDocsFunctionalTest {
         assertThat(srcIndex).contains("Source Index");
         assertThat(srcIndex).contains(".java");
 
+        // CHANGELOG.md — graceful absence: if the artifact doesn't publish one, no file should exist
+        Path changelogFile = aiDocs.resolve("one.jpro.platform/jpro-routing-core/CHANGELOG.md");
+        Path changelogOverview = aiDocs.resolve("one.jpro.platform/jpro-routing-core/changelog-overview.md");
+        if (changelogFile.toFile().exists()) {
+            // If a changelog is present, the overview should also exist
+            assertThat(changelogOverview).exists();
+            String changelogContent = Files.readString(changelogOverview);
+            assertThat(changelogContent).contains("Chapters");
+            // context.md should reference the changelog
+            assertThat(context).contains("changelog-overview.md");
+        } else {
+            // No changelog artifact — overview should not exist either
+            assertThat(changelogOverview).doesNotExist();
+        }
+
     }
 
     @Test

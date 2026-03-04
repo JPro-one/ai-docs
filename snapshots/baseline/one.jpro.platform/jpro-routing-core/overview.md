@@ -1,4 +1,4 @@
-# jpro-routing-core (0.5.8)
+# jpro-routing-core (0.6.0-SNAPSHOT)
 Full documentation: DOCUMENTATION.md
 
 ## Chapters

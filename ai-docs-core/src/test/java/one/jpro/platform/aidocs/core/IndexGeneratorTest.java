@@ -83,7 +83,7 @@ class IndexGeneratorTest {
     void displayNameShownWhenDifferentFromArtifact() {
         var pom = new PomMetadata("My Library", "A useful lib.", "https://example.com", null, "Apache-2.0");
         var entries = List.of(
-                new DocEntry("org.example", "my-lib", "1.0.0", "Doc description.", false, pom)
+                new DocEntry("org.example", "my-lib", "1.0.0", "Doc description.", false, false, pom)
         );
         String context = fakeContext(entries);
 

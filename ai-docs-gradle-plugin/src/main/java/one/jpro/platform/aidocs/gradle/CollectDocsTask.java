@@ -9,6 +9,8 @@ import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.ResolvedDependency;
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.artifacts.result.ResolvedComponentResult;
+import org.gradle.api.artifacts.result.ResolvedDependencyResult;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
@@ -73,15 +75,31 @@ public abstract class CollectDocsTask extends DefaultTask {
             if (!config.isCanBeResolved()) continue;
             if (!config.getName().toLowerCase().contains("classpath")) continue;
 
-            // Walk the full dependency graph to discover all modules, including POM-only ones
-            // that have no jar artifact but may publish DOCUMENTATION.md
-            Deque<ResolvedDependency> queue = new ArrayDeque<>(
-                    config.getResolvedConfiguration().getFirstLevelModuleDependencies());
+            // Walk the full dependency graph via ResolutionResult to discover all modules,
+            // including POM-only ones that have no jar artifact but may publish DOCUMENTATION.md.
+            // ResolvedDependency.getChildren() skips POM-only modules, so we use ResolutionResult instead.
+            // Use component IDs to avoid re-walking the same node in the graph
+            Set<Object> visitedComponents = new HashSet<>();
+            ResolvedComponentResult root = config.getIncoming().getResolutionResult().getRoot();
+            Deque<ResolvedComponentResult> queue = new ArrayDeque<>();
+            queue.add(root);
             while (!queue.isEmpty()) {
-                ResolvedDependency dep = queue.poll();
-                String group = dep.getModuleGroup();
-                String name = dep.getModuleName();
-                String version = dep.getModuleVersion();
+                ResolvedComponentResult component = queue.poll();
+                if (!visitedComponents.add(component.getId())) continue;
+
+                // Queue children regardless of component type
+                for (var depResult : component.getDependencies()) {
+                    if (depResult instanceof ResolvedDependencyResult resolved) {
+                        queue.add(resolved.getSelected());
+                    }
+                }
+
+                if (!(component.getId() instanceof ModuleComponentIdentifier moduleId)) {
+                    continue;
+                }
+                String group = moduleId.getGroup();
+                String name = moduleId.getModule();
+                String version = moduleId.getVersion();
 
                 String coordinate = group + ":" + name + ":" + version;
                 if (!seenCoordinates.add(coordinate)) continue;
@@ -121,7 +139,23 @@ public abstract class CollectDocsTask extends DefaultTask {
                     getLogger().debug("No sources jar for {}:{}:{}", group, name, version);
                 }
 
-                if (hasDocs || enriched.hasSources()) {
+                try {
+                    var changelogDep = dependencies.create(
+                            group + ":" + name + ":" + version + ":CHANGELOG@md"
+                    );
+                    var detached = configurations.detachedConfiguration(changelogDep);
+                    detached.setTransitive(false);
+
+                    for (File changelogFile : detached.resolve()) {
+                        DocsCollector.collectChangelog(outputDir, changelogFile.toPath(), enriched, getOverviewMinLines().get());
+                        enriched = enriched.withHasChangelog(true);
+                        getLogger().lifecycle("Collected changelog: {}:{}", group, name);
+                    }
+                } catch (Exception e) {
+                    getLogger().debug("No CHANGELOG.md for {}:{}:{}", group, name, version);
+                }
+
+                if (hasDocs || enriched.hasSources() || enriched.hasChangelog()) {
                     try {
                         var pomDep = dependencies.create(
                                 group + ":" + name + ":" + version + "@pom"
@@ -141,7 +175,6 @@ public abstract class CollectDocsTask extends DefaultTask {
                     entries.add(enriched);
                 }
 
-                queue.addAll(dep.getChildren());
             }
         }
     }

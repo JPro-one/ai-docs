@@ -1,4 +1,4 @@
-# jpro-file (0.5.8)
+# jpro-file (0.6.0-SNAPSHOT)
 Full documentation: DOCUMENTATION.md
 
 ## Chapters

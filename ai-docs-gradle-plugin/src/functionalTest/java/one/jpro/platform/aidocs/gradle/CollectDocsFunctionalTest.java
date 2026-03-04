@@ -151,6 +151,21 @@ class CollectDocsFunctionalTest {
         String context = Files.readString(contextFile);
         assertThat(context).contains("one.jpro.platform:jpro-routing-core");
         assertThat(context).contains("Chapters");
+
+        // sources.jar should be collected (jpro-routing-core publishes sources)
+        Path sourcesJar = aiDocs.resolve("one.jpro.platform/jpro-routing-core/sources.jar");
+        assertThat(sourcesJar).exists();
+        assertThat(Files.size(sourcesJar)).isGreaterThan(0);
+
+        // sources-index.md should be generated
+        Path sourcesIndex = aiDocs.resolve("one.jpro.platform/jpro-routing-core/sources-index.md");
+        assertThat(sourcesIndex).exists();
+        String srcIndex = Files.readString(sourcesIndex);
+        assertThat(srcIndex).contains("Source Index");
+        assertThat(srcIndex).contains(".java");
+
+        // index.md should contain sources link
+        assertThat(index).contains("[sources]");
     }
 
     @Test
@@ -219,11 +234,21 @@ class CollectDocsFunctionalTest {
 
         assertThat(result.task(":collectDocs").getOutcome()).isEqualTo(SUCCESS);
 
-        String index = Files.readString(projectDir.resolve("build/ai-docs/index.md"));
-        // slf4j should not appear (no DOCUMENTATION.md)
-        assertThat(index).doesNotContain("slf4j");
-        // jpro-routing-core should still be there
+        Path aiDocs = projectDir.resolve("build/ai-docs");
+        String index = Files.readString(aiDocs.resolve("index.md"));
+        // jpro-routing-core should be there
         assertThat(index).contains("jpro-routing-core");
+
+        // slf4j has sources but no DOCUMENTATION.md — it should still appear in the index with sources
+        assertThat(index).contains("slf4j");
+        Path slf4jSourcesJar = aiDocs.resolve("org.slf4j/slf4j-api/sources.jar");
+        assertThat(slf4jSourcesJar).exists();
+        Path slf4jSourcesIndex = aiDocs.resolve("org.slf4j/slf4j-api/sources-index.md");
+        assertThat(slf4jSourcesIndex).exists();
+
+        // slf4j POM has name/description/url/license — verify POM metadata is parsed
+        // The SLF4J POM contains a human-readable name
+        assertThat(index).contains("SLF4J");
     }
 
     @Test

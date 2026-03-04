@@ -13,21 +13,17 @@ import java.util.List;
  */
 public class OverviewGenerator {
 
-    /** Sub-chapters shorter than this are omitted from overview.md */
-    static final int OVERVIEW_MIN_LINES = 3;
-    /** Sub-chapters shorter than this are omitted from context.md */
-    static final int CONTEXT_MIN_LINES = 30;
-
     /**
      * Generates an overview.md file from a DOCUMENTATION.md file.
      *
      * @param overviewPath path to write the overview.md
      * @param docPath path to the source DOCUMENTATION.md
      * @param entry the documentation entry metadata
+     * @param minLineCount sub-chapters shorter than this are omitted
      */
-    public static void generate(Path overviewPath, Path docPath, DocEntry entry) throws IOException {
+    public static void generate(Path overviewPath, Path docPath, DocEntry entry, int minLineCount) throws IOException {
         List<String> lines = Files.readAllLines(docPath);
-        String content = generate(lines, entry);
+        String content = generate(lines, entry, minLineCount);
         Files.writeString(overviewPath, content);
     }
 
@@ -36,18 +32,21 @@ public class OverviewGenerator {
     }
 
     /**
-     * Generates overview content from documentation lines (uses OVERVIEW_MIN_LINES threshold).
+     * Generates overview content from documentation lines.
+     *
+     * @param minLineCount sub-chapters shorter than this are omitted
      */
-    static String generate(List<String> lines, DocEntry entry) {
-        return generateChapterListing(lines, entry, OVERVIEW_MIN_LINES);
+    static String generate(List<String> lines, DocEntry entry, int minLineCount) {
+        return generateChapterListing(lines, entry, minLineCount);
     }
 
     /**
-     * Generates chapter listing with a configurable minimum line threshold for sub-chapters.
+     * Generates chapter listing with a configurable minimum line threshold.
+     * Chapters with fewer than {@code minLineCount} lines have their children collapsed.
      */
     static String generateChapterListing(List<String> lines, DocEntry entry, int minLineCount) {
         var sb = new StringBuilder();
-        sb.append("# ").append(entry.name()).append(" (").append(entry.version()).append(")\n");
+        sb.append("# ").append(entry.displayName()).append(" (").append(entry.version()).append(")\n");
         sb.append("Full documentation: DOCUMENTATION.md\n\n");
         sb.append("## Chapters\n");
 
@@ -56,13 +55,30 @@ public class OverviewGenerator {
 
         int minDepth = chapters.stream().mapToInt(ChapterInfo::depth).min().orElse(1);
 
-        for (ChapterInfo ch : chapters) {
-            // Always keep top-level chapters; skip sub-chapters below the threshold
-            if (ch.depth() > minDepth && ch.lineCount() < minLineCount) continue;
+        for (ChapterInfo ch : filterChapters(chapters, minLineCount)) {
             appendChapter(sb, ch.title(), ch.depth(), minDepth, ch.startLine(), ch.endLine(), ch.summary());
         }
 
         return sb.toString();
+    }
+
+    /**
+     * Filters chapters by collapsing children of chapters shorter than {@code minLineCount}.
+     * Every chapter is always included, but if it has fewer than {@code minLineCount} lines,
+     * all its descendants are removed. Applied recursively through the hierarchy.
+     */
+    static List<ChapterInfo> filterChapters(List<ChapterInfo> chapters, int minLineCount) {
+        List<ChapterInfo> result = new ArrayList<>();
+        int collapsedAtDepth = Integer.MAX_VALUE;
+        for (ChapterInfo ch : chapters) {
+            if (ch.depth() > collapsedAtDepth) continue;
+            collapsedAtDepth = Integer.MAX_VALUE;
+            result.add(ch);
+            if (ch.lineCount() < minLineCount) {
+                collapsedAtDepth = ch.depth();
+            }
+        }
+        return result;
     }
 
     /**

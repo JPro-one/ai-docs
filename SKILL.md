@@ -14,6 +14,8 @@ When `gradle collectDocs` has been run, the `build/ai-docs/` directory contains 
 
 - **`build/ai-docs/{group}/{artifact}/DOCUMENTATION.md`** — The full documentation for a library. The line ranges from `overview.md` can be used to read only specific chapters instead of the entire file.
 
+- **`build/ai-docs/{group}/{artifact}/sources-index.md`** — (Optional) Lists all source files in the library's sources jar, organized by package. To read a specific source file, run: `unzip -p build/ai-docs/{group}/{artifact}/sources.jar <path>`
+
 ## How This Helps
 
 The four-layer structure allows for efficient, incremental reading. Start with `context.md` for the full picture. Use overviews to find specific chapters. Read full documentation selectively by line range. This avoids loading large amounts of documentation into context when only a specific topic is needed.

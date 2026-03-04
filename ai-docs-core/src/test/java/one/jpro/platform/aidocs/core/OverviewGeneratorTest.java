@@ -29,7 +29,7 @@ class OverviewGeneratorTest {
         );
         var entry = new DocEntry("com.example", "my-lib", "1.0.0");
 
-        String result = OverviewGenerator.generate(lines, entry);
+        String result = OverviewGenerator.generate(lines, entry, 1);
 
         assertThat(result).contains("# my-lib (1.0.0)");
         assertThat(result).contains("Full documentation: DOCUMENTATION.md");
@@ -46,7 +46,7 @@ class OverviewGeneratorTest {
         );
         var entry = new DocEntry("org.example", "single", "2.0.0");
 
-        String result = OverviewGenerator.generate(lines, entry);
+        String result = OverviewGenerator.generate(lines, entry, 1);
 
         // Top-level chapters are always kept regardless of size
         assertThat(result).contains("- Overview (2 lines 1-2) — This is the only chapter.");
@@ -56,7 +56,7 @@ class OverviewGeneratorTest {
     void emptyDocument() {
         var entry = new DocEntry("org.example", "empty", "1.0.0");
 
-        String result = OverviewGenerator.generate(List.of(), entry);
+        String result = OverviewGenerator.generate(List.of(), entry, 1);
 
         assertThat(result).contains("# empty (1.0.0)");
         assertThat(result).contains("## Chapters");
@@ -72,7 +72,7 @@ class OverviewGeneratorTest {
         );
         var entry = new DocEntry("org.example", "noheadings", "1.0.0");
 
-        String result = OverviewGenerator.generate(lines, entry);
+        String result = OverviewGenerator.generate(lines, entry, 1);
 
         assertThat(result).contains("## Chapters");
         assertThat(result.lines().filter(l -> l.stripLeading().startsWith("- ")).count()).isZero();
@@ -98,7 +98,7 @@ class OverviewGeneratorTest {
         );
         var entry = new DocEntry("org.example", "nested", "1.0.0");
 
-        String result = OverviewGenerator.generate(lines, entry);
+        String result = OverviewGenerator.generate(lines, entry, 1);
 
         assertThat(result).contains("- Top Level (14 lines 1-14) — Intro.");
         assertThat(result).contains("  - Section A (8 lines 3-10) — Content A.");
@@ -107,27 +107,33 @@ class OverviewGeneratorTest {
     }
 
     @Test
-    void shortSubChaptersFilteredFromOverview() {
+    void childrenCollapsedForShortChapters() {
         var lines = List.of(
-                "# Top Level",
-                "Intro.",
-                "## Big Section",
-                "Line 1.",
-                "Line 2.",
-                "Line 3.",
-                "## Tiny Section",
-                "Brief."
+                "# Top Level",             // 1
+                "Intro.",                   // 2
+                "## Big Section",           // 3
+                "Line 1.",                  // 4
+                "Line 2.",                  // 5
+                "Line 3.",                  // 6
+                "### Sub of Big",           // 7
+                "Detail.",                  // 8
+                "## Small Section",         // 9
+                "Brief.",                   // 10
+                "### Sub of Small",         // 11
+                "Hidden detail."            // 12
         );
         var entry = new DocEntry("org.example", "filtered", "1.0.0");
 
-        String result = OverviewGenerator.generate(lines, entry);
+        String result = OverviewGenerator.generate(lines, entry, 5);
 
-        // Top-level always kept
-        assertThat(result).contains("- Top Level (8 lines 1-8)");
-        // Big Section has 4 lines (>= 3), kept
-        assertThat(result).contains("  - Big Section (4 lines 3-6)");
-        // Tiny Section has 2 lines (< 3), filtered
-        assertThat(result).doesNotContain("Tiny Section");
+        // All chapters are always shown
+        assertThat(result).contains("- Top Level (12 lines 1-12)");
+        // Big Section has 6 lines (>= 5), its children are shown
+        assertThat(result).contains("  - Big Section (6 lines 3-8)");
+        assertThat(result).contains("    - Sub of Big (2 lines 7-8)");
+        // Small Section has 4 lines (< 5), shown but children collapsed
+        assertThat(result).contains("  - Small Section (4 lines 9-12)");
+        assertThat(result).doesNotContain("Sub of Small");
     }
 
     @Test
@@ -138,7 +144,7 @@ class OverviewGeneratorTest {
         );
         var entry = new DocEntry("org.example", "short-top", "1.0.0");
 
-        String result = OverviewGenerator.generate(lines, entry);
+        String result = OverviewGenerator.generate(lines, entry, 1);
 
         // Top-level chapters are never filtered even if short
         assertThat(result).contains("- Short Chapter (2 lines 1-2) — Brief.");
@@ -154,7 +160,7 @@ class OverviewGeneratorTest {
         );
         var entry = new DocEntry("org.example", "flat", "1.0.0");
 
-        String result = OverviewGenerator.generate(lines, entry);
+        String result = OverviewGenerator.generate(lines, entry, 1);
 
         // All at min depth — always kept regardless of size
         assertThat(result).contains("- Chapter One (2 lines 1-2) — Content one.");
@@ -170,7 +176,7 @@ class OverviewGeneratorTest {
         );
         var entry = new DocEntry("org.example", "long", "1.0.0");
 
-        String result = OverviewGenerator.generate(lines, entry);
+        String result = OverviewGenerator.generate(lines, entry, 1);
 
         assertThat(result).contains("...");
         assertThat(result).doesNotContain(longLine);
@@ -183,7 +189,7 @@ class OverviewGeneratorTest {
         );
         var entry = new DocEntry("org.example", "single-line", "1.0.0");
 
-        String result = OverviewGenerator.generate(lines, entry);
+        String result = OverviewGenerator.generate(lines, entry, 1);
 
         assertThat(result).contains("- Only Heading (1 line 1-1)");
     }
@@ -211,7 +217,7 @@ class OverviewGeneratorTest {
         );
         var entry = new DocEntry("org.example", "deep", "1.0.0");
 
-        String result = OverviewGenerator.generate(lines, entry);
+        String result = OverviewGenerator.generate(lines, entry, 1);
 
         assertThat(result).contains("- Getting Started (17 lines 1-17) — Overview.");
         assertThat(result).contains("  - Creating a project (11 lines 3-13) — Project setup.");
@@ -249,7 +255,7 @@ class OverviewGeneratorTest {
         );
         var entry = new DocEntry("org.example", "deploy", "1.0.0");
 
-        String result = OverviewGenerator.generate(lines, entry);
+        String result = OverviewGenerator.generate(lines, entry, 1);
 
         // Real headings should be present
         assertThat(result).contains("- Deployment");
@@ -275,11 +281,22 @@ class OverviewGeneratorTest {
         );
         var entry = new DocEntry("org.example", "setup", "1.0.0");
 
-        String result = OverviewGenerator.generate(lines, entry);
+        String result = OverviewGenerator.generate(lines, entry, 1);
 
         // The summary should be the real text, not the bash comment
         assertThat(result).contains("— Real description here.");
         assertThat(result).doesNotContain("bash comment");
+    }
+
+    @Test
+    void headerUsesDisplayNameFromPom() {
+        var lines = List.of("# Title", "Content.");
+        var pom = new PomMetadata("My Pretty Library", null, null, null);
+        var entry = new DocEntry("com.example", "my-lib", "1.0.0").withPomMetadata(pom);
+
+        String result = OverviewGenerator.generate(lines, entry, 1);
+
+        assertThat(result).contains("# My Pretty Library (1.0.0)");
     }
 
     @Test
@@ -296,7 +313,7 @@ class OverviewGeneratorTest {
         Path overviewFile = tempDir.resolve("overview.md");
         var entry = new DocEntry("com.example", "my-lib", "1.0.0");
 
-        OverviewGenerator.generate(overviewFile, docFile, entry);
+        OverviewGenerator.generate(overviewFile, docFile, entry, 1);
 
         assertThat(overviewFile).exists();
         String content = Files.readString(overviewFile);

@@ -15,6 +15,8 @@ public class AiDocsPlugin implements Plugin<Project> {
             task.setGroup("documentation");
             task.setDescription("Collects DOCUMENTATION.md artifacts from dependencies into build/ai-docs/");
             task.getOutputDirectory().convention(project.getLayout().getBuildDirectory().dir("ai-docs"));
+            task.getOverviewMinLines().convention(15);
+            task.getContextMinLines().convention(150);
         });
     }
 }

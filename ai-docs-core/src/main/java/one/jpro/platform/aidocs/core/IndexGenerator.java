@@ -34,10 +34,42 @@ public class IndexGenerator {
                 .sorted(Comparator.comparing(DocEntry::coordinate))
                 .forEach(entry -> {
                     String overviewPath = entry.relativePath() + "/overview.md";
-                    sb.append("- ").append(entry.coordinate())
-                            .append(" — [overview](").append(overviewPath).append(")\n");
-                    if (entry.description() != null) {
-                        sb.append("  ").append(entry.description()).append("\n");
+                    sb.append("- ").append(entry.coordinate());
+                    if (!entry.displayName().equals(entry.name())) {
+                        sb.append(" (").append(entry.displayName()).append(")");
+                    }
+                    sb.append(" — [overview](").append(overviewPath).append(")");
+                    if (entry.hasSources()) {
+                        String sourcesPath = entry.relativePath() + "/sources-index.md";
+                        sb.append(" | [sources](").append(sourcesPath).append(")");
+                    }
+                    sb.append("\n");
+                    String desc = entry.effectiveDescription();
+                    if (desc != null) {
+                        sb.append("  ").append(desc);
+                        PomMetadata pom = entry.pomMetadata();
+                        if (pom != null) {
+                            if (pom.url() != null) {
+                                sb.append(" [Homepage](").append(pom.url()).append(")");
+                            }
+                            if (pom.license() != null) {
+                                sb.append(" · ").append(pom.license());
+                            }
+                        }
+                        sb.append("\n");
+                    } else {
+                        PomMetadata pom = entry.pomMetadata();
+                        if (pom != null && (pom.url() != null || pom.license() != null)) {
+                            sb.append("  ");
+                            if (pom.url() != null) {
+                                sb.append("[Homepage](").append(pom.url()).append(")");
+                            }
+                            if (pom.license() != null) {
+                                if (pom.url() != null) sb.append(" · ");
+                                sb.append(pom.license());
+                            }
+                            sb.append("\n");
+                        }
                     }
                 });
 

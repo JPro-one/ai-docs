@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,7 +31,7 @@ class DocsCollectorTest {
 
         var entry = new DocEntry("com.example", "my-lib", "1.0.0");
         DocsCollector.cleanOutputDir(outputDir);
-        DocEntry enriched = DocsCollector.collectDoc(outputDir, sourceDoc, entry);
+        DocEntry enriched = DocsCollector.collectDoc(outputDir, sourceDoc, entry, 1);
         DocsCollector.generateIndex(outputDir, List.of(enriched));
 
         // Check description was extracted
@@ -69,8 +72,8 @@ class DocsCollectorTest {
         Files.writeString(doc2, "# Library B\nContent B.");
         var entry2 = new DocEntry("com.example", "lib-b", "2.0.0");
 
-        DocEntry enriched1 = DocsCollector.collectDoc(outputDir, doc1, entry1);
-        DocEntry enriched2 = DocsCollector.collectDoc(outputDir, doc2, entry2);
+        DocEntry enriched1 = DocsCollector.collectDoc(outputDir, doc1, entry1, 5);
+        DocEntry enriched2 = DocsCollector.collectDoc(outputDir, doc2, entry2, 5);
         DocsCollector.generateIndex(outputDir, List.of(enriched1, enriched2));
 
         assertThat(outputDir.resolve("com.example/lib-a/DOCUMENTATION.md")).exists();
@@ -94,7 +97,7 @@ class DocsCollectorTest {
 
         var entry = new DocEntry("com.example", "title-only", "1.0.0");
         DocsCollector.cleanOutputDir(outputDir);
-        DocEntry enriched = DocsCollector.collectDoc(outputDir, sourceDoc, entry);
+        DocEntry enriched = DocsCollector.collectDoc(outputDir, sourceDoc, entry, 5);
 
         assertThat(enriched.description()).isNull();
     }
@@ -108,8 +111,8 @@ class DocsCollectorTest {
         Files.writeString(doc1, "# Library A\nA great library.\n## Usage\nUse it.");
         var entry1 = new DocEntry("com.example", "lib-a", "1.0.0");
 
-        DocEntry enriched1 = DocsCollector.collectDoc(outputDir, doc1, entry1);
-        DocsCollector.generateContext(outputDir, List.of(enriched1));
+        DocEntry enriched1 = DocsCollector.collectDoc(outputDir, doc1, entry1, 5);
+        DocsCollector.generateContext(outputDir, List.of(enriched1), 50);
 
         Path contextFile = outputDir.resolve("context.md");
         assertThat(contextFile).exists();
@@ -144,7 +147,7 @@ class DocsCollectorTest {
         // Simulate what happens when the same dependency appears in multiple classpath configs:
         // collectDoc is called once, but the enriched entry (with description) is added to the list.
         // A second occurrence should be detected as duplicate via coordinate matching.
-        DocEntry enriched = DocsCollector.collectDoc(outputDir, sourceDoc, entry);
+        DocEntry enriched = DocsCollector.collectDoc(outputDir, sourceDoc, entry, 5);
 
         // The enriched entry has a description, so record equals won't match the bare entry
         assertThat(enriched).isNotEqualTo(entry);
@@ -176,5 +179,95 @@ class DocsCollectorTest {
         ))).isNull();
 
         assertThat(DocsCollector.extractDescription(List.of())).isNull();
+    }
+
+    @Test
+    void displayNameFromPomMetadata() {
+        var pom = new PomMetadata("My Library", null, null, null);
+        var entry = new DocEntry("com.example", "my-lib", "1.0.0").withPomMetadata(pom);
+
+        assertThat(entry.displayName()).isEqualTo("My Library");
+    }
+
+    @Test
+    void displayNameFallsBackToArtifactName() {
+        var entry = new DocEntry("com.example", "my-lib", "1.0.0");
+
+        assertThat(entry.displayName()).isEqualTo("my-lib");
+    }
+
+    @Test
+    void effectiveDescriptionPrefersDocDescription() {
+        var pom = new PomMetadata(null, "POM description", null, null);
+        var entry = new DocEntry("com.example", "my-lib", "1.0.0", "Doc description").withPomMetadata(pom);
+
+        assertThat(entry.effectiveDescription()).isEqualTo("Doc description");
+    }
+
+    @Test
+    void effectiveDescriptionFallsToPomDescription() {
+        var pom = new PomMetadata(null, "POM description", null, null);
+        var entry = new DocEntry("com.example", "my-lib", "1.0.0").withPomMetadata(pom);
+
+        assertThat(entry.effectiveDescription()).isEqualTo("POM description");
+    }
+
+    @Test
+    void effectiveDescriptionNullWhenNeitherAvailable() {
+        var entry = new DocEntry("com.example", "my-lib", "1.0.0");
+
+        assertThat(entry.effectiveDescription()).isNull();
+    }
+
+    @Test
+    void collectSources(@TempDir Path tempDir) throws IOException {
+        Path outputDir = tempDir.resolve("ai-docs");
+        DocsCollector.cleanOutputDir(outputDir);
+
+        Path jar = createTestJar(tempDir, Map.of(
+                "com/example/mylib/MyClass.java", "public class MyClass {}",
+                "com/example/mylib/MyService.java", "public class MyService {}"
+        ));
+
+        var entry = new DocEntry("com.example", "my-lib", "1.0.0");
+        DocsCollector.collectSources(outputDir, jar, entry);
+
+        // Check files were created
+        assertThat(outputDir.resolve("com.example/my-lib/sources.jar")).exists();
+        assertThat(outputDir.resolve("com.example/my-lib/sources-index.md")).exists();
+
+        // Check index content
+        String index = Files.readString(outputDir.resolve("com.example/my-lib/sources-index.md"));
+        assertThat(index).contains("my-lib (1.0.0) — Source Index");
+        assertThat(index).contains("com.example.mylib (2 files)");
+        assertThat(index).contains("MyClass.java");
+        assertThat(index).contains("MyService.java");
+    }
+
+    @Test
+    void indexIncludesSourcesLinkWhenAvailable(@TempDir Path tempDir) throws IOException {
+        Path outputDir = tempDir.resolve("ai-docs");
+        DocsCollector.cleanOutputDir(outputDir);
+
+        var entryWithSources = new DocEntry("com.example", "lib-a", "1.0.0", "A library.", true);
+        var entryWithoutSources = new DocEntry("com.example", "lib-b", "2.0.0", "Another library.", false);
+
+        DocsCollector.generateIndex(outputDir, List.of(entryWithSources, entryWithoutSources));
+
+        String index = Files.readString(outputDir.resolve("index.md"));
+        assertThat(index).contains("[sources](com.example/lib-a/sources-index.md)");
+        assertThat(index).doesNotContain("lib-b/sources-index.md");
+    }
+
+    private Path createTestJar(Path dir, Map<String, String> entries) throws IOException {
+        Path jarFile = dir.resolve("test-sources.jar");
+        try (var jos = new JarOutputStream(Files.newOutputStream(jarFile))) {
+            for (var e : entries.entrySet()) {
+                jos.putNextEntry(new JarEntry(e.getKey()));
+                jos.write(e.getValue().getBytes());
+                jos.closeEntry();
+            }
+        }
+        return jarFile;
     }
 }

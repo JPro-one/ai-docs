@@ -82,6 +82,52 @@ class IndexGeneratorTest {
     }
 
     @Test
+    void entryWithPomMetadata() {
+        var pom = new PomMetadata("My Library", "A useful lib.", "https://example.com", "Apache-2.0");
+        var entries = List.of(
+                new DocEntry("org.example", "my-lib", "1.0.0", "Doc description.", false, pom)
+        );
+
+        String result = IndexGenerator.generate(entries);
+
+        // Should show display name in parentheses
+        assertThat(result).contains("org.example:my-lib:1.0.0 (My Library)");
+        // Description comes from DOCUMENTATION.md (takes precedence over POM)
+        assertThat(result).contains("  Doc description.");
+        // Homepage and license from POM
+        assertThat(result).contains("[Homepage](https://example.com)");
+        assertThat(result).contains("Apache-2.0");
+    }
+
+    @Test
+    void entryWithPomFallbackDescription() {
+        var pom = new PomMetadata("My Library", "POM description.", "https://example.com", "MIT");
+        var entries = List.of(
+                new DocEntry("org.example", "my-lib", "1.0.0", null, false, pom)
+        );
+
+        String result = IndexGenerator.generate(entries);
+
+        // effectiveDescription falls back to POM description
+        assertThat(result).contains("  POM description.");
+        assertThat(result).contains("[Homepage](https://example.com)");
+        assertThat(result).contains("MIT");
+    }
+
+    @Test
+    void entryWithPomNoDisplayNameDifference() {
+        // When POM name equals artifact name, no parenthetical shown
+        var pom = new PomMetadata("my-lib", null, null, null);
+        var entries = List.of(
+                new DocEntry("org.example", "my-lib", "1.0.0", null, false, pom)
+        );
+
+        String result = IndexGenerator.generate(entries);
+
+        assertThat(result).doesNotContain("(my-lib)");
+    }
+
+    @Test
     void writeToFile(@TempDir Path tempDir) throws IOException {
         var entries = List.of(
                 new DocEntry("com.example", "lib-a", "1.0.0", "Library A."),

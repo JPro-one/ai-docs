@@ -29,9 +29,10 @@ public class DocsCollector {
      * @param outputDir the root output directory (e.g. build/ai-docs)
      * @param sourceFile the resolved DOCUMENTATION.md file
      * @param entry metadata about the dependency
+     * @param overviewMinLines sub-chapters shorter than this are omitted from overview.md
      * @return the entry with description populated from the documentation
      */
-    public static DocEntry collectDoc(Path outputDir, Path sourceFile, DocEntry entry) throws IOException {
+    public static DocEntry collectDoc(Path outputDir, Path sourceFile, DocEntry entry, int overviewMinLines) throws IOException {
         Path libDir = outputDir.resolve(entry.group()).resolve(entry.name());
         Files.createDirectories(libDir);
 
@@ -43,7 +44,7 @@ public class DocsCollector {
         DocEntry enriched = entry.withDescription(description);
 
         Path overviewTarget = libDir.resolve("overview.md");
-        OverviewGenerator.generate(overviewTarget, docTarget, enriched);
+        OverviewGenerator.generate(overviewTarget, docTarget, enriched, overviewMinLines);
 
         return enriched;
     }
@@ -65,6 +66,24 @@ public class DocsCollector {
     }
 
     /**
+     * Copies a sources jar into the output structure and generates its sources-index.md.
+     *
+     * @param outputDir the root output directory (e.g. build/ai-docs)
+     * @param sourcesJar the resolved sources jar file
+     * @param entry metadata about the dependency
+     */
+    public static void collectSources(Path outputDir, Path sourcesJar, DocEntry entry) throws IOException {
+        Path libDir = outputDir.resolve(entry.group()).resolve(entry.name());
+        Files.createDirectories(libDir);
+
+        Path jarTarget = libDir.resolve("sources.jar");
+        Files.copy(sourcesJar, jarTarget, StandardCopyOption.REPLACE_EXISTING);
+
+        Path indexTarget = libDir.resolve("sources-index.md");
+        SourcesIndexGenerator.generate(indexTarget, jarTarget, entry);
+    }
+
+    /**
      * Generates the index.md file from all collected entries.
      *
      * @param outputDir the root output directory
@@ -79,9 +98,10 @@ public class DocsCollector {
      *
      * @param outputDir the root output directory
      * @param entries all collected documentation entries (with descriptions)
+     * @param contextMinLines sub-chapters shorter than this are omitted from context.md
      */
-    public static void generateContext(Path outputDir, List<DocEntry> entries) throws IOException {
-        ContextGenerator.generate(outputDir.resolve("context.md"), outputDir, entries);
+    public static void generateContext(Path outputDir, List<DocEntry> entries, int contextMinLines) throws IOException {
+        ContextGenerator.generate(outputDir.resolve("context.md"), outputDir, entries, contextMinLines);
     }
 
     /**

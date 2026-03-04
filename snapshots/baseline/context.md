@@ -3,53 +3,89 @@
 This file provides a combined overview of all available library documentation.
 For full details on any library, read its DOCUMENTATION.md file.
 
-## one.jpro.platform:jpro-file:0.5.8
+## SANDEC:jnodes:0.8.3
+Sources: SANDEC/jnodes/sources-index.md
+
+
+## com.typesafe:config:1.4.3
+configuration library for JVM languages using HOCON files
+[Homepage](https://github.com/lightbend/config) · Apache-2.0
+Sources: com.typesafe/config/sources-index.md
+
+
+## one.jpro.platform:jpro-file:0.5.8 (JPro File)
 A library for handling file related operations (like open, save and drag & drop) independently of the running platform,
+[Homepage](https://www.jpro.one) · Apache License, Version 2.0
 Full docs: one.jpro.platform/jpro-file/DOCUMENTATION.md
+Sources: one.jpro.platform/jpro-file/sources-index.md
 
 ### Chapters
 - JPro File (125 lines 1-125)
-  - Introduction (82 lines 3-84) — A library for handling file related operations (like open, save and drag & drop) independently of the running platform,
 
-## one.jpro.platform:jpro-routing-core:0.5.8
+## one.jpro.platform:jpro-routing-core:0.5.8 (JPro Routing Core)
 JPro Routing is a framework
+[Homepage](https://www.jpro.one) · Apache License, Version 2.0
 Full docs: one.jpro.platform/jpro-routing-core/DOCUMENTATION.md
+Sources: one.jpro.platform/jpro-routing-core/sources-index.md
 
 ### Chapters
 - JPro Routing (186 lines 1-186)
   - Introduction (30 lines 3-32) — JPro Routing is a framework
+  - Advantages (20 lines 33-52) — With these basic types, we get a lot of features:
+  - Hello World (20 lines 53-72) — Checkout our sample project for a small application showing the features of JPro Routing:
   - Basic API (42 lines 73-114)
   - Setting Links (32 lines 115-146) — You usually want to use a link to switch from one page to another.
+  - Fullscreen and Scrolling (13 lines 147-159) — It is possible to configure a page to be either fullscreen or scrollable.
+  - History API and defaultpage (10 lines 160-169) — When Routing is used in a browser, the history API is used to navigate between pages.
+  - Additional Features (17 lines 170-186)
 
-## one.jpro:jpro:2026.1.1
+## one.jpro.platform:jpro-scenegraph:0.5.8 (JPro Scenegraph)
+A module that serializes a scene graph to a string representation making it both human and AI friendly.
+[Homepage](https://www.jpro.one) · Apache License, Version 2.0
+Sources: one.jpro.platform/jpro-scenegraph/sources-index.md
+
+
+## one.jpro.platform:jpro-utils:0.5.8 (JPro Utils)
+A utility module offering essential tools for various functionalities to enhance the development of **JPro/JavaFX** applications
+[Homepage](https://www.jpro.one) · Apache License, Version 2.0
+Sources: one.jpro.platform/jpro-utils/sources-index.md
+
+
+## one.jpro:jmemorybuddy:0.5.6 (JMemoryBuddy)
+A library usefull for unit testing memory leaks
+[Homepage](https://github.com/Sandec/JMemoryBuddy) · The Apache License, Version 2.0
+Sources: one.jpro/jmemorybuddy/sources-index.md
+
+
+## one.jpro:jpro-webapi:2026.1.1 (JPro Web API)
+A module that serves as an interface to access JPro server-side functionalities.
+[Homepage](https://www.jpro.one) · Apache License, Version 2.0
+Sources: one.jpro/jpro-webapi/sources-index.md
+
+
+## one.jpro:jpro:2026.1.1 (JPro)
 JPro allows you to run your JavaFX applications directly in the browser - no rewriting required. Your app runs on the server, and the browser displ...
+[Homepage](https://www.jpro.one) · Apache License 2.0
 Full docs: one.jpro/jpro/DOCUMENTATION.md
 
 ### Chapters
 - Getting Started (299 lines 1-299)
   - Overview (48 lines 3-50) — JPro allows you to run your JavaFX applications directly in the browser - no rewriting required. Your app runs on the...
   - Gradle setup (99 lines 51-149) — The simplest way to begin is by using **Gradle** as your build tool.
-    - `2` Create the Gradle scripts (70 lines 70-139) — Create the file `settings.gradle` and put it into your **project’s root directory**.
   - Maven setup (114 lines 150-263) — JPro provides a plugin for Maven, which allows you to easily start JPro from an existing project.
-    - `2` Create the Maven script (94 lines 160-253) — Create the file `pom.xml` and put it into your **project’s root directory**.
   - Build commands (36 lines 264-299) — The `gradle` & `maven` JPro plugins provide simple commands to **run your application locally** during development as...
 - Using JPro (486 lines 300-785)
   - Build configuration (100 lines 302-401) — JPro properties below are available in both Gradle & Maven.
-    - Example `pom.xml` configuration (37 lines 365-401) — Note how for maven, the `version` is set directly under `<plugin>` while other properties are set under the `<configu...
   - JPro config (52 lines 402-453) — The following properties can be set in the `jpro.conf` file:
   - HTTP routes & resources (71 lines 454-524)
-    - Custom HTTP handlers (45 lines 480-524) — JPro allows you to add custom request handlers to the server API:
   - JavaFX node attributes (31 lines 525-555) — In some cases, you may wish to override certain behavior for a specific element or area of your application instead o...
   - Instance close strategies (46 lines 556-601) — This documentation describes the structure for configuring the close instance strategies JPro should use under differ...
-    - Configuration Structure (40 lines 562-601) — JPro’s default configuration is structured into three optional strategies: `short`, `medium`, and `long`. Each strate...
   - Debug utilities (90 lines 602-691) — JPro servers provide a variety of utilities that can be useful for debugging or for system administrators to monitor ...
   - Logging (54 lines 692-745) — JPro provides the following a set of structured log messages out of the box:
   - Tips & Limitations (40 lines 746-785)
 - Web Integration (170 lines 786-955)
   - Custom index.html (56 lines 788-843) — To make your JPro application accessible via URL, an “index.html” needs to exist in the project structure under `src/...
-    - Index.html Structure (37 lines 794-830) — As an example, let’s look at the `index.html` file from the HelloJPro project:
   - Embedding JPro (59 lines 844-902) — JPro can be **embedded into an existing html-page** by using the  `<jpro-app>` tag, similar to how it is included in ...
-    - Adjusting behavior with `<jpro-app>` tag attributes (32 lines 871-902) — The following attributes can be added to the HTML tag in order to customize how your app behaves when loaded.
   - WebAPI Overview (53 lines 903-955) — The WebAPI enables you to create custom JavaScript code that interoperates with JPro. It also allows you to make use ...
 - Deployment (200 lines 956-1155)
   - Deploying on Linux (33 lines 958-990)
@@ -61,5 +97,22 @@ Full docs: one.jpro/jpro/DOCUMENTATION.md
   - Configuration (80 lines 1220-1299)
   - Windows service (39 lines 1300-1338) — To use the [Windows service wrapper](https://github.com/winsw/winsw), we have to do 2 things as a preparation.
 - QF-Test Integration (72 lines 1339-1410)
-  - The JPro Integration Library - jpro-utils.qft (71 lines 1340-1410) — The **jpro-utils.qft** library enables QF-Test to run automated tests directly
+
+## org.scala-lang:scala-library:2.12.18 (Scala Library)
+Standard library for the Scala Programming Language
+[Homepage](https://www.scala-lang.org/) · Apache-2.0
+Sources: org.scala-lang/scala-library/sources-index.md
+
+
+## org.scala-lang:scala-reflect:2.12.18 (Scala Reflect)
+Reflection Library for the Scala Programming Language
+[Homepage](https://www.scala-lang.org/) · Apache-2.0
+Sources: org.scala-lang/scala-reflect/sources-index.md
+
+
+## org.slf4j:slf4j-api:2.0.17 (SLF4J API Module)
+The slf4j API
+[Homepage](http://www.slf4j.org)
+Sources: org.slf4j/slf4j-api/sources-index.md
+
 

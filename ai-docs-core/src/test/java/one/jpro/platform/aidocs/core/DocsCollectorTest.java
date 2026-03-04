@@ -32,13 +32,14 @@ class DocsCollectorTest {
         var entry = new DocEntry("com.example", "my-lib", "1.0.0");
         DocsCollector.cleanOutputDir(outputDir);
         DocEntry enriched = DocsCollector.collectDoc(outputDir, sourceDoc, entry, 1);
-        DocsCollector.generateIndex(outputDir, List.of(enriched));
+        DocsCollector.generateContextAndIndex(outputDir, List.of(enriched), 50);
 
         // Check description was extracted
         assertThat(enriched.description()).isEqualTo("Some intro.");
 
         // Check file structure
         assertThat(outputDir.resolve("index.md")).exists();
+        assertThat(outputDir.resolve("context.md")).exists();
         assertThat(outputDir.resolve("com.example/my-lib/DOCUMENTATION.md")).exists();
         assertThat(outputDir.resolve("com.example/my-lib/overview.md")).exists();
 
@@ -53,10 +54,9 @@ class DocsCollectorTest {
         assertThat(overview).contains("Getting Started");
         assertThat(overview).contains("Some intro.");
 
-        // Check index lists the library with description
+        // Check index lists the library with line range into context.md
         String index = Files.readString(outputDir.resolve("index.md"));
         assertThat(index).contains("com.example:my-lib:1.0.0");
-        assertThat(index).contains("Some intro.");
     }
 
     @Test
@@ -74,7 +74,7 @@ class DocsCollectorTest {
 
         DocEntry enriched1 = DocsCollector.collectDoc(outputDir, doc1, entry1, 5);
         DocEntry enriched2 = DocsCollector.collectDoc(outputDir, doc2, entry2, 5);
-        DocsCollector.generateIndex(outputDir, List.of(enriched1, enriched2));
+        DocsCollector.generateContextAndIndex(outputDir, List.of(enriched1, enriched2), 50);
 
         assertThat(outputDir.resolve("com.example/lib-a/DOCUMENTATION.md")).exists();
         assertThat(outputDir.resolve("com.example/lib-b/DOCUMENTATION.md")).exists();
@@ -112,7 +112,7 @@ class DocsCollectorTest {
         var entry1 = new DocEntry("com.example", "lib-a", "1.0.0");
 
         DocEntry enriched1 = DocsCollector.collectDoc(outputDir, doc1, entry1, 5);
-        DocsCollector.generateContext(outputDir, List.of(enriched1), 50);
+        DocsCollector.generateContextAndIndex(outputDir, List.of(enriched1), 50);
 
         Path contextFile = outputDir.resolve("context.md");
         assertThat(contextFile).exists();
@@ -120,6 +120,13 @@ class DocsCollectorTest {
         assertThat(context).contains("com.example:lib-a:1.0.0");
         assertThat(context).contains("A great library.");
         assertThat(context).contains("Chapters");
+
+        // Index should reference lines in context.md
+        Path indexFile = outputDir.resolve("index.md");
+        assertThat(indexFile).exists();
+        String index = Files.readString(indexFile);
+        assertThat(index).contains("com.example:lib-a:1.0.0");
+        assertThat(index).contains("lines");
     }
 
     @Test
@@ -154,7 +161,7 @@ class DocsCollectorTest {
         assertThat(enriched.coordinate()).isEqualTo(entry.coordinate());
 
         // When building the index with duplicates, each coordinate should appear only once
-        DocsCollector.generateIndex(outputDir, List.of(enriched));
+        DocsCollector.generateContextAndIndex(outputDir, List.of(enriched), 50);
         String index = Files.readString(outputDir.resolve("index.md"));
         long count = index.lines().filter(l -> l.contains("com.example:my-lib:1.0.0")).count();
         assertThat(count).isEqualTo(1);
@@ -183,7 +190,7 @@ class DocsCollectorTest {
 
     @Test
     void displayNameFromPomMetadata() {
-        var pom = new PomMetadata("My Library", null, null, null);
+        var pom = new PomMetadata("My Library", null, null, null, null);
         var entry = new DocEntry("com.example", "my-lib", "1.0.0").withPomMetadata(pom);
 
         assertThat(entry.displayName()).isEqualTo("My Library");
@@ -197,19 +204,18 @@ class DocsCollectorTest {
     }
 
     @Test
-    void effectiveDescriptionPrefersDocDescription() {
-        var pom = new PomMetadata(null, "POM description", null, null);
+    void effectiveDescriptionPrefersPomDescription() {
+        var pom = new PomMetadata(null, "POM description", null, null, null);
         var entry = new DocEntry("com.example", "my-lib", "1.0.0", "Doc description").withPomMetadata(pom);
 
-        assertThat(entry.effectiveDescription()).isEqualTo("Doc description");
+        assertThat(entry.effectiveDescription()).isEqualTo("POM description");
     }
 
     @Test
-    void effectiveDescriptionFallsToPomDescription() {
-        var pom = new PomMetadata(null, "POM description", null, null);
-        var entry = new DocEntry("com.example", "my-lib", "1.0.0").withPomMetadata(pom);
+    void effectiveDescriptionFallsToDocDescription() {
+        var entry = new DocEntry("com.example", "my-lib", "1.0.0", "Doc description");
 
-        assertThat(entry.effectiveDescription()).isEqualTo("POM description");
+        assertThat(entry.effectiveDescription()).isEqualTo("Doc description");
     }
 
     @Test
@@ -245,18 +251,26 @@ class DocsCollectorTest {
     }
 
     @Test
-    void indexIncludesSourcesLinkWhenAvailable(@TempDir Path tempDir) throws IOException {
+    void indexContainsLineRangesForEachLibrary(@TempDir Path tempDir) throws IOException {
         Path outputDir = tempDir.resolve("ai-docs");
         DocsCollector.cleanOutputDir(outputDir);
 
-        var entryWithSources = new DocEntry("com.example", "lib-a", "1.0.0", "A library.", true);
-        var entryWithoutSources = new DocEntry("com.example", "lib-b", "2.0.0", "Another library.", false);
+        // Create doc files so context.md has chapter listings
+        Path libDir = outputDir.resolve("com.example/lib-a");
+        Files.createDirectories(libDir);
+        Files.writeString(libDir.resolve("DOCUMENTATION.md"), "# Lib A\nContent A.");
 
-        DocsCollector.generateIndex(outputDir, List.of(entryWithSources, entryWithoutSources));
+        var entry1 = new DocEntry("com.example", "lib-a", "1.0.0", "A library.", true);
+        var entry2 = new DocEntry("com.example", "lib-b", "2.0.0", "Another library.", false);
+
+        DocsCollector.generateContextAndIndex(outputDir, List.of(entry1, entry2), 50);
 
         String index = Files.readString(outputDir.resolve("index.md"));
-        assertThat(index).contains("[sources](com.example/lib-a/sources-index.md)");
-        assertThat(index).doesNotContain("lib-b/sources-index.md");
+        // Both libraries have line ranges
+        assertThat(index).contains("com.example:lib-a:1.0.0");
+        assertThat(index).contains("com.example:lib-b:2.0.0");
+        // Line ranges present
+        assertThat(index.lines().filter(l -> l.startsWith("- ") && l.contains("lines")).count()).isEqualTo(2);
     }
 
     private Path createTestJar(Path dir, Map<String, String> entries) throws IOException {

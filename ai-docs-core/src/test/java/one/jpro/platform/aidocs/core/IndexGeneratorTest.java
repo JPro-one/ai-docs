@@ -12,6 +12,29 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class IndexGeneratorTest {
 
+    /**
+     * Builds a minimal context.md content string for the given entries,
+     * so IndexGenerator can find section headings and compute line ranges.
+     */
+    private static String fakeContext(List<DocEntry> entries) {
+        var sb = new StringBuilder();
+        sb.append("# Project Documentation Context\n\n");
+        for (DocEntry entry : entries) {
+            sb.append("## ").append(entry.coordinate());
+            if (!entry.displayName().equals(entry.name())) {
+                sb.append(" (").append(entry.displayName()).append(")");
+            }
+            sb.append("\n");
+            String desc = entry.effectiveDescription();
+            if (desc != null) {
+                sb.append(desc).append("\n");
+            }
+            sb.append("Full docs: ").append(entry.relativePath()).append("/DOCUMENTATION.md\n");
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
+
     @Test
     void multipleEntries() {
         var entries = List.of(
@@ -19,21 +42,19 @@ class IndexGeneratorTest {
                 new DocEntry("one.jpro.platform", "jpro-routing-core", "0.5.8", "Routing framework."),
                 new DocEntry("com.example", "other-lib", "2.0.0", "Another library.")
         );
+        String context = fakeContext(entries);
 
-        String result = IndexGenerator.generate(entries);
+        String result = IndexGenerator.generate(entries, context);
 
         assertThat(result).contains("# AI Documentation Index");
+        assertThat(result).contains("context.md");
         // Should be sorted by coordinate
         assertThat(result).contains("com.example:other-lib:2.0.0");
         assertThat(result).contains("one.jpro.platform:jpro-file:0.5.8");
         assertThat(result).contains("one.jpro.platform:jpro-routing-core:0.5.8");
-        // Should have overview links
-        assertThat(result).contains("[overview](com.example/other-lib/overview.md)");
-        assertThat(result).contains("[overview](one.jpro.platform/jpro-file/overview.md)");
-        // Should have descriptions indented below each entry
-        assertThat(result).contains("  File handling library.");
-        assertThat(result).contains("  Routing framework.");
-        assertThat(result).contains("  Another library.");
+        // Should have line ranges, not overview links
+        assertThat(result).doesNotContain("[overview]");
+        assertThat(result.lines().filter(l -> l.startsWith("- ") && l.contains("lines")).count()).isEqualTo(3);
     }
 
     @Test
@@ -41,90 +62,75 @@ class IndexGeneratorTest {
         var entries = List.of(
                 new DocEntry("org.example", "no-desc", "1.0.0")
         );
+        String context = fakeContext(entries);
 
-        String result = IndexGenerator.generate(entries);
+        String result = IndexGenerator.generate(entries, context);
 
-        assertThat(result).contains("- org.example:no-desc:1.0.0 — [overview](org.example/no-desc/overview.md)");
-        // No description line
-        assertThat(result).doesNotContain("  ");
-    }
-
-    @Test
-    void entryWithDescription() {
-        var entries = List.of(
-                new DocEntry("org.example", "my-lib", "1.0.0", "A useful library.")
-        );
-
-        String result = IndexGenerator.generate(entries);
-
-        assertThat(result).contains("- org.example:my-lib:1.0.0 — [overview](org.example/my-lib/overview.md)");
-        assertThat(result).contains("  A useful library.");
+        assertThat(result).contains("- org.example:no-desc:1.0.0");
+        assertThat(result).contains("lines");
     }
 
     @Test
     void emptyEntries() {
-        String result = IndexGenerator.generate(List.of());
+        String result = IndexGenerator.generate(List.of(), "# Project Documentation Context\n");
 
         assertThat(result).contains("# AI Documentation Index");
-        assertThat(result).contains("## Available Libraries");
+        assertThat(result).contains("## Libraries");
         assertThat(result.lines().filter(l -> l.startsWith("- ")).count()).isZero();
     }
 
     @Test
-    void singleEntry() {
-        var entries = List.of(
-                new DocEntry("org.example", "my-lib", "1.0.0")
-        );
-
-        String result = IndexGenerator.generate(entries);
-
-        assertThat(result).contains("- org.example:my-lib:1.0.0 — [overview](org.example/my-lib/overview.md)");
-    }
-
-    @Test
-    void entryWithPomMetadata() {
-        var pom = new PomMetadata("My Library", "A useful lib.", "https://example.com", "Apache-2.0");
+    void displayNameShownWhenDifferentFromArtifact() {
+        var pom = new PomMetadata("My Library", "A useful lib.", "https://example.com", null, "Apache-2.0");
         var entries = List.of(
                 new DocEntry("org.example", "my-lib", "1.0.0", "Doc description.", false, pom)
         );
+        String context = fakeContext(entries);
 
-        String result = IndexGenerator.generate(entries);
+        String result = IndexGenerator.generate(entries, context);
 
-        // Should show display name in parentheses
         assertThat(result).contains("org.example:my-lib:1.0.0 (My Library)");
-        // Description comes from DOCUMENTATION.md (takes precedence over POM)
-        assertThat(result).contains("  Doc description.");
-        // Homepage and license from POM
-        assertThat(result).contains("[Homepage](https://example.com)");
-        assertThat(result).contains("Apache-2.0");
+        // Index should NOT contain descriptions, homepage, license — all in context.md
+        assertThat(result).doesNotContain("Doc description.");
+        assertThat(result).doesNotContain("[Homepage]");
+        assertThat(result).doesNotContain("Apache-2.0");
     }
 
     @Test
-    void entryWithPomFallbackDescription() {
-        var pom = new PomMetadata("My Library", "POM description.", "https://example.com", "MIT");
+    void lineRangesAreAccurate() {
         var entries = List.of(
-                new DocEntry("org.example", "my-lib", "1.0.0", null, false, pom)
+                new DocEntry("com.example", "lib-a", "1.0.0", "Library A."),
+                new DocEntry("com.example", "lib-b", "2.0.0", "Library B.")
         );
+        // Build a context where we know exact line numbers (1-based):
+        // 1: # Project Documentation Context
+        // 2: (blank)
+        // 3: ## com.example:lib-a:1.0.0
+        // 4: Library A.
+        // 5: Full docs: com.example/lib-a/DOCUMENTATION.md
+        // 6: (blank)
+        // 7: ## com.example:lib-b:2.0.0
+        // 8: Library B.
+        // 9: Full docs: com.example/lib-b/DOCUMENTATION.md
+        // 10: (blank - trailing, trimmed)
+        String context = """
+                # Project Documentation Context
 
-        String result = IndexGenerator.generate(entries);
+                ## com.example:lib-a:1.0.0
+                Library A.
+                Full docs: com.example/lib-a/DOCUMENTATION.md
 
-        // effectiveDescription falls back to POM description
-        assertThat(result).contains("  POM description.");
-        assertThat(result).contains("[Homepage](https://example.com)");
-        assertThat(result).contains("MIT");
-    }
+                ## com.example:lib-b:2.0.0
+                Library B.
+                Full docs: com.example/lib-b/DOCUMENTATION.md
+                """;
 
-    @Test
-    void entryWithPomNoDisplayNameDifference() {
-        // When POM name equals artifact name, no parenthetical shown
-        var pom = new PomMetadata("my-lib", null, null, null);
-        var entries = List.of(
-                new DocEntry("org.example", "my-lib", "1.0.0", null, false, pom)
-        );
+        String result = IndexGenerator.generate(entries, context);
 
-        String result = IndexGenerator.generate(entries);
-
-        assertThat(result).doesNotContain("(my-lib)");
+        // lib-a: lines 3-5 (heading through content, trailing blank trimmed before next ##)
+        assertThat(result).contains("lib-a:1.0.0 (3 lines 3-5)");
+        // lib-b: lines 7-9 (heading through content, trailing blank trimmed)
+        assertThat(result).contains("lib-b:2.0.0 (3 lines 7-9)");
     }
 
     @Test
@@ -133,15 +139,15 @@ class IndexGeneratorTest {
                 new DocEntry("com.example", "lib-a", "1.0.0", "Library A."),
                 new DocEntry("com.example", "lib-b", "2.0.0", "Library B.")
         );
+        String context = fakeContext(entries);
 
         Path indexFile = tempDir.resolve("index.md");
-        IndexGenerator.generate(indexFile, entries);
+        IndexGenerator.generate(indexFile, entries, context);
 
         assertThat(indexFile).exists();
         String content = Files.readString(indexFile);
         assertThat(content).contains("lib-a");
         assertThat(content).contains("lib-b");
-        assertThat(content).contains("  Library A.");
-        assertThat(content).contains("  Library B.");
+        assertThat(content).contains("lines");
     }
 }

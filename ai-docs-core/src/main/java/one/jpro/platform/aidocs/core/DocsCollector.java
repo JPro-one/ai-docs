@@ -84,24 +84,17 @@ public class DocsCollector {
     }
 
     /**
-     * Generates the index.md file from all collected entries.
-     *
-     * @param outputDir the root output directory
-     * @param entries all collected documentation entries
-     */
-    public static void generateIndex(Path outputDir, List<DocEntry> entries) throws IOException {
-        IndexGenerator.generate(outputDir.resolve("index.md"), entries);
-    }
-
-    /**
-     * Generates the context.md file combining all library information.
+     * Generates both context.md and index.md. Context is generated first because
+     * index.md references line ranges within context.md.
      *
      * @param outputDir the root output directory
      * @param entries all collected documentation entries (with descriptions)
      * @param contextMinLines sub-chapters shorter than this are omitted from context.md
      */
-    public static void generateContext(Path outputDir, List<DocEntry> entries, int contextMinLines) throws IOException {
-        ContextGenerator.generate(outputDir.resolve("context.md"), outputDir, entries, contextMinLines);
+    public static void generateContextAndIndex(Path outputDir, List<DocEntry> entries, int contextMinLines) throws IOException {
+        String contextContent = ContextGenerator.generate(outputDir, entries, contextMinLines);
+        Files.writeString(outputDir.resolve("context.md"), contextContent);
+        IndexGenerator.generate(outputDir.resolve("index.md"), entries, contextContent);
     }
 
     /**

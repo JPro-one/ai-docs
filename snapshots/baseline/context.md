@@ -9,13 +9,13 @@ Sources: SANDEC/jnodes/sources-index.md
 
 ## com.typesafe:config:1.4.3
 configuration library for JVM languages using HOCON files
-[Homepage](https://github.com/lightbend/config) · Apache-2.0
+[Homepage](https://github.com/lightbend/config) · [Repository](https://github.com/lightbend/config) · Apache-2.0
 Sources: com.typesafe/config/sources-index.md
 
 
 ## one.jpro.platform:jpro-file:0.5.8 (JPro File)
-A library for handling file related operations (like open, save and drag & drop) independently of the running platform,
-[Homepage](https://www.jpro.one) · Apache License, Version 2.0
+A module for handling file related operations in JPro/JavaFX applications running natively and via JPro server.
+[Homepage](https://www.jpro.one) · [Repository](https://github.com/JPro-one/jpro-platform/tree/main/jpro-file) · Apache License, Version 2.0
 Full docs: one.jpro.platform/jpro-file/DOCUMENTATION.md
 Sources: one.jpro.platform/jpro-file/sources-index.md
 
@@ -23,8 +23,8 @@ Sources: one.jpro.platform/jpro-file/sources-index.md
 - JPro File (125 lines 1-125)
 
 ## one.jpro.platform:jpro-routing-core:0.5.8 (JPro Routing Core)
-JPro Routing is a framework
-[Homepage](https://www.jpro.one) · Apache License, Version 2.0
+A framework for building JPro/JavaFX applications, both desktop and web, with routing capabilities.
+[Homepage](https://www.jpro.one) · [Repository](https://github.com/JPro-one/jpro-platform/tree/main/core) · Apache License, Version 2.0
 Full docs: one.jpro.platform/jpro-routing-core/DOCUMENTATION.md
 Sources: one.jpro.platform/jpro-routing-core/sources-index.md
 
@@ -41,31 +41,31 @@ Sources: one.jpro.platform/jpro-routing-core/sources-index.md
 
 ## one.jpro.platform:jpro-scenegraph:0.5.8 (JPro Scenegraph)
 A module that serializes a scene graph to a string representation making it both human and AI friendly.
-[Homepage](https://www.jpro.one) · Apache License, Version 2.0
+[Homepage](https://www.jpro.one) · [Repository](https://github.com/JPro-one/jpro-platform/tree/main/jpro-scenegraph) · Apache License, Version 2.0
 Sources: one.jpro.platform/jpro-scenegraph/sources-index.md
 
 
 ## one.jpro.platform:jpro-utils:0.5.8 (JPro Utils)
 A utility module offering essential tools for various functionalities to enhance the development of **JPro/JavaFX** applications
-[Homepage](https://www.jpro.one) · Apache License, Version 2.0
+[Homepage](https://www.jpro.one) · [Repository](https://github.com/JPro-one/jpro-platform/tree/main/jpro-utils) · Apache License, Version 2.0
 Sources: one.jpro.platform/jpro-utils/sources-index.md
 
 
 ## one.jpro:jmemorybuddy:0.5.6 (JMemoryBuddy)
 A library usefull for unit testing memory leaks
-[Homepage](https://github.com/Sandec/JMemoryBuddy) · The Apache License, Version 2.0
+[Homepage](https://github.com/Sandec/JMemoryBuddy) · [Repository](https://github.com/Sandec/JMemoryBuddy) · The Apache License, Version 2.0
 Sources: one.jpro/jmemorybuddy/sources-index.md
 
 
 ## one.jpro:jpro-webapi:2026.1.1 (JPro Web API)
 A module that serves as an interface to access JPro server-side functionalities.
-[Homepage](https://www.jpro.one) · Apache License, Version 2.0
+[Homepage](https://www.jpro.one) · [Repository](https://github.com/Sandec/jpro/tree/main/webapi) · Apache License, Version 2.0
 Sources: one.jpro/jpro-webapi/sources-index.md
 
 
 ## one.jpro:jpro:2026.1.1 (JPro)
-JPro allows you to run your JavaFX applications directly in the browser - no rewriting required. Your app runs on the server, and the browser displ...
-[Homepage](https://www.jpro.one) · Apache License 2.0
+Additional JPro resources
+[Homepage](https://www.jpro.one) · [Repository](https://github.com/Sandec/jpro/tree/main) · Apache License 2.0
 Full docs: one.jpro/jpro/DOCUMENTATION.md
 
 ### Chapters
@@ -100,13 +100,13 @@ Full docs: one.jpro/jpro/DOCUMENTATION.md
 
 ## org.scala-lang:scala-library:2.12.18 (Scala Library)
 Standard library for the Scala Programming Language
-[Homepage](https://www.scala-lang.org/) · Apache-2.0
+[Homepage](https://www.scala-lang.org/) · [Repository](https://github.com/scala/scala) · Apache-2.0
 Sources: org.scala-lang/scala-library/sources-index.md
 
 
 ## org.scala-lang:scala-reflect:2.12.18 (Scala Reflect)
 Reflection Library for the Scala Programming Language
-[Homepage](https://www.scala-lang.org/) · Apache-2.0
+[Homepage](https://www.scala-lang.org/) · [Repository](https://github.com/scala/scala) · Apache-2.0
 Sources: org.scala-lang/scala-reflect/sources-index.md
 
 

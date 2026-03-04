@@ -16,10 +16,12 @@ class SkillGeneratorTest {
         String result = SkillGenerator.generate("build/ai-docs");
 
         assertThat(result).contains("build/ai-docs/");
+        assertThat(result).contains("context.md");
         assertThat(result).contains("index.md");
         assertThat(result).contains("overview.md");
         assertThat(result).contains("DOCUMENTATION.md");
         assertThat(result).contains("gradle collectDocs");
+        assertThat(result).contains("Reading Strategies");
     }
 
     @Test

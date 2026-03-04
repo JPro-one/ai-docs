@@ -4,11 +4,11 @@ This project uses the **AI Docs** Gradle plugin, which collects `DOCUMENTATION.m
 
 ## What's Available
 
-When `gradle collectDocs` has been run, the `build/ai-docs/` directory contains documentation for the project's dependencies, organized in four layers:
+When `gradle collectDocs` has been run, the `build/ai-docs/` directory contains documentation for the project's dependencies:
 
-- **`build/ai-docs/context.md`** — A single combined file with all library names, descriptions, and chapter listings. This is the best starting point — read this one file to get a complete picture of all available documentation.
+- **`build/ai-docs/context.md`** — A single combined file with all library descriptions, chapter listings, homepage links, and licenses. Best starting point for small-to-medium projects.
 
-- **`build/ai-docs/index.md`** — A small file listing every library that has documentation, with one-line descriptions and links to each library's overview.
+- **`build/ai-docs/index.md`** — A compact table of contents listing every library with a one-line description and links to its overview. Use this as the entry point when context.md is too large.
 
 - **`build/ai-docs/{group}/{artifact}/overview.md`** — A per-library summary showing chapter titles with hierarchy, line ranges, and one-line summaries. Useful for finding the right section to read.
 
@@ -16,9 +16,11 @@ When `gradle collectDocs` has been run, the `build/ai-docs/` directory contains 
 
 - **`build/ai-docs/{group}/{artifact}/sources-index.md`** — (Optional) Lists all source files in the library's sources jar, organized by package. To read a specific source file, run: `unzip -p build/ai-docs/{group}/{artifact}/sources.jar <path>`
 
-## How This Helps
+## Reading Strategies
 
-The four-layer structure allows for efficient, incremental reading. Start with `context.md` for the full picture. Use overviews to find specific chapters. Read full documentation selectively by line range. This avoids loading large amounts of documentation into context when only a specific topic is needed.
+**Few dependencies:** Start with `context.md` — it contains everything in one file.
+
+**Many dependencies:** Start with `index.md` to find the library you need, then read its `overview.md` to find the right chapter, then read the specific line range from `DOCUMENTATION.md`.
 
 ## If Documentation Hasn't Been Collected Yet
 

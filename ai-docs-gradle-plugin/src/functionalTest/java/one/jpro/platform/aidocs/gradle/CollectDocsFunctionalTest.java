@@ -120,10 +120,10 @@ class CollectDocsFunctionalTest {
 
         Path aiDocs = projectDir.resolve("build/ai-docs");
 
-        // index.md should list the library exactly once (no duplicates from multiple classpath configs)
+        // index.md should list the library exactly once with line range into context.md
         String index = Files.readString(aiDocs.resolve("index.md"));
         assertThat(index).contains("one.jpro.platform:jpro-routing-core");
-        assertThat(index).contains("[overview]");
+        assertThat(index).contains("lines");
         long indexCount = index.lines().filter(l -> l.contains("jpro-routing-core")).count();
         assertThat(indexCount).isEqualTo(1);
 
@@ -164,8 +164,6 @@ class CollectDocsFunctionalTest {
         assertThat(srcIndex).contains("Source Index");
         assertThat(srcIndex).contains(".java");
 
-        // index.md should contain sources link
-        assertThat(index).contains("[sources]");
     }
 
     @Test

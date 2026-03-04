@@ -40,16 +40,14 @@ public record DocEntry(String group, String name, String version, String descrip
     }
 
     /**
-     * Returns the description from DOCUMENTATION.md if available, otherwise the POM description.
+     * Returns the POM description if available, otherwise falls back to the
+     * first line extracted from DOCUMENTATION.md.
      */
     public String effectiveDescription() {
-        if (description != null) {
-            return description;
-        }
-        if (pomMetadata != null) {
+        if (pomMetadata != null && pomMetadata.description() != null) {
             return pomMetadata.description();
         }
-        return null;
+        return description;
     }
 
     public String coordinate() {

@@ -291,7 +291,7 @@ class OverviewGeneratorTest {
     @Test
     void headerUsesDisplayNameFromPom() {
         var lines = List.of("# Title", "Content.");
-        var pom = new PomMetadata("My Pretty Library", null, null, null);
+        var pom = new PomMetadata("My Pretty Library", null, null, null, null);
         var entry = new DocEntry("com.example", "my-lib", "1.0.0").withPomMetadata(pom);
 
         String result = OverviewGenerator.generate(lines, entry, 1);

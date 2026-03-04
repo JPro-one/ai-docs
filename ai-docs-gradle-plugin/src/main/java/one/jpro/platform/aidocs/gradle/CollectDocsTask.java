@@ -122,8 +122,7 @@ public abstract class CollectDocsTask extends DefaultTask {
             }
         }
 
-        DocsCollector.generateIndex(outputDir, entries);
-        DocsCollector.generateContext(outputDir, entries, getContextMinLines().get());
+        DocsCollector.generateContextAndIndex(outputDir, entries, getContextMinLines().get());
 
         Path skillDir = getProject().getRootDir().toPath().resolve(".claude/skills/docs");
         String relativeDocsDir = getProject().getRootDir().toPath().relativize(outputDir).toString();

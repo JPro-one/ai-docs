@@ -32,7 +32,7 @@ class OverviewGeneratorTest {
         String result = OverviewGenerator.generate(lines, entry, 1);
 
         assertThat(result).contains("# my-lib (1.0.0)");
-        assertThat(result).contains("Full documentation: DOCUMENTATION.md");
+        assertThat(result).contains("Full content: DOCUMENTATION.md");
         assertThat(result).contains("- My Library (11 lines 1-11) — Some intro text.");
         assertThat(result).contains("  - Getting Started (4 lines 4-7) — Step 1: add dependency.");
         assertThat(result).contains("  - API Reference (4 lines 8-11) — The main class is Foo.");

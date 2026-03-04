@@ -23,7 +23,8 @@ public class OverviewGenerator {
      */
     public static void generate(Path overviewPath, Path docPath, DocEntry entry, int minLineCount) throws IOException {
         List<String> lines = Files.readAllLines(docPath);
-        String content = generate(lines, entry, minLineCount);
+        String sourceFileName = docPath.getFileName().toString();
+        String content = generate(lines, entry, minLineCount, sourceFileName);
         Files.writeString(overviewPath, content);
     }
 
@@ -37,17 +38,21 @@ public class OverviewGenerator {
      * @param minLineCount sub-chapters shorter than this are omitted
      */
     static String generate(List<String> lines, DocEntry entry, int minLineCount) {
-        return generateChapterListing(lines, entry, minLineCount);
+        return generate(lines, entry, minLineCount, "DOCUMENTATION.md");
+    }
+
+    static String generate(List<String> lines, DocEntry entry, int minLineCount, String sourceFileName) {
+        return generateChapterListing(lines, entry, minLineCount, sourceFileName);
     }
 
     /**
      * Generates chapter listing with a configurable minimum line threshold.
      * Chapters with fewer than {@code minLineCount} lines have their children collapsed.
      */
-    static String generateChapterListing(List<String> lines, DocEntry entry, int minLineCount) {
+    static String generateChapterListing(List<String> lines, DocEntry entry, int minLineCount, String sourceFileName) {
         var sb = new StringBuilder();
         sb.append("# ").append(entry.displayName()).append(" (").append(entry.version()).append(")\n");
-        sb.append("Full documentation: DOCUMENTATION.md\n\n");
+        sb.append("Full content: ").append(sourceFileName).append("\n\n");
         sb.append("## Chapters\n");
 
         List<ChapterInfo> chapters = parseChapters(lines);

@@ -250,6 +250,48 @@ class CollectDocsFunctionalTest {
     }
 
     @Test
+    void collectDocsFromBuildscriptDependency() throws IOException {
+        // Put jpro-routing-core in the buildscript classpath (not project dependencies)
+        // to verify that buildscript scanning picks it up
+        Files.writeString(projectDir.resolve("build.gradle"), """
+                buildscript {
+                """ + JPRO_REPOS + """
+                    dependencies {
+                        classpath 'one.jpro.platform:jpro-routing-core:0.5.8'
+                    }
+                }
+                plugins {
+                    id 'java'
+                    id 'one.jpro.platform.ai-docs'
+                }
+                repositories {
+                    mavenCentral()
+                }
+                """);
+
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(projectDir.toFile())
+                .withArguments("collectDocs")
+                .withPluginClasspath()
+                .build();
+
+        assertThat(result.task(":collectDocs").getOutcome()).isEqualTo(SUCCESS);
+
+        Path aiDocs = projectDir.resolve("build/ai-docs");
+
+        // jpro-routing-core should appear even though it's only in the buildscript classpath
+        String index = Files.readString(aiDocs.resolve("index.md"));
+        assertThat(index).contains("jpro-routing-core");
+
+        // DOCUMENTATION.md should be collected
+        Path docFile = aiDocs.resolve("one.jpro.platform/jpro-routing-core/DOCUMENTATION.md");
+        assertThat(docFile).exists();
+        String doc = Files.readString(docFile);
+        assertThat(doc.length()).isGreaterThan(100);
+        assertThat(doc).containsIgnoringCase("routing");
+    }
+
+    @Test
     void collectDocsIsIdempotent() throws IOException {
         Files.writeString(projectDir.resolve("build.gradle"), """
                 plugins {

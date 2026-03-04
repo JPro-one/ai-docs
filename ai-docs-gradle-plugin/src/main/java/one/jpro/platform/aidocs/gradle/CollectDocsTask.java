@@ -5,8 +5,10 @@ import one.jpro.platform.aidocs.core.DocsCollector;
 import one.jpro.platform.aidocs.core.PomParser;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.ResolvedDependency;
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
+import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
@@ -46,7 +48,28 @@ public abstract class CollectDocsTask extends DefaultTask {
         List<DocEntry> entries = new ArrayList<>();
         Set<String> seenCoordinates = new HashSet<>();
 
-        for (Configuration config : getProject().getConfigurations()) {
+        // Scan project dependencies (compile/runtime classpaths)
+        scanConfigurations(getProject().getConfigurations(), getProject().getDependencies(),
+                outputDir, entries, seenCoordinates);
+
+        // Scan buildscript dependencies (plugin classpath)
+        scanConfigurations(getProject().getBuildscript().getConfigurations(),
+                getProject().getBuildscript().getDependencies(),
+                outputDir, entries, seenCoordinates);
+
+        DocsCollector.generateContextAndIndex(outputDir, entries, getContextMinLines().get());
+
+        Path skillDir = getProject().getRootDir().toPath().resolve(".claude/skills/docs");
+        String relativeDocsDir = getProject().getRootDir().toPath().relativize(outputDir).toString();
+        DocsCollector.generateSkill(skillDir, relativeDocsDir);
+        getLogger().lifecycle("Generated AI skill at .claude/skills/docs/SKILL.md");
+
+        getLogger().lifecycle("Collected documentation for {} libraries into {}", entries.size(), outputDir);
+    }
+
+    private void scanConfigurations(ConfigurationContainer configurations, DependencyHandler dependencies,
+                                    Path outputDir, List<DocEntry> entries, Set<String> seenCoordinates) {
+        for (Configuration config : configurations) {
             if (!config.isCanBeResolved()) continue;
             if (!config.getName().toLowerCase().contains("classpath")) continue;
 
@@ -67,10 +90,10 @@ public abstract class CollectDocsTask extends DefaultTask {
                 DocEntry enriched = entry;
                 boolean hasDocs = false;
                 try {
-                    var docDep = getProject().getDependencies().create(
+                    var docDep = dependencies.create(
                             group + ":" + name + ":" + version + ":DOCUMENTATION@md"
                     );
-                    var detached = getProject().getConfigurations().detachedConfiguration(docDep);
+                    var detached = configurations.detachedConfiguration(docDep);
                     detached.setTransitive(false);
 
                     for (File docFile : detached.resolve()) {
@@ -83,10 +106,10 @@ public abstract class CollectDocsTask extends DefaultTask {
                 }
 
                 try {
-                    var srcDep = getProject().getDependencies().create(
+                    var srcDep = dependencies.create(
                             group + ":" + name + ":" + version + ":sources@jar"
                     );
-                    var detached = getProject().getConfigurations().detachedConfiguration(srcDep);
+                    var detached = configurations.detachedConfiguration(srcDep);
                     detached.setTransitive(false);
 
                     for (File srcFile : detached.resolve()) {
@@ -100,10 +123,10 @@ public abstract class CollectDocsTask extends DefaultTask {
 
                 if (hasDocs || enriched.hasSources()) {
                     try {
-                        var pomDep = getProject().getDependencies().create(
+                        var pomDep = dependencies.create(
                                 group + ":" + name + ":" + version + "@pom"
                         );
-                        var detached = getProject().getConfigurations().detachedConfiguration(pomDep);
+                        var detached = configurations.detachedConfiguration(pomDep);
                         detached.setTransitive(false);
 
                         for (File pomFile : detached.resolve()) {
@@ -121,14 +144,5 @@ public abstract class CollectDocsTask extends DefaultTask {
                 queue.addAll(dep.getChildren());
             }
         }
-
-        DocsCollector.generateContextAndIndex(outputDir, entries, getContextMinLines().get());
-
-        Path skillDir = getProject().getRootDir().toPath().resolve(".claude/skills/docs");
-        String relativeDocsDir = getProject().getRootDir().toPath().relativize(outputDir).toString();
-        DocsCollector.generateSkill(skillDir, relativeDocsDir);
-        getLogger().lifecycle("Generated AI skill at .claude/skills/docs/SKILL.md");
-
-        getLogger().lifecycle("Collected documentation for {} libraries into {}", entries.size(), outputDir);
     }
 }

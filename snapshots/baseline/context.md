@@ -13,6 +13,13 @@ configuration library for JVM languages using HOCON files
 Sources: com.typesafe/config/sources-index.md
 
 
+## one.jpro.platform:ai-docs-gradle-plugin:0.1.0-SNAPSHOT
+A Gradle plugin that collects `DOCUMENTATION.md` artifacts from your project's dependencies and organizes them into an AI-navigable file structure....
+Full docs: one.jpro.platform/ai-docs-gradle-plugin/DOCUMENTATION.md
+
+### Chapters
+- AI Docs Gradle Plugin (132 lines 1-132) — A Gradle plugin that collects `DOCUMENTATION.md` artifacts from your project's dependencies and organizes them into a...
+
 ## one.jpro.platform:jpro-file:0.5.8 (JPro File)
 A module for handling file related operations in JPro/JavaFX applications running natively and via JPro server.
 [Homepage](https://www.jpro.one) · [Repository](https://github.com/JPro-one/jpro-platform/tree/main/jpro-file) · Apache License, Version 2.0

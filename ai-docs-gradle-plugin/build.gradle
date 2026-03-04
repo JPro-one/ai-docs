@@ -44,3 +44,16 @@ tasks.register('functionalTest', Test) {
 tasks.named('check') {
     dependsOn tasks.named('functionalTest')
 }
+
+afterEvaluate {
+    publishing {
+        publications {
+            pluginMaven {
+                artifact(file('DOCUMENTATION.md')) {
+                    classifier = 'DOCUMENTATION'
+                    extension = 'md'
+                }
+            }
+        }
+    }
+}

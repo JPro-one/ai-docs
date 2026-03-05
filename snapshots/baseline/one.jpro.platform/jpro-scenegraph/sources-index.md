@@ -4,6 +4,6 @@ To read a source file: `unzip -p sources.jar <path>`
 
 ## Packages
 - (default package) (1 file)
-  - module-info.java
+  - module-info.java (5 lines)
 - one.jpro.platform.scenegraph (1 file)
-  - SceneGraphSerializer.java
+  - SceneGraphSerializer.java (116 lines)

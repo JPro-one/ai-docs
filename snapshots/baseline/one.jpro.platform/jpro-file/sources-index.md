@@ -4,34 +4,34 @@ To read a source file: `unzip -p sources.jar <path>`
 
 ## Packages
 - (default package) (1 file)
-  - module-info.java
+  - module-info.java (17 lines)
 - one.jpro.platform.file (6 files)
-  - ExtensionFilter.java
-  - FileSource.java
-  - FileStorage.java
-  - MultipleFileSelector.java
-  - NativeFileSource.java
-  - WebFileSource.java
+  - ExtensionFilter.java (140 lines)
+  - FileSource.java (156 lines)
+  - FileStorage.java (131 lines)
+  - MultipleFileSelector.java (60 lines)
+  - NativeFileSource.java (107 lines)
+  - WebFileSource.java (65 lines)
 - one.jpro.platform.file.dropper (4 files)
-  - BaseFileDropper.java
-  - FileDropper.java
-  - NativeFileDropper.java
-  - WebFileDropper.java
+  - BaseFileDropper.java (172 lines)
+  - FileDropper.java (124 lines)
+  - NativeFileDropper.java (116 lines)
+  - WebFileDropper.java (119 lines)
 - one.jpro.platform.file.event (3 files)
-  - DataTransfer.java
-  - FileDragEvent.java
-  - FileEvent.java
+  - DataTransfer.java (155 lines)
+  - FileDragEvent.java (49 lines)
+  - FileEvent.java (51 lines)
 - one.jpro.platform.file.picker (10 files)
-  - BaseFileOpenPicker.java
-  - BaseFilePicker.java
-  - BaseFileSavePicker.java
-  - FileOpenPicker.java
-  - FilePicker.java
-  - FileSavePicker.java
-  - NativeFileOpenPicker.java
-  - NativeFileSavePicker.java
-  - WebFileOpenPicker.java
-  - WebFileSavePicker.java
+  - BaseFileOpenPicker.java (60 lines)
+  - BaseFilePicker.java (164 lines)
+  - BaseFileSavePicker.java (66 lines)
+  - FileOpenPicker.java (33 lines)
+  - FilePicker.java (133 lines)
+  - FileSavePicker.java (81 lines)
+  - NativeFileOpenPicker.java (144 lines)
+  - NativeFileSavePicker.java (72 lines)
+  - WebFileOpenPicker.java (97 lines)
+  - WebFileSavePicker.java (98 lines)
 - one.jpro.platform.file.util (2 files)
-  - NodeUtils.java
-  - SaveUtils.java
+  - NodeUtils.java (76 lines)
+  - SaveUtils.java (154 lines)

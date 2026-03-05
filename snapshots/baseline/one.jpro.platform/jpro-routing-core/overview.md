@@ -1,5 +1,5 @@
 # jpro-routing-core (0.6.0-SNAPSHOT)
-Full documentation: DOCUMENTATION.md
+Full content: DOCUMENTATION.md
 
 ## Chapters
 - JPro Routing (186 lines 1-186)

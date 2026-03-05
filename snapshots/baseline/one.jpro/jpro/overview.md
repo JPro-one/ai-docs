@@ -1,5 +1,5 @@
 # jpro (2026.1.1)
-Full documentation: DOCUMENTATION.md
+Full content: DOCUMENTATION.md
 
 ## Chapters
 - Getting Started (299 lines 1-299)

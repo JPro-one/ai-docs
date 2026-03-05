@@ -2,4 +2,4 @@ rootProject.name = 'ai-docs'
 
 include 'ai-docs-core'
 include 'ai-docs-gradle-plugin'
-// include 'ai-docs-maven-plugin'  // Phase 2
+include 'ai-docs-maven-plugin'

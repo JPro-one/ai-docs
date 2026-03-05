@@ -1,5 +1,5 @@
 # jpro-file (0.6.0-SNAPSHOT)
-Full documentation: DOCUMENTATION.md
+Full content: DOCUMENTATION.md
 
 ## Chapters
 - JPro File (125 lines 1-125)

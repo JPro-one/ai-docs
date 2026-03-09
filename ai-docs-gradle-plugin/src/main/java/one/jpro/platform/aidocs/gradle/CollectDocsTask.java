@@ -4,6 +4,7 @@ import one.jpro.platform.aidocs.core.DocEntry;
 import one.jpro.platform.aidocs.core.DocsCollector;
 import one.jpro.platform.aidocs.core.PomParser;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
@@ -57,6 +58,13 @@ public abstract class CollectDocsTask extends DefaultTask {
         scanConfigurations(getProject().getBuildscript().getConfigurations(),
                 getProject().getBuildscript().getDependencies(),
                 outputDir, entries, seenCoordinates);
+
+        // Scan all subprojects' dependencies (for multi-project builds)
+        for (Project subproject : getProject().getSubprojects()) {
+            getLogger().lifecycle("Scanning subproject: {}", subproject.getPath());
+            scanConfigurations(subproject.getConfigurations(), subproject.getDependencies(),
+                    outputDir, entries, seenCoordinates);
+        }
 
         DocsCollector.generateContextAndIndex(outputDir, entries, getContextMinLines().get());
 

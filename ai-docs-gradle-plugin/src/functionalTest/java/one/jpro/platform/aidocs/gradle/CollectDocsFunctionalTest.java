@@ -307,6 +307,58 @@ class CollectDocsFunctionalTest {
     }
 
     @Test
+    void collectDocsFromSubprojectDependencies() throws IOException {
+        // Root project applies the plugin but has no dependencies of its own
+        Files.writeString(projectDir.resolve("build.gradle"), """
+                plugins {
+                    id 'one.jpro.aidocs'
+                }
+                repositories {
+                    mavenCentral()
+                }
+                """);
+
+        // Settings: include a subproject
+        Files.writeString(projectDir.resolve("settings.gradle"), """
+                rootProject.name = 'test-multiproject'
+                include 'sub'
+                """);
+
+        // Subproject has jpro-routing-core as a dependency
+        Path subDir = projectDir.resolve("sub");
+        Files.createDirectories(subDir);
+        Files.writeString(subDir.resolve("build.gradle"), """
+                plugins {
+                    id 'java'
+                }
+                """ + JPRO_REPOS + """
+                dependencies {
+                    implementation 'one.jpro.platform:jpro-routing-core:0.5.8'
+                }
+                """);
+
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(projectDir.toFile())
+                .withArguments("collectDocs")
+                .withPluginClasspath()
+                .build();
+
+        assertThat(result.task(":collectDocs").getOutcome()).isEqualTo(SUCCESS);
+        assertThat(result.getOutput()).contains("Scanning subproject: :sub");
+
+        Path aiDocs = projectDir.resolve("build/ai-docs");
+
+        // jpro-routing-core comes from the subproject — should be collected
+        String index = Files.readString(aiDocs.resolve("index.md"));
+        assertThat(index).contains("jpro-routing-core");
+
+        Path docFile = aiDocs.resolve("one.jpro.platform/jpro-routing-core/DOCUMENTATION.md");
+        assertThat(docFile).exists();
+        String doc = Files.readString(docFile);
+        assertThat(doc).containsIgnoringCase("routing");
+    }
+
+    @Test
     void collectDocsIsIdempotent() throws IOException {
         Files.writeString(projectDir.resolve("build.gradle"), """
                 plugins {

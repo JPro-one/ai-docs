@@ -47,7 +47,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Publish to Sandec Artifactory
-        run: ./gradlew publish
+        run: ./publishOnline.sh
         env:
           SANDEC_ARTIFACTORY_USERNAME: ${{ secrets.SANDEC_ARTIFACTORY_USERNAME }}
           SANDEC_ARTIFACTORY_PASSWORD: ${{ secrets.SANDEC_ARTIFACTORY_PASSWORD }}

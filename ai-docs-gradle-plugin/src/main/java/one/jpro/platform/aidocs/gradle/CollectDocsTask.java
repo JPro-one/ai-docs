@@ -74,10 +74,8 @@ public abstract class CollectDocsTask extends DefaultTask {
             if (!config.isCanBeResolved()) continue;
             if (!config.getName().toLowerCase().contains("classpath")) continue;
 
-            // Walk the full dependency graph via ResolutionResult to discover all modules,
-            // including POM-only ones that have no jar artifact but may publish DOCUMENTATION.md.
-            // ResolvedDependency.getChildren() skips POM-only modules, so we use ResolutionResult instead.
-            // Use component IDs to avoid re-walking the same node in the graph
+            // Collect all module coordinates from the dependency graph via BFS
+            Deque<String[]> modulesToProcess = new ArrayDeque<>();
             Set<Object> visitedComponents = new HashSet<>();
             ResolvedComponentResult root = config.getIncoming().getResolutionResult().getRoot();
             Deque<ResolvedComponentResult> queue = new ArrayDeque<>();
@@ -86,7 +84,6 @@ public abstract class CollectDocsTask extends DefaultTask {
                 ResolvedComponentResult component = queue.poll();
                 if (!visitedComponents.add(component.getId())) continue;
 
-                // Queue children regardless of component type
                 for (var depResult : component.getDependencies()) {
                     if (depResult instanceof ResolvedDependencyResult resolved) {
                         queue.add(resolved.getSelected());
@@ -96,85 +93,109 @@ public abstract class CollectDocsTask extends DefaultTask {
                 if (!(component.getId() instanceof ModuleComponentIdentifier moduleId)) {
                     continue;
                 }
-                String group = moduleId.getGroup();
-                String name = moduleId.getModule();
-                String version = moduleId.getVersion();
-
-                String coordinate = group + ":" + name + ":" + version;
-                if (!seenCoordinates.add(coordinate)) continue;
-
-                var entry = new DocEntry(group, name, version);
-                DocEntry enriched = entry;
-                boolean hasDocs = false;
-                try {
-                    var docDep = dependencies.create(
-                            group + ":" + name + ":" + version + ":DOCUMENTATION@md"
-                    );
-                    var detached = configurations.detachedConfiguration(docDep);
-                    detached.setTransitive(false);
-
-                    for (File docFile : detached.resolve()) {
-                        enriched = DocsCollector.collectDoc(outputDir, docFile.toPath(), entry, getOverviewMinLines().get());
-                        hasDocs = true;
-                        getLogger().lifecycle("Collected docs: {}:{}", group, name);
-                    }
-                } catch (Exception e) {
-                    getLogger().debug("No DOCUMENTATION.md for {}:{}:{}", group, name, version);
-                }
-
-                try {
-                    var srcDep = dependencies.create(
-                            group + ":" + name + ":" + version + ":sources@jar"
-                    );
-                    var detached = configurations.detachedConfiguration(srcDep);
-                    detached.setTransitive(false);
-
-                    for (File srcFile : detached.resolve()) {
-                        DocsCollector.collectSources(outputDir, srcFile.toPath(), enriched);
-                        enriched = enriched.withHasSources(true);
-                        getLogger().lifecycle("Collected sources: {}:{}", group, name);
-                    }
-                } catch (Exception e) {
-                    getLogger().debug("No sources jar for {}:{}:{}", group, name, version);
-                }
-
-                try {
-                    var changelogDep = dependencies.create(
-                            group + ":" + name + ":" + version + ":CHANGELOG@md"
-                    );
-                    var detached = configurations.detachedConfiguration(changelogDep);
-                    detached.setTransitive(false);
-
-                    for (File changelogFile : detached.resolve()) {
-                        DocsCollector.collectChangelog(outputDir, changelogFile.toPath(), enriched, getOverviewMinLines().get());
-                        enriched = enriched.withHasChangelog(true);
-                        getLogger().lifecycle("Collected changelog: {}:{}", group, name);
-                    }
-                } catch (Exception e) {
-                    getLogger().debug("No CHANGELOG.md for {}:{}:{}", group, name, version);
-                }
-
-                if (hasDocs || enriched.hasSources() || enriched.hasChangelog()) {
-                    try {
-                        var pomDep = dependencies.create(
-                                group + ":" + name + ":" + version + "@pom"
-                        );
-                        var detached = configurations.detachedConfiguration(pomDep);
-                        detached.setTransitive(false);
-
-                        for (File pomFile : detached.resolve()) {
-                            var pomMetadata = PomParser.parse(pomFile.toPath());
-                            enriched = enriched.withPomMetadata(pomMetadata);
-                            getLogger().debug("Parsed POM metadata for {}:{}", group, name);
-                        }
-                    } catch (Exception e) {
-                        getLogger().debug("No POM for {}:{}:{}", group, name, version);
-                    }
-
-                    entries.add(enriched);
-                }
-
+                String coordinate = moduleId.getGroup() + ":" + moduleId.getModule() + ":" + moduleId.getVersion();
+                if (seenCoordinates.contains(coordinate)) continue;
+                modulesToProcess.add(new String[]{moduleId.getGroup(), moduleId.getModule(), moduleId.getVersion()});
             }
+
+            // Process modules, discovering and queuing parent POMs as we go
+            while (!modulesToProcess.isEmpty()) {
+                String[] module = modulesToProcess.poll();
+                processModule(module[0], module[1], module[2], configurations, dependencies,
+                        outputDir, entries, seenCoordinates, modulesToProcess);
+            }
+        }
+    }
+
+    private void processModule(String group, String name, String version,
+                               ConfigurationContainer configurations, DependencyHandler dependencies,
+                               Path outputDir, List<DocEntry> entries, Set<String> seenCoordinates,
+                               Deque<String[]> modulesToProcess) {
+        String coordinate = group + ":" + name + ":" + version;
+        if (!seenCoordinates.add(coordinate)) return;
+
+        var entry = DocEntry.of(group, name, version);
+        DocEntry enriched = entry;
+        boolean hasDocs = false;
+        try {
+            var docDep = dependencies.create(
+                    group + ":" + name + ":" + version + ":DOCUMENTATION@md"
+            );
+            var detached = configurations.detachedConfiguration(docDep);
+            detached.setTransitive(false);
+
+            for (File docFile : detached.resolve()) {
+                enriched = DocsCollector.collectDoc(outputDir, docFile.toPath(), entry, getOverviewMinLines().get());
+                hasDocs = true;
+                getLogger().lifecycle("Collected docs: {}:{}", group, name);
+            }
+        } catch (Exception e) {
+            getLogger().debug("No DOCUMENTATION.md for {}:{}:{}", group, name, version);
+        }
+
+        try {
+            var srcDep = dependencies.create(
+                    group + ":" + name + ":" + version + ":sources@jar"
+            );
+            var detached = configurations.detachedConfiguration(srcDep);
+            detached.setTransitive(false);
+
+            for (File srcFile : detached.resolve()) {
+                DocsCollector.collectSources(outputDir, srcFile.toPath(), enriched);
+                enriched = enriched.withHasSources(true);
+                getLogger().lifecycle("Collected sources: {}:{}", group, name);
+            }
+        } catch (Exception e) {
+            getLogger().debug("No sources jar for {}:{}:{}", group, name, version);
+        }
+
+        try {
+            var changelogDep = dependencies.create(
+                    group + ":" + name + ":" + version + ":CHANGELOG@md"
+            );
+            var detached = configurations.detachedConfiguration(changelogDep);
+            detached.setTransitive(false);
+
+            for (File changelogFile : detached.resolve()) {
+                DocsCollector.collectChangelog(outputDir, changelogFile.toPath(), enriched, getOverviewMinLines().get());
+                enriched = enriched.withHasChangelog(true);
+                getLogger().lifecycle("Collected changelog: {}:{}", group, name);
+            }
+        } catch (Exception e) {
+            getLogger().debug("No CHANGELOG.md for {}:{}:{}", group, name, version);
+        }
+
+        // Always resolve POM to discover parent chain
+        try {
+            var pomDep = dependencies.create(
+                    group + ":" + name + ":" + version + "@pom"
+            );
+            var detached = configurations.detachedConfiguration(pomDep);
+            detached.setTransitive(false);
+
+            for (File pomFile : detached.resolve()) {
+                if (hasDocs || enriched.hasSources() || enriched.hasChangelog()) {
+                    var pomMetadata = PomParser.parse(pomFile.toPath());
+                    enriched = enriched.withPomMetadata(pomMetadata);
+                    getLogger().debug("Parsed POM metadata for {}:{}", group, name);
+                }
+
+                // Queue parent for processing if not already seen
+                String[] parent = PomParser.parseParent(pomFile.toPath());
+                if (parent != null) {
+                    String parentCoord = parent[0] + ":" + parent[1] + ":" + parent[2];
+                    if (!seenCoordinates.contains(parentCoord)) {
+                        modulesToProcess.add(parent);
+                        getLogger().debug("Discovered parent POM: {}", parentCoord);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            getLogger().debug("No POM for {}:{}:{}", group, name, version);
+        }
+
+        if (hasDocs || enriched.hasSources() || enriched.hasChangelog()) {
+            entries.add(enriched);
         }
     }
 }

@@ -34,7 +34,7 @@ Full docs: one.jpro.platform/jpro-platform/DOCUMENTATION.md
 Changelog: one.jpro.platform/jpro-platform/changelog-overview.md
 
 ### Chapters
-- JPro Platform (496 lines 1-496) — ![Build](https://github.com/jpro-one/jpro-platform/actions/workflows/main.yml/badge.svg)
+- JPro Platform (541 lines 1-541) — ![Build](https://github.com/jpro-one/jpro-platform/actions/workflows/main.yml/badge.svg)
     - Key Features: (9 lines 10-18) — * **Modular Components**: Begin your development journey with an assortment of pre-configured modules designed to
     - Benefits: (32 lines 19-50) — * **Unified Development Paradigm**: JPro provides a cohesive development environment, ensuring consistent behavior
   - JPro Auth (27 lines 51-77) — Rely on this library to add sophisticated authentication and authorization to your **JPro/JavaFX** applications.
@@ -49,39 +49,43 @@ Changelog: one.jpro.platform/jpro-platform/changelog-overview.md
   - JPro Utils (21 lines 333-353) — This library offers essential tools for various functionalities to enhance the development of **JPro/JavaFX** applica...
   - JPro WebRTC (29 lines 354-382) — This library provides an API to use WebRTC in **JPro/JavaFX** applications. This technology allows for the direct
   - JPro YouTube (39 lines 383-421) — This library makes it easy to embed a YouTube video in your **JPro/JavaFX** applications. It provides a simple API
-  - JPro HTML Scrollpane (21 lines 422-442) — Provides a skin implementation of a scrollpane for **JPro** applications only.
-  - Launch the examples (54 lines 443-496) — To run the examples, you can use the following commands:
-- JPro Auth (275 lines 497-771)
-  - Introduction (11 lines 499-509) — Rely on this library to add sophisticated authentication and authorization to your **JPro/JavaFX**. At the core, it
-  - Features (9 lines 510-518) — - Authentication Simplified
-  - Architecture Overview (71 lines 519-589) — 1. Basic concepts
-  - Getting Started (182 lines 590-771)
-    - Configuration (45 lines 592-636) — The `jpro-auth-core` module contains the core classes and interfaces to implement authentication and authorization
-    - Usage (28 lines 637-664) — - The following example shows how to authenticate a user with a username and password using the
-    - Combined with the Routing API (72 lines 665-736) — By simply adding the `jpro-auth-routing` dependency to your project, the authentication process can be simplified even
-    - Launch the examples (35 lines 737-771) — **Basic login sample**
-- JPro File (127 lines 772-898)
-- JPro Media (539 lines 899-1437) — JPro Media is a Java Library for playing and recording audio and video files in JavaFX applications that run
-  - Features (7 lines 905-911) — - Write Once Run Anywhere (the same code runs on desktop/mobile devices and in the web browser)
-  - Supported Platforms (9 lines 912-920) — - Web (via [JPro](https://www.jpro.one))
-  - Getting Started (161 lines 921-1081) — To get started with JPro Media, we need to add the following configuration to your project.
-    - Gradle (39 lines 923-961) — 1. In `plugin` section, we need to add the `org.bytedeco.gradle-javacpp-platform` plugin in order to select from
-    - Maven (39 lines 962-1000) — 1. Add `jpro-media` and `javacv-platform` dependencies to the `pom.xml` file.
-    - Platform specific modules configuration (71 lines 1001-1071) — When we run the application on the desktop/device, the following modules are required and must be added the module
-    - Similarities and differences to JavaFX Media (10 lines 1072-1081) — - The `MediaSource` class is very similar to the `Media` class from the JavaFX Media API.
-  - Usage (168 lines 1082-1249)
-    - Media Player API (76 lines 1083-1158) — For the playback functionality, the JPro Media API is very similar to the JavaFX Media API.
-    - Media Recorder API (88 lines 1159-1246) — The JPro Media also provides a MediaRecorder API for recording the audio and video stream from a camera device.
-    - More examples (3 lines 1247-1249) — For more examples, please take a look at the [JPro Media Examples](https://github.com/JPro-one/jpro-platform/tree/mai...
-  - JPro Routing (188 lines 1250-1437)
-    - Introduction (30 lines 1252-1281) — JPro Routing is a framework
-    - Advantages (20 lines 1282-1301) — With these basic types, we get a lot of features:
-    - Hello World (20 lines 1302-1321) — Checkout our sample project for a small application showing the features of JPro Routing:
-    - Basic API (42 lines 1322-1363)
-    - Setting Links (32 lines 1364-1395) — You usually want to use a link to switch from one page to another.
-    - Fullscreen and Scrolling (13 lines 1396-1408) — It is possible to configure a page to be either fullscreen or scrollable.
-    - History API and defaultpage (10 lines 1409-1418) — When Routing is used in a browser, the history API is used to navigate between pages.
-    - Additional Features (19 lines 1419-1437)
+  - JPro Dynamic CSS (21 lines 422-442) — Reactive dynamic CSS for JavaFX scenes and parents. Apply CSS strings at runtime without external stylesheet files.
+  - JPro FlexBox (23 lines 443-465) — A CSS FlexBox layout implementation for JavaFX. Brings the familiar CSS Flexbox model to JavaFX with support for
+  - JPro HTML Scrollpane (21 lines 466-486) — Provides a skin implementation of a scrollpane for **JPro** applications only.
+  - Launch the examples (55 lines 487-541) — To run the examples, you can use the following commands:
+- JPro Auth (275 lines 542-816)
+  - Introduction (11 lines 544-554) — Rely on this library to add sophisticated authentication and authorization to your **JPro/JavaFX**. At the core, it
+  - Features (9 lines 555-563) — - Authentication Simplified
+  - Architecture Overview (71 lines 564-634) — 1. Basic concepts
+  - Getting Started (182 lines 635-816)
+    - Configuration (45 lines 637-681) — The `jpro-auth-core` module contains the core classes and interfaces to implement authentication and authorization
+    - Usage (28 lines 682-709) — - The following example shows how to authenticate a user with a username and password using the
+    - Combined with the Routing API (72 lines 710-781) — By simply adding the `jpro-auth-routing` dependency to your project, the authentication process can be simplified even
+    - Launch the examples (35 lines 782-816) — **Basic login sample**
+- JPro Dynamic CSS (62 lines 817-878) — Apply CSS strings to JavaFX scenes and parents at runtime. Each call replaces the previous CSS for that target — temp...
+- JPro File (127 lines 879-1005)
+- JPro FlexBox (124 lines 1006-1129) — A CSS FlexBox layout implementation for JavaFX. All properties are styleable via CSS.
+- JPro Media (539 lines 1130-1668) — JPro Media is a Java Library for playing and recording audio and video files in JavaFX applications that run
+  - Features (7 lines 1136-1142) — - Write Once Run Anywhere (the same code runs on desktop/mobile devices and in the web browser)
+  - Supported Platforms (9 lines 1143-1151) — - Web (via [JPro](https://www.jpro.one))
+  - Getting Started (161 lines 1152-1312) — To get started with JPro Media, we need to add the following configuration to your project.
+    - Gradle (39 lines 1154-1192) — 1. In `plugin` section, we need to add the `org.bytedeco.gradle-javacpp-platform` plugin in order to select from
+    - Maven (39 lines 1193-1231) — 1. Add `jpro-media` and `javacv-platform` dependencies to the `pom.xml` file.
+    - Platform specific modules configuration (71 lines 1232-1302) — When we run the application on the desktop/device, the following modules are required and must be added the module
+    - Similarities and differences to JavaFX Media (10 lines 1303-1312) — - The `MediaSource` class is very similar to the `Media` class from the JavaFX Media API.
+  - Usage (168 lines 1313-1480)
+    - Media Player API (76 lines 1314-1389) — For the playback functionality, the JPro Media API is very similar to the JavaFX Media API.
+    - Media Recorder API (88 lines 1390-1477) — The JPro Media also provides a MediaRecorder API for recording the audio and video stream from a camera device.
+    - More examples (3 lines 1478-1480) — For more examples, please take a look at the [JPro Media Examples](https://github.com/JPro-one/jpro-platform/tree/mai...
+  - JPro Routing (188 lines 1481-1668)
+    - Introduction (30 lines 1483-1512) — JPro Routing is a framework
+    - Advantages (20 lines 1513-1532) — With these basic types, we get a lot of features:
+    - Hello World (20 lines 1533-1552) — Checkout our sample project for a small application showing the features of JPro Routing:
+    - Basic API (42 lines 1553-1594)
+    - Setting Links (32 lines 1595-1626) — You usually want to use a link to switch from one page to another.
+    - Fullscreen and Scrolling (13 lines 1627-1639) — It is possible to configure a page to be either fullscreen or scrollable.
+    - History API and defaultpage (10 lines 1640-1649) — When Routing is used in a browser, the history API is used to navigate between pages.
+    - Additional Features (19 lines 1650-1668)
 
 ## one.jpro.platform:jpro-routing-core:0.6.0-SNAPSHOT (JPro Routing Core)
 A framework for building JPro/JavaFX applications, both desktop and web, with routing capabilities.

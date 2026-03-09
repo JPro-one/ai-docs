@@ -14,6 +14,5 @@ repositories {
 dependencies {
     implementation 'one.jpro.platform:jpro-routing-core:0.6.0-SNAPSHOT'
     implementation 'one.jpro.platform:jpro-file:0.6.0-SNAPSHOT'
-    implementation 'one.jpro:jpro-webapi:2026.1.1'
-    implementation 'one.jpro:jpro:2026.1.1'
+    implementation 'one.jpro:jpro-webapi:2026.1.2-SNAPSHOT'
 }

@@ -42,6 +42,40 @@ public class PomParser {
     }
 
     /**
+     * Extracts parent coordinates from a POM file.
+     *
+     * @param pomFile path to the POM XML file
+     * @return a {@code String[]{groupId, artifactId, version}} or {@code null} if no parent is declared
+     */
+    public static String[] parseParent(Path pomFile) {
+        try {
+            var factory = DocumentBuilderFactory.newInstance();
+            factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            var builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(pomFile.toFile());
+            Element root = doc.getDocumentElement();
+
+            NodeList children = root.getChildNodes();
+            for (int i = 0; i < children.getLength(); i++) {
+                if (children.item(i) instanceof Element el && el.getTagName().equals("parent")) {
+                    String groupId = getDirectChildText(el, "groupId");
+                    String artifactId = getDirectChildText(el, "artifactId");
+                    String version = getDirectChildText(el, "version");
+                    if (groupId != null && artifactId != null && version != null) {
+                        return new String[]{groupId, artifactId, version};
+                    }
+                    return null;
+                }
+            }
+        } catch (Exception e) {
+            // fall through
+        }
+        return null;
+    }
+
+    /**
      * Gets the text content of a direct child element of the given parent.
      * Returns null if the element doesn't exist or has empty text.
      */

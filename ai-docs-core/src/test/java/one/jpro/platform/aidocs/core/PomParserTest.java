@@ -137,6 +137,65 @@ class PomParserTest {
     }
 
     @Test
+    void parseParentFromPom(@TempDir Path tempDir) throws IOException {
+        Path pom = tempDir.resolve("pom.xml");
+        Files.writeString(pom, """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project>
+                    <parent>
+                        <groupId>org.example</groupId>
+                        <artifactId>parent-lib</artifactId>
+                        <version>2.0.0</version>
+                    </parent>
+                    <artifactId>child-lib</artifactId>
+                </project>
+                """);
+
+        String[] parent = PomParser.parseParent(pom);
+
+        assertThat(parent).isNotNull();
+        assertThat(parent[0]).isEqualTo("org.example");
+        assertThat(parent[1]).isEqualTo("parent-lib");
+        assertThat(parent[2]).isEqualTo("2.0.0");
+    }
+
+    @Test
+    void parseParentReturnsNullWhenNoParent(@TempDir Path tempDir) throws IOException {
+        Path pom = tempDir.resolve("pom.xml");
+        Files.writeString(pom, """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project>
+                    <groupId>org.example</groupId>
+                    <artifactId>root-lib</artifactId>
+                    <version>1.0.0</version>
+                </project>
+                """);
+
+        String[] parent = PomParser.parseParent(pom);
+
+        assertThat(parent).isNull();
+    }
+
+    @Test
+    void parseParentReturnsNullWhenPartialParent(@TempDir Path tempDir) throws IOException {
+        Path pom = tempDir.resolve("pom.xml");
+        Files.writeString(pom, """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project>
+                    <parent>
+                        <groupId>org.example</groupId>
+                        <artifactId>parent-lib</artifactId>
+                    </parent>
+                    <artifactId>child-lib</artifactId>
+                </project>
+                """);
+
+        String[] parent = PomParser.parseParent(pom);
+
+        assertThat(parent).isNull();
+    }
+
+    @Test
     void parseEmptyElementsReturnNull(@TempDir Path tempDir) throws IOException {
         Path pom = tempDir.resolve("pom.xml");
         Files.writeString(pom, """

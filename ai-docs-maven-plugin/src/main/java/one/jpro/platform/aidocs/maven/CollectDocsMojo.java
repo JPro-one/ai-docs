@@ -22,8 +22,12 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Maven Mojo that resolves DOCUMENTATION.md, sources.jar, and CHANGELOG.md classifier
@@ -70,61 +74,18 @@ public class CollectDocsMojo extends AbstractMojo {
         }
 
         List<DocEntry> entries = new ArrayList<>();
+        Set<String> seenCoordinates = new HashSet<>();
 
+        // Seed the processing queue with all project artifacts
+        Deque<String[]> modulesToProcess = new ArrayDeque<>();
         for (Artifact artifact : project.getArtifacts()) {
-            String group = artifact.getGroupId();
-            String name = artifact.getArtifactId();
-            String version = artifact.getVersion();
+            modulesToProcess.add(new String[]{artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion()});
+        }
 
-            var entry = new DocEntry(group, name, version);
-            DocEntry enriched = entry;
-            boolean hasDocs = false;
-
-            // Try DOCUMENTATION.md
-            File docFile = resolveArtifact(group, name, version, "DOCUMENTATION", "md");
-            if (docFile != null) {
-                try {
-                    enriched = DocsCollector.collectDoc(outputDir, docFile.toPath(), entry, overviewMinLines);
-                    hasDocs = true;
-                    getLog().info("Collected docs: " + group + ":" + name);
-                } catch (IOException e) {
-                    getLog().warn("Failed to collect docs for " + group + ":" + name, e);
-                }
-            }
-
-            // Try sources.jar
-            File srcFile = resolveArtifact(group, name, version, "sources", "jar");
-            if (srcFile != null) {
-                try {
-                    DocsCollector.collectSources(outputDir, srcFile.toPath(), enriched);
-                    enriched = enriched.withHasSources(true);
-                    getLog().info("Collected sources: " + group + ":" + name);
-                } catch (IOException e) {
-                    getLog().warn("Failed to collect sources for " + group + ":" + name, e);
-                }
-            }
-
-            // Try CHANGELOG.md
-            File changelogFile = resolveArtifact(group, name, version, "CHANGELOG", "md");
-            if (changelogFile != null) {
-                try {
-                    DocsCollector.collectChangelog(outputDir, changelogFile.toPath(), enriched, overviewMinLines);
-                    enriched = enriched.withHasChangelog(true);
-                    getLog().info("Collected changelog: " + group + ":" + name);
-                } catch (IOException e) {
-                    getLog().warn("Failed to collect changelog for " + group + ":" + name, e);
-                }
-            }
-
-            // If any artifact was found, resolve POM for metadata
-            if (hasDocs || enriched.hasSources() || enriched.hasChangelog()) {
-                File pomFile = resolveArtifact(group, name, version, "", "pom");
-                if (pomFile != null) {
-                    var pomMetadata = PomParser.parse(pomFile.toPath());
-                    enriched = enriched.withPomMetadata(pomMetadata);
-                }
-                entries.add(enriched);
-            }
+        // Process modules, discovering and queuing parent POMs as we go
+        while (!modulesToProcess.isEmpty()) {
+            String[] module = modulesToProcess.poll();
+            processModule(module[0], module[1], module[2], outputDir, entries, seenCoordinates, modulesToProcess);
         }
 
         try {
@@ -138,6 +99,76 @@ public class CollectDocsMojo extends AbstractMojo {
             getLog().info("Collected documentation for " + entries.size() + " libraries into " + outputDir);
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to generate index", e);
+        }
+    }
+
+    private void processModule(String group, String name, String version,
+                               Path outputDir, List<DocEntry> entries, Set<String> seenCoordinates,
+                               Deque<String[]> modulesToProcess) {
+        String coordinate = group + ":" + name + ":" + version;
+        if (!seenCoordinates.add(coordinate)) return;
+
+        var entry = DocEntry.of(group, name, version);
+        DocEntry enriched = entry;
+        boolean hasDocs = false;
+
+        // Try DOCUMENTATION.md
+        File docFile = resolveArtifact(group, name, version, "DOCUMENTATION", "md");
+        if (docFile != null) {
+            try {
+                enriched = DocsCollector.collectDoc(outputDir, docFile.toPath(), entry, overviewMinLines);
+                hasDocs = true;
+                getLog().info("Collected docs: " + group + ":" + name);
+            } catch (IOException e) {
+                getLog().warn("Failed to collect docs for " + group + ":" + name, e);
+            }
+        }
+
+        // Try sources.jar
+        File srcFile = resolveArtifact(group, name, version, "sources", "jar");
+        if (srcFile != null) {
+            try {
+                DocsCollector.collectSources(outputDir, srcFile.toPath(), enriched);
+                enriched = enriched.withHasSources(true);
+                getLog().info("Collected sources: " + group + ":" + name);
+            } catch (IOException e) {
+                getLog().warn("Failed to collect sources for " + group + ":" + name, e);
+            }
+        }
+
+        // Try CHANGELOG.md
+        File changelogFile = resolveArtifact(group, name, version, "CHANGELOG", "md");
+        if (changelogFile != null) {
+            try {
+                DocsCollector.collectChangelog(outputDir, changelogFile.toPath(), enriched, overviewMinLines);
+                enriched = enriched.withHasChangelog(true);
+                getLog().info("Collected changelog: " + group + ":" + name);
+            } catch (IOException e) {
+                getLog().warn("Failed to collect changelog for " + group + ":" + name, e);
+            }
+        }
+
+        // Always resolve POM to discover parent chain
+        File pomFile = resolveArtifact(group, name, version, "", "pom");
+        if (pomFile != null) {
+            if (hasDocs || enriched.hasSources() || enriched.hasChangelog()) {
+                var pomMetadata = PomParser.parse(pomFile.toPath());
+                enriched = enriched.withPomMetadata(pomMetadata);
+            }
+
+            // Queue parent for processing if not already seen
+            String[] parent = PomParser.parseParent(pomFile.toPath());
+            if (parent != null) {
+                String parentCoord = parent[0] + ":" + parent[1] + ":" + parent[2];
+                if (!seenCoordinates.contains(parentCoord)) {
+                    modulesToProcess.add(parent);
+                    getLog().debug("Discovered parent POM: " + parentCoord);
+                }
+            }
+        }
+
+        if (hasDocs || enriched.hasSources() || enriched.hasChangelog()) {
+            entries.add(enriched);
         }
     }
 

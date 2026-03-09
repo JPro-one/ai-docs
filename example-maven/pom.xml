@@ -53,13 +53,7 @@
         <dependency>
             <groupId>one.jpro</groupId>
             <artifactId>jpro-webapi</artifactId>
-            <version>2026.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>one.jpro</groupId>
-            <artifactId>jpro</artifactId>
-            <version>2026.1.1</version>
-            <type>pom</type>
+            <version>2026.1.2-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

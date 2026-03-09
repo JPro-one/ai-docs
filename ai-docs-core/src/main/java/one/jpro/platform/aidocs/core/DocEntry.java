@@ -5,16 +5,11 @@ package one.jpro.platform.aidocs.core;
  */
 public record DocEntry(String group, String name, String version, String description, boolean hasSources, boolean hasChangelog, PomMetadata pomMetadata) {
 
-    public DocEntry(String group, String name, String version) {
-        this(group, name, version, null, false, false, null);
-    }
-
-    public DocEntry(String group, String name, String version, String description) {
-        this(group, name, version, description, false, false, null);
-    }
-
-    public DocEntry(String group, String name, String version, String description, boolean hasSources) {
-        this(group, name, version, description, hasSources, false, null);
+    /**
+     * Creates a DocEntry with the required fields. Use {@code with*()} methods to set optional fields.
+     */
+    public static DocEntry of(String group, String name, String version) {
+        return new DocEntry(group, name, version, null, false, false, null);
     }
 
     public DocEntry withDescription(String description) {

@@ -90,16 +90,8 @@ public class ContextGenerator {
                             .mapToInt(OverviewGenerator.ChapterInfo::depth).min().orElse(1);
                     sb.append("### Chapters\n");
                     for (OverviewGenerator.ChapterInfo ch : OverviewGenerator.filterChapters(chapters, contextMinLines)) {
-                        int indent = ch.depth() - minDepth;
-                        int lineCount = ch.lineCount();
-                        sb.append("  ".repeat(indent));
-                        sb.append("- ").append(ch.title())
-                                .append(" (").append(lineCount).append(lineCount == 1 ? " line " : " lines ")
-                                .append(ch.startLine()).append("-").append(ch.endLine()).append(")");
-                        if (ch.summary() != null) {
-                            sb.append(" — ").append(ch.summary());
-                        }
-                        sb.append("\n");
+                        OverviewGenerator.appendChapter(sb, ch.title(), ch.depth(), minDepth,
+                                ch.startLine(), ch.endLine(), ch.summary());
                     }
                 }
             }

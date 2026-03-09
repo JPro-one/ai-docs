@@ -51,7 +51,12 @@ public class IndexGenerator {
             sb.append(" (").append(section.lineCount())
                     .append(section.lineCount() == 1 ? " line " : " lines ")
                     .append(section.startLine()).append("-").append(section.endLine())
-                    .append(")\n");
+                    .append(")");
+            String desc = entry.effectiveDescription();
+            if (desc != null) {
+                sb.append(" — ").append(desc);
+            }
+            sb.append("\n");
         }
 
         return sb.toString();

@@ -29,7 +29,7 @@ class DocsCollectorTest {
                 Step 3.
                 """);
 
-        var entry = new DocEntry("com.example", "my-lib", "1.0.0");
+        var entry = DocEntry.of("com.example", "my-lib", "1.0.0");
         DocsCollector.cleanOutputDir(outputDir);
         DocEntry enriched = DocsCollector.collectDoc(outputDir, sourceDoc, entry, 1);
         DocsCollector.generateContextAndIndex(outputDir, List.of(enriched), 50);
@@ -66,11 +66,11 @@ class DocsCollectorTest {
 
         Path doc1 = tempDir.resolve("doc1.md");
         Files.writeString(doc1, "# Library A\nContent A.");
-        var entry1 = new DocEntry("com.example", "lib-a", "1.0.0");
+        var entry1 = DocEntry.of("com.example", "lib-a", "1.0.0");
 
         Path doc2 = tempDir.resolve("doc2.md");
         Files.writeString(doc2, "# Library B\nContent B.");
-        var entry2 = new DocEntry("com.example", "lib-b", "2.0.0");
+        var entry2 = DocEntry.of("com.example", "lib-b", "2.0.0");
 
         DocEntry enriched1 = DocsCollector.collectDoc(outputDir, doc1, entry1, 5);
         DocEntry enriched2 = DocsCollector.collectDoc(outputDir, doc2, entry2, 5);
@@ -95,7 +95,7 @@ class DocsCollectorTest {
                 # Title Only
                 """);
 
-        var entry = new DocEntry("com.example", "title-only", "1.0.0");
+        var entry = DocEntry.of("com.example", "title-only", "1.0.0");
         DocsCollector.cleanOutputDir(outputDir);
         DocEntry enriched = DocsCollector.collectDoc(outputDir, sourceDoc, entry, 5);
 
@@ -109,7 +109,7 @@ class DocsCollectorTest {
 
         Path doc1 = tempDir.resolve("doc1.md");
         Files.writeString(doc1, "# Library A\nA great library.\n## Usage\nUse it.");
-        var entry1 = new DocEntry("com.example", "lib-a", "1.0.0");
+        var entry1 = DocEntry.of("com.example", "lib-a", "1.0.0");
 
         DocEntry enriched1 = DocsCollector.collectDoc(outputDir, doc1, entry1, 5);
         DocsCollector.generateContextAndIndex(outputDir, List.of(enriched1), 50);
@@ -149,7 +149,7 @@ class DocsCollectorTest {
         Path sourceDoc = tempDir.resolve("source.md");
         Files.writeString(sourceDoc, "# My Library\nSome intro.");
 
-        var entry = new DocEntry("com.example", "my-lib", "1.0.0");
+        var entry = DocEntry.of("com.example", "my-lib", "1.0.0");
 
         // Simulate what happens when the same dependency appears in multiple classpath configs:
         // collectDoc is called once, but the enriched entry (with description) is added to the list.
@@ -191,14 +191,14 @@ class DocsCollectorTest {
     @Test
     void displayNameFromPomMetadata() {
         var pom = new PomMetadata("My Library", null, null, null, null);
-        var entry = new DocEntry("com.example", "my-lib", "1.0.0").withPomMetadata(pom);
+        var entry = DocEntry.of("com.example", "my-lib", "1.0.0").withPomMetadata(pom);
 
         assertThat(entry.displayName()).isEqualTo("My Library");
     }
 
     @Test
     void displayNameFallsBackToArtifactName() {
-        var entry = new DocEntry("com.example", "my-lib", "1.0.0");
+        var entry = DocEntry.of("com.example", "my-lib", "1.0.0");
 
         assertThat(entry.displayName()).isEqualTo("my-lib");
     }
@@ -206,21 +206,21 @@ class DocsCollectorTest {
     @Test
     void effectiveDescriptionPrefersPomDescription() {
         var pom = new PomMetadata(null, "POM description", null, null, null);
-        var entry = new DocEntry("com.example", "my-lib", "1.0.0", "Doc description").withPomMetadata(pom);
+        var entry = DocEntry.of("com.example", "my-lib", "1.0.0").withDescription("Doc description").withPomMetadata(pom);
 
         assertThat(entry.effectiveDescription()).isEqualTo("POM description");
     }
 
     @Test
     void effectiveDescriptionFallsToDocDescription() {
-        var entry = new DocEntry("com.example", "my-lib", "1.0.0", "Doc description");
+        var entry = DocEntry.of("com.example", "my-lib", "1.0.0").withDescription("Doc description");
 
         assertThat(entry.effectiveDescription()).isEqualTo("Doc description");
     }
 
     @Test
     void effectiveDescriptionNullWhenNeitherAvailable() {
-        var entry = new DocEntry("com.example", "my-lib", "1.0.0");
+        var entry = DocEntry.of("com.example", "my-lib", "1.0.0");
 
         assertThat(entry.effectiveDescription()).isNull();
     }
@@ -235,7 +235,7 @@ class DocsCollectorTest {
                 "com/example/mylib/MyService.java", "public class MyService {}"
         ));
 
-        var entry = new DocEntry("com.example", "my-lib", "1.0.0");
+        var entry = DocEntry.of("com.example", "my-lib", "1.0.0");
         DocsCollector.collectSources(outputDir, jar, entry);
 
         // Check files were created
@@ -260,8 +260,8 @@ class DocsCollectorTest {
         Files.createDirectories(libDir);
         Files.writeString(libDir.resolve("DOCUMENTATION.md"), "# Lib A\nContent A.");
 
-        var entry1 = new DocEntry("com.example", "lib-a", "1.0.0", "A library.", true);
-        var entry2 = new DocEntry("com.example", "lib-b", "2.0.0", "Another library.", false);
+        var entry1 = DocEntry.of("com.example", "lib-a", "1.0.0").withDescription("A library.").withHasSources(true);
+        var entry2 = DocEntry.of("com.example", "lib-b", "2.0.0").withDescription("Another library.");
 
         DocsCollector.generateContextAndIndex(outputDir, List.of(entry1, entry2), 50);
 

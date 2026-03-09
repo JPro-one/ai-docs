@@ -27,7 +27,7 @@ class ContextGeneratorTest {
         for (int i = 0; i < 40; i++) docLines.add("Content line " + i);
         Files.writeString(libDir.resolve("DOCUMENTATION.md"), String.join("\n", docLines));
 
-        var entry = new DocEntry("com.example", "my-lib", "1.0.0", "A great library.");
+        var entry = DocEntry.of("com.example", "my-lib", "1.0.0").withDescription("A great library.");
 
         String result = ContextGenerator.generate(outputDir, List.of(entry), 30);
 
@@ -61,7 +61,7 @@ class ContextGeneratorTest {
         docLines.add("Hidden detail.");
         Files.writeString(libDir.resolve("DOCUMENTATION.md"), String.join("\n", docLines));
 
-        var entry = new DocEntry("com.example", "my-lib", "1.0.0", "A library.");
+        var entry = DocEntry.of("com.example", "my-lib", "1.0.0").withDescription("A library.");
 
         String result = ContextGenerator.generate(outputDir, List.of(entry), 30);
 
@@ -87,8 +87,8 @@ class ContextGeneratorTest {
                 "# Lib B\nIntro B.");
 
         var entries = List.of(
-                new DocEntry("com.example", "lib-a", "1.0.0", "Library A."),
-                new DocEntry("com.example", "lib-b", "2.0.0", "Library B.")
+                DocEntry.of("com.example", "lib-a", "1.0.0").withDescription("Library A."),
+                DocEntry.of("com.example", "lib-b", "2.0.0").withDescription("Library B.")
         );
 
         String result = ContextGenerator.generate(outputDir, entries, 30);
@@ -107,7 +107,7 @@ class ContextGeneratorTest {
 
         Files.writeString(libDir.resolve("DOCUMENTATION.md"), "# No Desc\nContent.");
 
-        var entry = new DocEntry("org.example", "no-desc", "1.0.0");
+        var entry = DocEntry.of("org.example", "no-desc", "1.0.0");
 
         String result = ContextGenerator.generate(outputDir, List.of(entry), 30);
 
@@ -124,7 +124,7 @@ class ContextGeneratorTest {
         Files.writeString(libDir.resolve("DOCUMENTATION.md"), "# POM Lib\nContent.");
 
         var pom = new PomMetadata("POM Library", "A POM-described lib.", "https://example.com", null, "MIT");
-        var entry = new DocEntry("org.example", "pom-lib", "1.0.0", null, false, false, pom);
+        var entry = DocEntry.of("org.example", "pom-lib", "1.0.0").withPomMetadata(pom);
 
         String result = ContextGenerator.generate(outputDir, List.of(entry), 30);
 
@@ -141,7 +141,7 @@ class ContextGeneratorTest {
         Files.createDirectories(outputDir.resolve("org.example/src-only"));
 
         // No DOCUMENTATION.md — only sources
-        var entry = new DocEntry("org.example", "src-only", "1.0.0", null, true);
+        var entry = DocEntry.of("org.example", "src-only", "1.0.0").withHasSources(true);
 
         String result = ContextGenerator.generate(outputDir, List.of(entry), 30);
 
@@ -157,7 +157,7 @@ class ContextGeneratorTest {
         Files.createDirectories(libDir);
         Files.writeString(libDir.resolve("DOCUMENTATION.md"), "# Both\nContent.");
 
-        var entry = new DocEntry("com.example", "both", "1.0.0", "Has both.", true);
+        var entry = DocEntry.of("com.example", "both", "1.0.0").withDescription("Has both.").withHasSources(true);
 
         String result = ContextGenerator.generate(outputDir, List.of(entry), 30);
 
@@ -184,7 +184,7 @@ class ContextGeneratorTest {
 
         Files.writeString(libDir.resolve("DOCUMENTATION.md"), "# My Lib\nContent.");
 
-        var entry = new DocEntry("com.example", "my-lib", "1.0.0", "A lib.");
+        var entry = DocEntry.of("com.example", "my-lib", "1.0.0").withDescription("A lib.");
         Path contextFile = outputDir.resolve("context.md");
 
         ContextGenerator.generate(contextFile, outputDir, List.of(entry), 30);

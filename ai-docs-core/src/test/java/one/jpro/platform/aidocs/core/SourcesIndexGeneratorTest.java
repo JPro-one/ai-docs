@@ -22,7 +22,7 @@ class SourcesIndexGeneratorTest {
                 "com/example/mylib/model/MyModel.java", "public class MyModel {}"
         ));
 
-        var entry = new DocEntry("com.example", "my-lib", "1.0.0");
+        var entry = DocEntry.of("com.example", "my-lib", "1.0.0");
         String result = SourcesIndexGenerator.generate(jar, entry);
 
         assertThat(result).contains("# my-lib (1.0.0) — Source Index");
@@ -42,7 +42,7 @@ class SourcesIndexGeneratorTest {
                 "com/example/Foo.java", "public class Foo {}"
         ));
 
-        var entry = new DocEntry("com.example", "foo-lib", "2.0.0");
+        var entry = DocEntry.of("com.example", "foo-lib", "2.0.0");
         Path indexFile = tempDir.resolve("sources-index.md");
         SourcesIndexGenerator.generate(indexFile, jar, entry);
 
@@ -57,7 +57,7 @@ class SourcesIndexGeneratorTest {
     void emptyJarProducesEmptyPackages(@TempDir Path tempDir) throws IOException {
         Path jar = createTestJar(tempDir, Map.of());
 
-        var entry = new DocEntry("com.example", "empty-lib", "1.0.0");
+        var entry = DocEntry.of("com.example", "empty-lib", "1.0.0");
         String result = SourcesIndexGenerator.generate(jar, entry);
 
         assertThat(result).contains("## Packages");
@@ -73,7 +73,7 @@ class SourcesIndexGeneratorTest {
                 "META-INF/MANIFEST.MF", "Manifest-Version: 1.0"
         ));
 
-        var entry = new DocEntry("com.example", "mixed-lib", "1.0.0");
+        var entry = DocEntry.of("com.example", "mixed-lib", "1.0.0");
         String result = SourcesIndexGenerator.generate(jar, entry);
 
         assertThat(result).contains("MyClass.java (1 line)");
@@ -87,7 +87,7 @@ class SourcesIndexGeneratorTest {
                 "Main.java", "public class Main {}"
         ));
 
-        var entry = new DocEntry("com.example", "nopackage", "1.0.0");
+        var entry = DocEntry.of("com.example", "nopackage", "1.0.0");
         String result = SourcesIndexGenerator.generate(jar, entry);
 
         assertThat(result).contains("(default package) (1 file)");
@@ -121,7 +121,7 @@ class SourcesIndexGeneratorTest {
                 "com/example/Large.java", "package com.example;\n\npublic class Large {\n    int x;\n    int y;\n}\n"
         ));
 
-        var entry = new DocEntry("com.example", "counted-lib", "1.0.0");
+        var entry = DocEntry.of("com.example", "counted-lib", "1.0.0");
         String result = SourcesIndexGenerator.generate(jar, entry);
 
         assertThat(result).contains("  - Large.java (6 lines)");

@@ -38,9 +38,9 @@ class IndexGeneratorTest {
     @Test
     void multipleEntries() {
         var entries = List.of(
-                new DocEntry("one.jpro.platform", "jpro-file", "0.5.8", "File handling library."),
-                new DocEntry("one.jpro.platform", "jpro-routing-core", "0.5.8", "Routing framework."),
-                new DocEntry("com.example", "other-lib", "2.0.0", "Another library.")
+                DocEntry.of("one.jpro.platform", "jpro-file", "0.5.8").withDescription("File handling library."),
+                DocEntry.of("one.jpro.platform", "jpro-routing-core", "0.5.8").withDescription("Routing framework."),
+                DocEntry.of("com.example", "other-lib", "2.0.0").withDescription("Another library.")
         );
         String context = fakeContext(entries);
 
@@ -60,7 +60,7 @@ class IndexGeneratorTest {
     @Test
     void entryWithoutDescription() {
         var entries = List.of(
-                new DocEntry("org.example", "no-desc", "1.0.0")
+                DocEntry.of("org.example", "no-desc", "1.0.0")
         );
         String context = fakeContext(entries);
 
@@ -83,7 +83,7 @@ class IndexGeneratorTest {
     void displayNameShownWhenDifferentFromArtifact() {
         var pom = new PomMetadata("My Library", "A useful lib.", "https://example.com", null, "Apache-2.0");
         var entries = List.of(
-                new DocEntry("org.example", "my-lib", "1.0.0", "Doc description.", false, false, pom)
+                DocEntry.of("org.example", "my-lib", "1.0.0").withDescription("Doc description.").withPomMetadata(pom)
         );
         String context = fakeContext(entries);
 
@@ -99,8 +99,8 @@ class IndexGeneratorTest {
     @Test
     void lineRangesAreAccurate() {
         var entries = List.of(
-                new DocEntry("com.example", "lib-a", "1.0.0", "Library A."),
-                new DocEntry("com.example", "lib-b", "2.0.0", "Library B.")
+                DocEntry.of("com.example", "lib-a", "1.0.0").withDescription("Library A."),
+                DocEntry.of("com.example", "lib-b", "2.0.0").withDescription("Library B.")
         );
         // Build a context where we know exact line numbers (1-based):
         // 1: # Project Documentation Context
@@ -136,8 +136,8 @@ class IndexGeneratorTest {
     @Test
     void writeToFile(@TempDir Path tempDir) throws IOException {
         var entries = List.of(
-                new DocEntry("com.example", "lib-a", "1.0.0", "Library A."),
-                new DocEntry("com.example", "lib-b", "2.0.0", "Library B.")
+                DocEntry.of("com.example", "lib-a", "1.0.0").withDescription("Library A."),
+                DocEntry.of("com.example", "lib-b", "2.0.0").withDescription("Library B.")
         );
         String context = fakeContext(entries);
 

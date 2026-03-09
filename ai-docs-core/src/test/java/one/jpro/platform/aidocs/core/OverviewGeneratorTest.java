@@ -27,7 +27,7 @@ class OverviewGeneratorTest {
                 "More API details.",
                 "Even more details."
         );
-        var entry = new DocEntry("com.example", "my-lib", "1.0.0");
+        var entry = DocEntry.of("com.example", "my-lib", "1.0.0");
 
         String result = OverviewGenerator.generate(lines, entry, 1);
 
@@ -44,7 +44,7 @@ class OverviewGeneratorTest {
                 "# Overview",
                 "This is the only chapter."
         );
-        var entry = new DocEntry("org.example", "single", "2.0.0");
+        var entry = DocEntry.of("org.example", "single", "2.0.0");
 
         String result = OverviewGenerator.generate(lines, entry, 1);
 
@@ -54,7 +54,7 @@ class OverviewGeneratorTest {
 
     @Test
     void emptyDocument() {
-        var entry = new DocEntry("org.example", "empty", "1.0.0");
+        var entry = DocEntry.of("org.example", "empty", "1.0.0");
 
         String result = OverviewGenerator.generate(List.of(), entry, 1);
 
@@ -70,7 +70,7 @@ class OverviewGeneratorTest {
                 "No headings here.",
                 "Plain content."
         );
-        var entry = new DocEntry("org.example", "noheadings", "1.0.0");
+        var entry = DocEntry.of("org.example", "noheadings", "1.0.0");
 
         String result = OverviewGenerator.generate(lines, entry, 1);
 
@@ -96,7 +96,7 @@ class OverviewGeneratorTest {
                 "More B.",
                 "Even more B."
         );
-        var entry = new DocEntry("org.example", "nested", "1.0.0");
+        var entry = DocEntry.of("org.example", "nested", "1.0.0");
 
         String result = OverviewGenerator.generate(lines, entry, 1);
 
@@ -122,7 +122,7 @@ class OverviewGeneratorTest {
                 "### Sub of Small",         // 11
                 "Hidden detail."            // 12
         );
-        var entry = new DocEntry("org.example", "filtered", "1.0.0");
+        var entry = DocEntry.of("org.example", "filtered", "1.0.0");
 
         String result = OverviewGenerator.generate(lines, entry, 5);
 
@@ -142,7 +142,7 @@ class OverviewGeneratorTest {
                 "# Short Chapter",
                 "Brief."
         );
-        var entry = new DocEntry("org.example", "short-top", "1.0.0");
+        var entry = DocEntry.of("org.example", "short-top", "1.0.0");
 
         String result = OverviewGenerator.generate(lines, entry, 1);
 
@@ -158,7 +158,7 @@ class OverviewGeneratorTest {
                 "## Chapter Two",
                 "Content two."
         );
-        var entry = new DocEntry("org.example", "flat", "1.0.0");
+        var entry = DocEntry.of("org.example", "flat", "1.0.0");
 
         String result = OverviewGenerator.generate(lines, entry, 1);
 
@@ -174,7 +174,7 @@ class OverviewGeneratorTest {
                 "# Title",
                 longLine
         );
-        var entry = new DocEntry("org.example", "long", "1.0.0");
+        var entry = DocEntry.of("org.example", "long", "1.0.0");
 
         String result = OverviewGenerator.generate(lines, entry, 1);
 
@@ -187,7 +187,7 @@ class OverviewGeneratorTest {
         var lines = List.of(
                 "# Only Heading"
         );
-        var entry = new DocEntry("org.example", "single-line", "1.0.0");
+        var entry = DocEntry.of("org.example", "single-line", "1.0.0");
 
         String result = OverviewGenerator.generate(lines, entry, 1);
 
@@ -215,7 +215,7 @@ class OverviewGeneratorTest {
                 "More API docs.",           // 16
                 "Even more API."            // 17
         );
-        var entry = new DocEntry("org.example", "deep", "1.0.0");
+        var entry = DocEntry.of("org.example", "deep", "1.0.0");
 
         String result = OverviewGenerator.generate(lines, entry, 1);
 
@@ -253,7 +253,7 @@ class OverviewGeneratorTest {
                 "",
                 "After configuration, restart."
         );
-        var entry = new DocEntry("org.example", "deploy", "1.0.0");
+        var entry = DocEntry.of("org.example", "deploy", "1.0.0");
 
         String result = OverviewGenerator.generate(lines, entry, 1);
 
@@ -279,7 +279,7 @@ class OverviewGeneratorTest {
                 "",
                 "Real description here."
         );
-        var entry = new DocEntry("org.example", "setup", "1.0.0");
+        var entry = DocEntry.of("org.example", "setup", "1.0.0");
 
         String result = OverviewGenerator.generate(lines, entry, 1);
 
@@ -292,7 +292,7 @@ class OverviewGeneratorTest {
     void headerUsesDisplayNameFromPom() {
         var lines = List.of("# Title", "Content.");
         var pom = new PomMetadata("My Pretty Library", null, null, null, null);
-        var entry = new DocEntry("com.example", "my-lib", "1.0.0").withPomMetadata(pom);
+        var entry = DocEntry.of("com.example", "my-lib", "1.0.0").withPomMetadata(pom);
 
         String result = OverviewGenerator.generate(lines, entry, 1);
 
@@ -311,7 +311,7 @@ class OverviewGeneratorTest {
                 """);
 
         Path overviewFile = tempDir.resolve("overview.md");
-        var entry = new DocEntry("com.example", "my-lib", "1.0.0");
+        var entry = DocEntry.of("com.example", "my-lib", "1.0.0");
 
         OverviewGenerator.generate(overviewFile, docFile, entry, 1);
 
@@ -319,5 +319,26 @@ class OverviewGeneratorTest {
         String content = Files.readString(overviewFile);
         assertThat(content).contains("# my-lib (1.0.0)");
         assertThat(content).contains("- My Library");
+    }
+
+    @Test
+    void tildeCodeBlocksDoNotCreateFalseHeadings() {
+        var entry = DocEntry.of("org.example", "tilde", "1.0.0");
+        var lines = List.of(
+                "# Main",
+                "Intro text.",
+                "~~~python",
+                "# this is a comment, not a heading",
+                "print('hello')",
+                "~~~",
+                "## Real Section",
+                "Content here."
+        );
+
+        String result = OverviewGenerator.generate(lines, entry, 1);
+
+        assertThat(result).contains("- Main");
+        assertThat(result).contains("- Real Section");
+        assertThat(result).doesNotContain("this is a comment");
     }
 }

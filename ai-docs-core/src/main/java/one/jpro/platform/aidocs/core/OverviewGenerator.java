@@ -101,7 +101,7 @@ public class OverviewGenerator {
         boolean inCodeBlock = false;
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i);
-            if (line.startsWith("```")) {
+            if (line.startsWith("```") || line.startsWith("~~~")) {
                 inCodeBlock = !inCodeBlock;
                 continue;
             }
@@ -148,7 +148,7 @@ public class OverviewGenerator {
         return depth;
     }
 
-    private static void appendChapter(StringBuilder sb, String heading, int depth, int minDepth,
+    static void appendChapter(StringBuilder sb, String heading, int depth, int minDepth,
                                        int startLine, int endLine, String summary) {
         int indent = depth - minDepth;
         int lineCount = endLine - startLine + 1;

@@ -3,9 +3,15 @@
 This file provides a combined overview of all available library documentation.
 For full details on any library, read its DOCUMENTATION.md file.
 
-## one.jpro.platform:ai-docs-gradle-plugin:0.1.0-SNAPSHOT
+## com.typesafe:config:1.4.5
+configuration library for JVM languages using HOCON files
+[Homepage](https://github.com/lightbend/config) · [Repository](https://github.com/lightbend/config) · Apache-2.0
+Sources: com.typesafe/config/sources-index.md
+
+
+## one.jpro.aidocs:ai-docs-gradle-plugin:0.1.0-SNAPSHOT
 A Gradle plugin that collects `DOCUMENTATION.md` artifacts from your project's dependencies and organizes them into an AI-navigable file structure....
-Full docs: one.jpro.platform/ai-docs-gradle-plugin/DOCUMENTATION.md
+Full docs: one.jpro.aidocs/ai-docs-gradle-plugin/DOCUMENTATION.md
 
 ### Chapters
 - AI Docs Gradle Plugin (186 lines 1-186) — A Gradle plugin that collects `DOCUMENTATION.md` artifacts from your project's dependencies and organizes them into a...
@@ -112,6 +118,12 @@ A library usefull for unit testing memory leaks
 Sources: one.jpro/jmemorybuddy/sources-index.md
 
 
+## one.jpro:jpro-webapi:2026.1.1 (JPro Web API)
+A module that serves as an interface to access JPro server-side functionalities.
+[Homepage](https://www.jpro.one) · [Repository](https://github.com/Sandec/jpro/tree/main/webapi) · Apache License, Version 2.0
+Sources: one.jpro/jpro-webapi/sources-index.md
+
+
 ## one.jpro:jpro:2026.1.1 (JPro)
 Additional JPro resources
 [Homepage](https://www.jpro.one) · [Repository](https://github.com/Sandec/jpro/tree/main) · Apache License 2.0
@@ -152,6 +164,18 @@ Changelog: one.jpro/jpro/changelog-overview.md
 A set of annotations used for code inspection support and code documentation.
 [Homepage](https://github.com/JetBrains/java-annotations) · [Repository](https://github.com/JetBrains/java-annotations) · The Apache Software License, Version 2.0
 Sources: org.jetbrains/annotations/sources-index.md
+
+
+## org.scala-lang:scala-library:2.13.18 (Scala Library)
+Standard library for the Scala Programming Language
+[Homepage](https://www.scala-lang.org/) · [Repository](https://github.com/scala/scala) · Apache-2.0
+Sources: org.scala-lang/scala-library/sources-index.md
+
+
+## org.scala-lang:scala-reflect:2.13.18 (Scala Reflect)
+Reflection Library for the Scala Programming Language
+[Homepage](https://www.scala-lang.org/) · [Repository](https://github.com/scala/scala) · Apache-2.0
+Sources: org.scala-lang/scala-reflect/sources-index.md
 
 
 ## org.slf4j:slf4j-api:2.0.17 (SLF4J API Module)

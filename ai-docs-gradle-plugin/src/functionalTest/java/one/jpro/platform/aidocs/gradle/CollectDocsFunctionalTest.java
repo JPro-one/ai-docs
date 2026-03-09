@@ -37,7 +37,7 @@ class CollectDocsFunctionalTest {
         Files.writeString(projectDir.resolve("build.gradle"), """
                 plugins {
                     id 'java'
-                    id 'one.jpro.platform.ai-docs'
+                    id 'one.jpro.aidocs'
                 }
                 repositories {
                     mavenCentral()
@@ -58,7 +58,7 @@ class CollectDocsFunctionalTest {
         Files.writeString(projectDir.resolve("build.gradle"), """
                 plugins {
                     id 'java'
-                    id 'one.jpro.platform.ai-docs'
+                    id 'one.jpro.aidocs'
                 }
                 repositories {
                     mavenCentral()
@@ -102,7 +102,7 @@ class CollectDocsFunctionalTest {
         Files.writeString(projectDir.resolve("build.gradle"), """
                 plugins {
                     id 'java'
-                    id 'one.jpro.platform.ai-docs'
+                    id 'one.jpro.aidocs'
                 }
                 """ + JPRO_REPOS + """
                 dependencies {
@@ -186,7 +186,7 @@ class CollectDocsFunctionalTest {
         Files.writeString(projectDir.resolve("build.gradle"), """
                 plugins {
                     id 'java'
-                    id 'one.jpro.platform.ai-docs'
+                    id 'one.jpro.aidocs'
                 }
                 """ + JPRO_REPOS + """
                 dependencies {
@@ -230,7 +230,7 @@ class CollectDocsFunctionalTest {
         Files.writeString(projectDir.resolve("build.gradle"), """
                 plugins {
                     id 'java'
-                    id 'one.jpro.platform.ai-docs'
+                    id 'one.jpro.aidocs'
                 }
                 """ + JPRO_REPOS + """
                 dependencies {
@@ -277,7 +277,7 @@ class CollectDocsFunctionalTest {
                 }
                 plugins {
                     id 'java'
-                    id 'one.jpro.platform.ai-docs'
+                    id 'one.jpro.aidocs'
                 }
                 repositories {
                     mavenCentral()
@@ -311,7 +311,7 @@ class CollectDocsFunctionalTest {
         Files.writeString(projectDir.resolve("build.gradle"), """
                 plugins {
                     id 'java'
-                    id 'one.jpro.platform.ai-docs'
+                    id 'one.jpro.aidocs'
                 }
                 """ + JPRO_REPOS + """
                 dependencies {

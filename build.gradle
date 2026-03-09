@@ -1,5 +1,5 @@
 subprojects {
-    group = 'one.jpro.platform'
+    group = 'one.jpro.aidocs'
     version = '0.1.0-SNAPSHOT'
 
     apply plugin: 'java'
@@ -13,6 +13,22 @@ subprojects {
     repositories {
         mavenCentral()
         gradlePluginPortal()
+        maven {
+            url "https://sandec.jfrog.io/artifactory/repo"
+        }
+    }
+
+    publishing {
+        repositories {
+            maven {
+                name = "artifactory"
+                url = "https://sandec.jfrog.io/artifactory/repo"
+                credentials {
+                    username System.getenv("SANDEC_ARTIFACTORY_USERNAME")
+                    password System.getenv("SANDEC_ARTIFACTORY_PASSWORD")
+                }
+            }
+        }
     }
 
     test {

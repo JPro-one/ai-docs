@@ -34,7 +34,7 @@ pluginManagement {
 // build.gradle
 plugins {
     id 'java'
-    id 'one.jpro.platform.ai-docs' version '0.1.0-SNAPSHOT'
+    id 'one.jpro.aidocs' version '0.1.0-SNAPSHOT'
 }
 ```
 

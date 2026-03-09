@@ -7,7 +7,7 @@ A Gradle plugin that collects `DOCUMENTATION.md` artifacts from Java/JVM project
 ## Module Structure
 
 - **ai-docs-core** — Reusable Java library: `DocEntry`, `DocsCollector`, `IndexGenerator`, `OverviewGenerator`
-- **ai-docs-gradle-plugin** — Gradle plugin (`one.jpro.platform.ai-docs`) that registers the `collectDocs` task. Depends on `ai-docs-core`.
+- **ai-docs-gradle-plugin** — Gradle plugin (`one.jpro.aidocs`) that registers the `collectDocs` task. Depends on `ai-docs-core`.
 - **ai-docs-maven-plugin** — Stub, not yet implemented
 - **example/** — Standalone test project (not included in the main build). Must be published locally first.
 
@@ -35,8 +35,8 @@ cd example && gradle collectDocs # from example/
 
 ## Key Conventions
 
-- Plugin ID: `one.jpro.platform.ai-docs`
-- Group: `one.jpro.platform`, Version: `0.1.0-SNAPSHOT`
+- Plugin ID: `one.jpro.aidocs`
+- Group: `one.jpro.aidocs`, Version: `0.1.0-SNAPSHOT`
 - Task output goes to `build/ai-docs/`
 - The `collectDocs` task only scans configurations whose name contains "classpath"
 - Dependencies without a `DOCUMENTATION.md` artifact are silently skipped (logged at debug level)

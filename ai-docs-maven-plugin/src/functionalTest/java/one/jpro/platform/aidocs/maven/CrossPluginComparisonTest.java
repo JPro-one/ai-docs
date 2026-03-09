@@ -49,11 +49,11 @@ class CrossPluginComparisonTest {
                         maven { url "https://sandec.jfrog.io/artifactory/repo" }
                     }
                     dependencies {
-                        classpath 'one.jpro.platform:ai-docs-gradle-plugin:%s'
+                        classpath 'one.jpro.aidocs:ai-docs-gradle-plugin:%s'
                     }
                 }
                 apply plugin: 'java'
-                apply plugin: 'one.jpro.platform.ai-docs'
+                apply plugin: 'one.jpro.aidocs'
                 repositories {
                     mavenCentral()
                     maven { url "https://sandec.jfrog.io/artifactory/repo" }

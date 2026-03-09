@@ -12,7 +12,7 @@ Add the plugin to your `build.gradle`:
 
 ```groovy
 plugins {
-    id 'one.jpro.platform.ai-docs' version '0.1.0-SNAPSHOT'
+    id 'one.jpro.aidocs' version '0.1.0-SNAPSHOT'
 }
 ```
 

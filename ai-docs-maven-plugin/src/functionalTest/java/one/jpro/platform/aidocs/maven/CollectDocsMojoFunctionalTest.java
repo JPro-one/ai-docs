@@ -40,7 +40,7 @@ class CollectDocsMojoFunctionalTest {
                 <build>
                     <plugins>
                         <plugin>
-                            <groupId>one.jpro.platform</groupId>
+                            <groupId>one.jpro.aidocs</groupId>
                             <artifactId>ai-docs-maven-plugin</artifactId>
                             <version>%s</version>
                         </plugin>

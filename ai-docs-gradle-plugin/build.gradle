@@ -25,7 +25,7 @@ dependencies {
 gradlePlugin {
     plugins {
         aiDocs {
-            id = 'one.jpro.platform.ai-docs'
+            id = 'one.jpro.aidocs'
             implementationClass = 'one.jpro.platform.aidocs.gradle.AiDocsPlugin'
             displayName = 'AI Docs Plugin'
             description = 'Collects DOCUMENTATION.md artifacts from dependencies and makes them accessible to AI coding assistants.'

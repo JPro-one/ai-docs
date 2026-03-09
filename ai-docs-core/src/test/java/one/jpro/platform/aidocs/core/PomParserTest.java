@@ -1,0 +1,158 @@
+package one.jpro.platform.aidocs.core;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class PomParserTest {
+
+    @Test
+    void parseFullPom(@TempDir Path tempDir) throws IOException {
+        Path pom = tempDir.resolve("pom.xml");
+        Files.writeString(pom, """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project>
+                    <groupId>org.example</groupId>
+                    <artifactId>my-lib</artifactId>
+                    <version>1.0.0</version>
+                    <name>My Library</name>
+                    <description>A great utility library for Java projects.</description>
+                    <url>https://example.com/my-lib</url>
+                    <scm>
+                        <url>https://github.com/example/my-lib</url>
+                        <connection>scm:git:git://github.com/example/my-lib.git</connection>
+                    </scm>
+                    <licenses>
+                        <license>
+                            <name>Apache-2.0</name>
+                            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+                        </license>
+                    </licenses>
+                </project>
+                """);
+
+        PomMetadata metadata = PomParser.parse(pom);
+
+        assertThat(metadata.name()).isEqualTo("My Library");
+        assertThat(metadata.description()).isEqualTo("A great utility library for Java projects.");
+        assertThat(metadata.url()).isEqualTo("https://example.com/my-lib");
+        assertThat(metadata.scmUrl()).isEqualTo("https://github.com/example/my-lib");
+        assertThat(metadata.license()).isEqualTo("Apache-2.0");
+    }
+
+    @Test
+    void parsePomWithMissingFields(@TempDir Path tempDir) throws IOException {
+        Path pom = tempDir.resolve("pom.xml");
+        Files.writeString(pom, """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project>
+                    <groupId>org.example</groupId>
+                    <artifactId>minimal-lib</artifactId>
+                    <version>1.0.0</version>
+                </project>
+                """);
+
+        PomMetadata metadata = PomParser.parse(pom);
+
+        assertThat(metadata.name()).isNull();
+        assertThat(metadata.description()).isNull();
+        assertThat(metadata.url()).isNull();
+        assertThat(metadata.scmUrl()).isNull();
+        assertThat(metadata.license()).isNull();
+    }
+
+    @Test
+    void parsePomWithPartialFields(@TempDir Path tempDir) throws IOException {
+        Path pom = tempDir.resolve("pom.xml");
+        Files.writeString(pom, """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project>
+                    <groupId>org.example</groupId>
+                    <artifactId>partial-lib</artifactId>
+                    <version>1.0.0</version>
+                    <name>Partial Library</name>
+                    <url>https://example.com</url>
+                </project>
+                """);
+
+        PomMetadata metadata = PomParser.parse(pom);
+
+        assertThat(metadata.name()).isEqualTo("Partial Library");
+        assertThat(metadata.description()).isNull();
+        assertThat(metadata.url()).isEqualTo("https://example.com");
+        assertThat(metadata.license()).isNull();
+    }
+
+    @Test
+    void parseMalformedXmlReturnsEmptyMetadata(@TempDir Path tempDir) throws IOException {
+        Path pom = tempDir.resolve("pom.xml");
+        Files.writeString(pom, "this is not XML at all");
+
+        PomMetadata metadata = PomParser.parse(pom);
+
+        assertThat(metadata.name()).isNull();
+        assertThat(metadata.description()).isNull();
+        assertThat(metadata.url()).isNull();
+        assertThat(metadata.license()).isNull();
+    }
+
+    @Test
+    void parseNonExistentFileReturnsEmptyMetadata(@TempDir Path tempDir) {
+        Path pom = tempDir.resolve("nonexistent.xml");
+
+        PomMetadata metadata = PomParser.parse(pom);
+
+        assertThat(metadata.name()).isNull();
+        assertThat(metadata.description()).isNull();
+    }
+
+    @Test
+    void parseMultipleLicensesTakesFirst(@TempDir Path tempDir) throws IOException {
+        Path pom = tempDir.resolve("pom.xml");
+        Files.writeString(pom, """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project>
+                    <groupId>org.example</groupId>
+                    <artifactId>dual-license</artifactId>
+                    <version>1.0.0</version>
+                    <licenses>
+                        <license>
+                            <name>MIT</name>
+                        </license>
+                        <license>
+                            <name>Apache-2.0</name>
+                        </license>
+                    </licenses>
+                </project>
+                """);
+
+        PomMetadata metadata = PomParser.parse(pom);
+
+        assertThat(metadata.license()).isEqualTo("MIT");
+    }
+
+    @Test
+    void parseEmptyElementsReturnNull(@TempDir Path tempDir) throws IOException {
+        Path pom = tempDir.resolve("pom.xml");
+        Files.writeString(pom, """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project>
+                    <groupId>org.example</groupId>
+                    <artifactId>empty-fields</artifactId>
+                    <version>1.0.0</version>
+                    <name></name>
+                    <description>  </description>
+                </project>
+                """);
+
+        PomMetadata metadata = PomParser.parse(pom);
+
+        assertThat(metadata.name()).isNull();
+        assertThat(metadata.description()).isNull();
+    }
+}

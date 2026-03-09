@@ -45,6 +45,9 @@ tasks.register('functionalTest', Test) {
     testClassesDirs = sourceSets.functionalTest.output.classesDirs
     classpath = sourceSets.functionalTest.runtimeClasspath
     useJUnitPlatform()
+
+    // Tests invoke mvn/gradle externally and need plugins in mavenLocal
+    dependsOn rootProject.allprojects.collect { it.tasks.matching { t -> t.name == 'publishToMavenLocal' } }
 }
 
 tasks.named('check') {

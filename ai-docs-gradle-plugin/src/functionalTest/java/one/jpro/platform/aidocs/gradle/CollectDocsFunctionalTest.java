@@ -476,6 +476,45 @@ class CollectDocsFunctionalTest {
     }
 
     @Test
+    void collectsJavadocGuidesWithJavafxPlugin() throws IOException {
+        // The javafx plugin makes JavaFX resolve via Gradle Module Metadata variants —
+        // classifier artifacts must still be resolvable (variant matching must be bypassed)
+        Files.writeString(projectDir.resolve("settings.gradle"), """
+                pluginManagement { repositories { gradlePluginPortal() } }
+                rootProject.name = 'test-project'
+                """);
+        Files.writeString(projectDir.resolve("build.gradle"), """
+                plugins {
+                    id 'java'
+                    id 'org.openjfx.javafxplugin' version '0.1.0'
+                    id 'one.jpro.aidocs'
+                }
+                javafx {
+                    version = '21.0.5'
+                    modules = ['javafx.controls']
+                }
+                repositories {
+                    mavenCentral()
+                }
+                """);
+
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(projectDir.toFile())
+                .withArguments("collectDocs")
+                .withPluginClasspath()
+                .build();
+
+        assertThat(result.task(":collectDocs").getOutcome()).isEqualTo(SUCCESS);
+
+        Path aiDocs = projectDir.resolve("build/ai-docs");
+        String index = Files.readString(aiDocs.resolve("index.md"));
+        assertThat(index).contains("org.openjfx:javafx-graphics");
+        String guides = Files.readString(aiDocs.resolve("org.openjfx/javafx-graphics/javadoc-index.md"));
+        assertThat(guides).contains("cssref.html");
+        assertThat(aiDocs.resolve("org.openjfx/javafx-graphics/sources-index.md")).exists();
+    }
+
+    @Test
     void worksWithConfigurationCache() throws IOException {
         Files.writeString(projectDir.resolve("build.gradle"), """
                 plugins {

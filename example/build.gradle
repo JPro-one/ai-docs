@@ -1,13 +1,25 @@
 plugins {
     id 'java'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
     id 'one.jpro.aidocs' version '0.1.0-SNAPSHOT'
 }
 
+javafx {
+    version = '21.0.5'
+    modules = ['javafx.controls']
+}
+
 repositories {
-    mavenLocal()
+    // restrict mavenLocal to the locally-published jpro artifacts — a partially
+    // populated ~/.m2 would otherwise shadow classifier artifacts of other groups
+    mavenLocal {
+        content {
+            includeGroupByRegex 'one\\.jpro.*'
+        }
+    }
     mavenCentral()
     maven {
-        url "https://sandec.jfrog.io/artifactory/repo"
+        url = "https://sandec.jfrog.io/artifactory/repo"
     }
 }
 

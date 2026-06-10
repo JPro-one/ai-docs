@@ -6,8 +6,15 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.artifacts.result.ArtifactResult;
+import org.gradle.api.artifacts.result.ComponentArtifactsResult;
+import org.gradle.api.artifacts.result.ResolvedArtifactResult;
 import org.gradle.api.artifacts.result.ResolvedComponentResult;
 import org.gradle.api.artifacts.result.ResolvedDependencyResult;
+import org.gradle.api.component.Artifact;
+import org.gradle.jvm.JvmLibrary;
+import org.gradle.language.base.artifact.SourcesArtifact;
+import org.gradle.language.java.artifact.JavadocArtifact;
 
 import java.io.File;
 import java.util.ArrayDeque;
@@ -86,10 +93,13 @@ class DocsResolver {
         if (!seenCoordinates.add(coordinate)) return;
 
         File doc = resolveArtifact(configurations, dependencies, coordinate + ":DOCUMENTATION@md");
-        File sources = resolveArtifact(configurations, dependencies, coordinate + ":sources@jar");
         File changelog = resolveArtifact(configurations, dependencies, coordinate + ":CHANGELOG@md");
-        File javadoc = resolveArtifact(configurations, dependencies, coordinate + ":javadoc@jar");
         File pom = resolveArtifact(configurations, dependencies, coordinate + "@pom");
+        // Sources/javadoc via ArtifactResolutionQuery — classifier requests on detached
+        // configurations fail for modules with Gradle Module Metadata (e.g. JavaFX),
+        // whose variants require OS/arch attributes
+        File sources = resolveViaQuery(dependencies, group, name, version, SourcesArtifact.class);
+        File javadoc = resolveViaQuery(dependencies, group, name, version, JavadocArtifact.class);
 
         // Walk the parent chain: queue the immediate parent for processing as its own
         // module, and collect all parent POMs for metadata fallback
@@ -128,6 +138,27 @@ class DocsResolver {
             detached.setTransitive(false);
             for (File file : detached.resolve()) {
                 return file;
+            }
+        } catch (Exception e) {
+            // artifact not published — expected for most dependencies
+        }
+        return null;
+    }
+
+    private static File resolveViaQuery(DependencyHandler dependencies,
+                                        String group, String name, String version,
+                                        Class<? extends Artifact> artifactType) {
+        try {
+            var result = dependencies.createArtifactResolutionQuery()
+                    .forModule(group, name, version)
+                    .withArtifacts(JvmLibrary.class, artifactType)
+                    .execute();
+            for (ComponentArtifactsResult component : result.getResolvedComponents()) {
+                for (ArtifactResult artifact : component.getArtifacts(artifactType)) {
+                    if (artifact instanceof ResolvedArtifactResult resolved) {
+                        return resolved.getFile();
+                    }
+                }
             }
         } catch (Exception e) {
             // artifact not published — expected for most dependencies

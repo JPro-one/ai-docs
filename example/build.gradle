@@ -10,13 +10,9 @@ javafx {
 }
 
 repositories {
-    // restrict mavenLocal to the locally-published jpro artifacts — a partially
-    // populated ~/.m2 would otherwise shadow classifier artifacts of other groups
-    mavenLocal {
-        content {
-            includeGroupByRegex 'one\\.jpro.*'
-        }
-    }
+    // no mavenLocal here: Gradle only fetches artifacts from the repository that
+    // supplied the module metadata, so a partially populated ~/.m2 (e.g. from Maven
+    // runs, which cache jar+pom only) would silently hide DOCUMENTATION/sources jars
     mavenCentral()
     maven {
         url = "https://sandec.jfrog.io/artifactory/repo"
@@ -24,7 +20,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'one.jpro.platform:jpro-routing-core:0.6.0-SNAPSHOT'
-    implementation 'one.jpro.platform:jpro-file:0.6.0-SNAPSHOT'
-    implementation 'one.jpro:jpro-webapi:2026.1.2-SNAPSHOT'
+    implementation 'one.jpro.platform:jpro-routing-core:0.6.3'
+    implementation 'one.jpro.platform:jpro-file:0.6.3'
+    implementation 'one.jpro:jpro-webapi:2026.2.0'
 }

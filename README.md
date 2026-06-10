@@ -58,7 +58,9 @@ build/ai-docs/
 │       ├── DOCUMENTATION.md              # Full documentation
 │       ├── CHANGELOG.md                  # If published, plus changelog-overview.md
 │       ├── sources.jar.link              # Path of the sources jar in the local cache
-│       └── sources-index.md              # All source files by package, with unzip commands
+│       ├── sources-index.md              # All source files by package, with unzip commands
+│       ├── javadoc.jar.link              # Path of the javadoc jar (when it contains guides)
+│       └── javadoc-index.md              # Hand-written doc-files guides (e.g. JavaFX CSS reference)
 ```
 
 A `SKILL.md` is also generated at `.claude/skills/docs/` so AI agents discover the documentation automatically.

@@ -23,6 +23,8 @@ When `gradle collectDocs` has been run, the `build/ai-docs/` directory contains 
 
 - **`build/ai-docs/{group}/{artifact}/sources-index.md`** — (Optional) Lists all source files in the library's sources jar, organized by package. The jar lives in the local artifact cache; its path is stored in the sibling `sources.jar.link` file.
 
+- **`build/ai-docs/{group}/{artifact}/javadoc-index.md`** — (Optional) Hand-written guide documents (HTML) from the library's javadoc jar with per-guide chapter line ranges — e.g. the JavaFX CSS Reference Guide. Read via `unzip -p "$(cat javadoc.jar.link)" <path>` from the library's directory.
+
 ## Reading Strategies
 
 **Few dependencies:** Start with `context.md` — it contains everything in one file.

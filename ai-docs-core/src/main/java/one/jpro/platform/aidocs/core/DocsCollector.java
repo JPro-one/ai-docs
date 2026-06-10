@@ -106,6 +106,31 @@ public class DocsCollector {
     }
 
     /**
+     * If the javadoc jar contains hand-written guide documents (doc-files HTML), generates
+     * a javadoc-index.md (with per-guide chapter overviews) plus a javadoc.jar.link
+     * referencing the jar in the local cache.
+     *
+     * @param outputDir the root output directory (e.g. build/ai-docs)
+     * @param javadocJar the resolved javadoc jar file
+     * @param entry metadata about the dependency
+     * @param overviewMinLines chapters shorter than this are collapsed in the guide overviews
+     * @return the titles of the found guides, empty if the jar contains none
+     */
+    public static List<String> collectJavadoc(Path outputDir, Path javadocJar, DocEntry entry, int overviewMinLines) throws IOException {
+        var guides = JavadocIndexGenerator.analyzeGuides(javadocJar);
+        if (guides.isEmpty()) {
+            return List.of();
+        }
+        Path libDir = outputDir.resolve(entry.group()).resolve(entry.name());
+        Files.createDirectories(libDir);
+
+        Files.writeString(libDir.resolve(JavadocIndexGenerator.LINK_FILE),
+                javadocJar.toAbsolutePath() + "\n");
+        JavadocIndexGenerator.generate(libDir.resolve("javadoc-index.md"), entry, guides, overviewMinLines);
+        return guides.stream().map(JavadocIndexGenerator.Guide::title).toList();
+    }
+
+    /**
      * Generates both context.md and index.md. Context is generated first because
      * index.md references line ranges within context.md.
      *

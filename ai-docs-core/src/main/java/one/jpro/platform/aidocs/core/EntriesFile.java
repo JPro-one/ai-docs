@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Reads and writes a line-based file of {@link DocEntry} values. Used to pass collected
@@ -21,10 +22,13 @@ public class EntriesFile {
         var sb = new StringBuilder();
         for (DocEntry e : entries) {
             PomMetadata pom = e.pomMetadata();
+            String guideTitles = e.javadocGuideTitles().stream()
+                    .map(EntriesFile::enc).reduce((a, b) -> a + ";" + b).orElse("");
             sb.append(String.join("\t",
                     enc(e.group()), enc(e.name()), enc(e.version()),
                     enc(e.description()),
                     String.valueOf(e.hasSources()), String.valueOf(e.hasChangelog()),
+                    guideTitles,
                     enc(pom == null ? null : pom.name()),
                     enc(pom == null ? null : pom.description()),
                     enc(pom == null ? null : pom.url()),
@@ -40,11 +44,14 @@ public class EntriesFile {
         for (String line : Files.readAllLines(file)) {
             if (line.isBlank()) continue;
             String[] f = line.split("\t", -1);
+            List<String> guideTitles = f[6].isEmpty() ? List.of()
+                    : Stream.of(f[6].split(";")).map(EntriesFile::dec).toList();
             var entry = DocEntry.of(dec(f[0]), dec(f[1]), dec(f[2]))
                     .withDescription(dec(f[3]))
                     .withHasSources(Boolean.parseBoolean(f[4]))
-                    .withHasChangelog(Boolean.parseBoolean(f[5]));
-            var pom = new PomMetadata(dec(f[6]), dec(f[7]), dec(f[8]), dec(f[9]), dec(f[10]));
+                    .withHasChangelog(Boolean.parseBoolean(f[5]))
+                    .withJavadocGuideTitles(guideTitles);
+            var pom = new PomMetadata(dec(f[7]), dec(f[8]), dec(f[9]), dec(f[10]), dec(f[11]));
             if (pom.name() != null || pom.description() != null || pom.url() != null
                     || pom.scmUrl() != null || pom.license() != null) {
                 entry = entry.withPomMetadata(pom);

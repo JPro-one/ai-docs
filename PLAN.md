@@ -102,9 +102,15 @@ Publishing is just convention — no plugin needed. Library authors:
 ## Phase 4: Smart Features
 
 ### Auto-discovery
+- ✅ Javadoc-jar guides: hand-written `doc-files/*.html` documents (e.g. the JavaFX CSS Reference Guide) are indexed with chapter line ranges into `javadoc-index.md`
 - If a dependency doesn't publish `DOCUMENTATION.md`, fall back to:
   1. Check if the dependency has a `README.md` in its source jar
-  2. Check if there's an `llms.txt` at the project's website
+  2. Check if there's an `llms.txt` at the project's website (worth investigating — unclear how many libraries publish one and how useful the content is; needs network at collect time + caching)
+
+### Third-party documentation (promising direction)
+- **Project-local doc supplements** — merge `ai-docs-extra/{group}/{artifact}/DOCUMENTATION.md` from the repo into the output, so a team can write curated notes for any dependency that publishes nothing.
+- **Community docs packs** — extend the convention so documentation can be published by someone other than the library author, e.g. `aiDocs { docsFor 'org.openjfx:javafx-graphics', from 'one.jpro.docs:javafx' }` resolving a separately-published `DOCUMENTATION@md`. This is how JavaFX/Guava/etc. could get first-class docs without upstream PRs.
+- Related: a human-browsable frontend for the collected/community docs would complement the agent-facing output — see the jfx-central project, which goes in a similar direction (curated JavaFX ecosystem content, just not for agents).
 
 ### Aggregation
 - For multi-module projects, aggregate all sub-module docs into one

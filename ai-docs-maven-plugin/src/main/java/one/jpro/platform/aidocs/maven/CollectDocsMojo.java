@@ -152,10 +152,24 @@ public class CollectDocsMojo extends AbstractMojo {
             }
         }
 
+        // Try javadoc jar (only hand-written doc-files guides are indexed)
+        File javadocFile = resolveArtifact(group, name, version, "javadoc", "jar");
+        if (javadocFile != null) {
+            try {
+                var guideTitles = DocsCollector.collectJavadoc(outputDir, javadocFile.toPath(), enriched, overviewMinLines);
+                if (!guideTitles.isEmpty()) {
+                    enriched = enriched.withJavadocGuideTitles(guideTitles);
+                    getLog().info("Collected javadoc guides: " + group + ":" + name);
+                }
+            } catch (IOException e) {
+                getLog().warn("Failed to collect javadoc guides for " + group + ":" + name, e);
+            }
+        }
+
         // Always resolve POM to discover parent chain
         File pomFile = resolveArtifact(group, name, version, "", "pom");
         if (pomFile != null) {
-            boolean hasArtifacts = hasDocs || enriched.hasSources() || enriched.hasChangelog();
+            boolean hasArtifacts = hasDocs || enriched.hasSources() || enriched.hasChangelog() || enriched.hasJavadocGuides();
             var pomMetadata = hasArtifacts ? PomParser.parse(pomFile.toPath()) : null;
 
             // Walk the parent chain: queue the immediate parent for processing as its own
@@ -184,7 +198,7 @@ public class CollectDocsMojo extends AbstractMojo {
             }
         }
 
-        if (hasDocs || enriched.hasSources() || enriched.hasChangelog()) {
+        if (hasDocs || enriched.hasSources() || enriched.hasChangelog() || enriched.hasJavadocGuides()) {
             entries.add(enriched);
         }
     }

@@ -88,6 +88,7 @@ class DocsResolver {
         File doc = resolveArtifact(configurations, dependencies, coordinate + ":DOCUMENTATION@md");
         File sources = resolveArtifact(configurations, dependencies, coordinate + ":sources@jar");
         File changelog = resolveArtifact(configurations, dependencies, coordinate + ":CHANGELOG@md");
+        File javadoc = resolveArtifact(configurations, dependencies, coordinate + ":javadoc@jar");
         File pom = resolveArtifact(configurations, dependencies, coordinate + "@pom");
 
         // Walk the parent chain: queue the immediate parent for processing as its own
@@ -113,8 +114,8 @@ class DocsResolver {
             }
         }
 
-        if (doc != null || sources != null || changelog != null) {
-            specs.add(new ModuleSpec(group, name, version, doc, sources, changelog, pomChain));
+        if (doc != null || sources != null || changelog != null || javadoc != null) {
+            specs.add(new ModuleSpec(group, name, version, doc, sources, changelog, javadoc, pomChain));
         } else {
             project.getLogger().debug("No documentation artifacts for {}", coordinate);
         }

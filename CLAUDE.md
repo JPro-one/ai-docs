@@ -44,7 +44,7 @@ cd example-maven && mvn one.jpro.aidocs:ai-docs-maven-plugin:collect-docs
 - Only configurations whose name contains "classpath" are scanned; buildscript configurations only with `aiDocs { includeBuildscript = true }` (default off)
 - The generated SKILL.md contains a marker comment; if a user removes it (took ownership), the plugins never overwrite the file
 - Generator regressions are caught by `BaselineRegressionTest`, which diffs generated output for pinned release deps against `ai-docs-gradle-plugin/src/functionalTest/resources/baseline/` (regenerate with `-DupdateBaseline=true`)
-- Per dependency, the plugins try to resolve: `DOCUMENTATION@md`, `sources@jar`, `CHANGELOG@md`, and the POM (for metadata + parent-POM traversal)
+- Per dependency, the plugins try to resolve: `DOCUMENTATION@md`, `sources@jar`, `CHANGELOG@md`, `javadoc@jar` (only doc-files guides are indexed), and the POM (for metadata + parent-POM traversal)
 - Dependencies without any of these artifacts are silently skipped (logged at debug level)
 - A skill file is generated at `.claude/skills/docs/SKILL.md` from the root `SKILL.md` template (copied into ai-docs-core resources at build time)
 
@@ -60,7 +60,9 @@ build/ai-docs/
 │       ├── DOCUMENTATION.md        # Full documentation copied from the artifact
 │       ├── CHANGELOG.md            # If published, plus changelog-overview.md
 │       ├── sources.jar.link        # Absolute path of the sources jar in the local cache (not copied)
-│       └── sources-index.md        # Source files by package with line counts + unzip commands
+│       ├── sources-index.md        # Source files by package with line counts + unzip commands
+│       ├── javadoc.jar.link        # Absolute path of the javadoc jar (only when it contains doc-files guides)
+│       └── javadoc-index.md        # Hand-written doc-files HTML guides with chapter line ranges
 .claude/skills/docs/SKILL.md    # Generated skill telling agents how to navigate the docs
 ```
 

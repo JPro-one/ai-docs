@@ -79,6 +79,10 @@ public class ContextGenerator {
             if (entry.hasChangelog()) {
                 sb.append("Changelog: ").append(entry.relativePath()).append("/changelog-overview.md\n");
             }
+            if (entry.hasJavadocGuides()) {
+                sb.append("Guides (").append(String.join(", ", entry.javadocGuideTitles()))
+                        .append("): ").append(entry.relativePath()).append("/javadoc-index.md\n");
+            }
             sb.append("\n");
 
             // Generate chapter listing directly from DOCUMENTATION.md with context threshold

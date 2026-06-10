@@ -14,22 +14,22 @@ import java.util.stream.Stream;
  * The POM chain holds the module's own POM first, then its parents upward.
  */
 record ModuleSpec(String group, String name, String version,
-                  File doc, File sources, File changelog, List<File> pomChain) {
+                  File doc, File sources, File changelog, File javadoc, List<File> pomChain) {
 
     String encode() {
         String poms = pomChain.stream().map(ModuleSpec::encFile)
                 .reduce((a, b) -> a + ";" + b).orElse("");
         return String.join("\t",
                 enc(group), enc(name), enc(version),
-                encFile(doc), encFile(sources), encFile(changelog), poms);
+                encFile(doc), encFile(sources), encFile(changelog), encFile(javadoc), poms);
     }
 
     static ModuleSpec decode(String encoded) {
         String[] f = encoded.split("\t", -1);
-        List<File> poms = f[6].isEmpty() ? List.of()
-                : Stream.of(f[6].split(";")).map(ModuleSpec::decFile).toList();
+        List<File> poms = f[7].isEmpty() ? List.of()
+                : Stream.of(f[7].split(";")).map(ModuleSpec::decFile).toList();
         return new ModuleSpec(dec(f[0]), dec(f[1]), dec(f[2]),
-                decFile(f[3]), decFile(f[4]), decFile(f[5]), poms);
+                decFile(f[3]), decFile(f[4]), decFile(f[5]), decFile(f[6]), poms);
     }
 
     List<File> files() {
@@ -37,6 +37,7 @@ record ModuleSpec(String group, String name, String version,
         if (doc != null) result.add(doc);
         if (sources != null) result.add(sources);
         if (changelog != null) result.add(changelog);
+        if (javadoc != null) result.add(javadoc);
         result.addAll(pomChain);
         return result;
     }

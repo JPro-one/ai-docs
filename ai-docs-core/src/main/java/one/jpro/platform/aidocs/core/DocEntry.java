@@ -1,31 +1,43 @@
 package one.jpro.platform.aidocs.core;
 
+import java.util.List;
+
 /**
  * Represents a collected documentation artifact.
  */
-public record DocEntry(String group, String name, String version, String description, boolean hasSources, boolean hasChangelog, PomMetadata pomMetadata) {
+public record DocEntry(String group, String name, String version, String description,
+                       boolean hasSources, boolean hasChangelog, List<String> javadocGuideTitles,
+                       PomMetadata pomMetadata) {
 
     /**
      * Creates a DocEntry with the required fields. Use {@code with*()} methods to set optional fields.
      */
     public static DocEntry of(String group, String name, String version) {
-        return new DocEntry(group, name, version, null, false, false, null);
+        return new DocEntry(group, name, version, null, false, false, List.of(), null);
     }
 
     public DocEntry withDescription(String description) {
-        return new DocEntry(group, name, version, description, hasSources, hasChangelog, pomMetadata);
+        return new DocEntry(group, name, version, description, hasSources, hasChangelog, javadocGuideTitles, pomMetadata);
     }
 
     public DocEntry withHasSources(boolean hasSources) {
-        return new DocEntry(group, name, version, description, hasSources, hasChangelog, pomMetadata);
+        return new DocEntry(group, name, version, description, hasSources, hasChangelog, javadocGuideTitles, pomMetadata);
     }
 
     public DocEntry withHasChangelog(boolean hasChangelog) {
-        return new DocEntry(group, name, version, description, hasSources, hasChangelog, pomMetadata);
+        return new DocEntry(group, name, version, description, hasSources, hasChangelog, javadocGuideTitles, pomMetadata);
+    }
+
+    public DocEntry withJavadocGuideTitles(List<String> javadocGuideTitles) {
+        return new DocEntry(group, name, version, description, hasSources, hasChangelog, javadocGuideTitles, pomMetadata);
     }
 
     public DocEntry withPomMetadata(PomMetadata pomMetadata) {
-        return new DocEntry(group, name, version, description, hasSources, hasChangelog, pomMetadata);
+        return new DocEntry(group, name, version, description, hasSources, hasChangelog, javadocGuideTitles, pomMetadata);
+    }
+
+    public boolean hasJavadocGuides() {
+        return !javadocGuideTitles.isEmpty();
     }
 
     /**

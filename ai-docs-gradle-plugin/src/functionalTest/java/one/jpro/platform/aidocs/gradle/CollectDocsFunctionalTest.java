@@ -433,6 +433,49 @@ class CollectDocsFunctionalTest {
     }
 
     @Test
+    void collectsJavadocGuides() throws IOException {
+        Files.writeString(projectDir.resolve("build.gradle"), """
+                plugins {
+                    id 'java'
+                    id 'one.jpro.aidocs'
+                }
+                repositories {
+                    mavenCentral()
+                }
+                dependencies {
+                    implementation 'org.openjfx:javafx-graphics:21.0.5'
+                }
+                """);
+
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(projectDir.toFile())
+                .withArguments("collectDocs")
+                .withPluginClasspath()
+                .build();
+
+        assertThat(result.task(":collectDocs").getOutcome()).isEqualTo(SUCCESS);
+
+        Path aiDocs = projectDir.resolve("build/ai-docs");
+
+        // The JavaFX CSS reference guide ships as doc-files HTML in the javadoc jar
+        Path guideIndex = aiDocs.resolve("org.openjfx/javafx-graphics/javadoc-index.md");
+        assertThat(guideIndex).exists();
+        String guides = Files.readString(guideIndex);
+        assertThat(guides).contains("cssref.html");
+        assertThat(guides).containsIgnoringCase("CSS Reference Guide");
+        // Chapter overview parsed from the guide's HTML headings
+        assertThat(guides).contains("(lines ");
+
+        String linkContent = Files.readString(aiDocs.resolve("org.openjfx/javafx-graphics/javadoc.jar.link"));
+        assertThat(Path.of(linkContent.strip())).exists();
+
+        // The guides are highlighted in context.md with their titles
+        String context = Files.readString(aiDocs.resolve("context.md"));
+        assertThat(context).contains("Guides (");
+        assertThat(context).containsIgnoringCase("CSS Reference Guide");
+    }
+
+    @Test
     void worksWithConfigurationCache() throws IOException {
         Files.writeString(projectDir.resolve("build.gradle"), """
                 plugins {

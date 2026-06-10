@@ -70,6 +70,13 @@ public abstract class CollectDocsPartialTask extends DefaultTask {
                 enriched = enriched.withHasChangelog(true);
                 getLogger().lifecycle("Collected changelog: {}:{}", spec.group(), spec.name());
             }
+            if (spec.javadoc() != null) {
+                var guideTitles = DocsCollector.collectJavadoc(outputDir, spec.javadoc().toPath(), enriched, getOverviewMinLines().get());
+                if (!guideTitles.isEmpty()) {
+                    enriched = enriched.withJavadocGuideTitles(guideTitles);
+                    getLogger().lifecycle("Collected javadoc guides: {}:{}", spec.group(), spec.name());
+                }
+            }
             if (!spec.pomChain().isEmpty()) {
                 var metadata = PomParser.parse(spec.pomChain().get(0).toPath());
                 for (var parentPom : spec.pomChain().subList(1, spec.pomChain().size())) {
@@ -77,7 +84,11 @@ public abstract class CollectDocsPartialTask extends DefaultTask {
                 }
                 enriched = enriched.withPomMetadata(metadata);
             }
-            entries.add(enriched);
+            // A module whose javadoc jar held no guides may end up with no content at all
+            if (spec.doc() != null || spec.sources() != null || spec.changelog() != null
+                    || enriched.hasJavadocGuides()) {
+                entries.add(enriched);
+            }
         }
 
         entries.sort(Comparator.comparing(DocEntry::coordinate));

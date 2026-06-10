@@ -1,11 +1,11 @@
 # jpro-webapi (2025.3.1) — Source Index
 Source jar: sources.jar
-To read a source file: `unzip -p sources.jar <path>`
+To read a source file: `unzip -p sources.jar <directory><file>`, e.g. `unzip -p sources.jar com/jpro/webapi/HTMLView.java`
 
 ## Packages
-- (default package) (1 file)
+- (root) (1 file)
   - module-info.java (12 lines)
-- com.jpro.webapi (14 files)
+- com/jpro/webapi/ (14 files)
   - HTMLView.java (128 lines)
   - InstanceCloseListener.java (15 lines)
   - InstanceInfo.java (136 lines)
@@ -20,11 +20,11 @@ To read a source file: `unzip -p sources.jar <path>`
   - WebAPI.java (1116 lines)
   - WebAPIConsumer.java (17 lines)
   - WebCallback.java (17 lines)
-- com.jpro.webapi.annotation (1 file)
+- com/jpro/webapi/annotation/ (1 file)
   - Experimental.java (21 lines)
-- com.jpro.webapi.js (1 file)
+- com/jpro/webapi/js/ (1 file)
   - JS.java (39 lines)
-- com.jpro.webapi.server (3 files)
+- com/jpro/webapi/server/ (3 files)
   - Request.java (72 lines)
   - Response.java (135 lines)
   - ServerAPI.java (64 lines)

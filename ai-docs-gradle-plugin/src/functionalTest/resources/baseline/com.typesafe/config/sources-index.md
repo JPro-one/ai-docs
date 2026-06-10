@@ -1,9 +1,9 @@
 # config (1.4.3) — Source Index
 Source jar: sources.jar
-To read a source file: `unzip -p sources.jar <path>`
+To read a source file: `unzip -p sources.jar <directory><file>`, e.g. `unzip -p sources.jar com/typesafe/config/Config.java`
 
 ## Packages
-- com.typesafe.config (28 files)
+- com/typesafe/config/ (28 files)
   - Config.java (1139 lines)
   - ConfigBeanFactory.java (49 lines)
   - ConfigException.java (460 lines)
@@ -32,7 +32,7 @@ To read a source file: `unzip -p sources.jar <path>`
   - ConfigValueType.java (12 lines)
   - DefaultConfigLoadingStrategy.java (14 lines)
   - Optional.java (14 lines)
-- com.typesafe.config.impl (65 files)
+- com/typesafe/config/impl/ (65 files)
   - AbstractConfigNode.java (29 lines)
   - AbstractConfigNodeValue.java (11 lines)
   - AbstractConfigObject.java (221 lines)
@@ -98,7 +98,7 @@ To read a source file: `unzip -p sources.jar <path>`
   - Tokenizer.java (695 lines)
   - Tokens.java (521 lines)
   - Unmergeable.java (16 lines)
-- com.typesafe.config.parser (3 files)
+- com/typesafe/config/parser/ (3 files)
   - ConfigDocument.java (82 lines)
   - ConfigDocumentFactory.java (93 lines)
   - ConfigNode.java (35 lines)

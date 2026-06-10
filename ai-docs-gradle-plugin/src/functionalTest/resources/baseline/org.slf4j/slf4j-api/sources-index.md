@@ -1,9 +1,9 @@
 # slf4j-api (2.0.17) — Source Index
 Source jar: sources.jar
-To read a source file: `unzip -p sources.jar <path>`
+To read a source file: `unzip -p sources.jar <directory><file>`, e.g. `unzip -p sources.jar org/slf4j/ILoggerFactory.java`
 
 ## Packages
-- org.slf4j (8 files)
+- org/slf4j/ (8 files)
   - ILoggerFactory.java (57 lines)
   - IMarkerFactory.java (81 lines)
   - Logger.java (881 lines)
@@ -12,7 +12,7 @@ To read a source file: `unzip -p sources.jar <path>`
   - MDC.java (330 lines)
   - Marker.java (149 lines)
   - MarkerFactory.java (97 lines)
-- org.slf4j.event (7 files)
+- org/slf4j/event/ (7 files)
   - DefaultLoggingEvent.java (140 lines)
   - EventConstants.java (13 lines)
   - EventRecordingLogger.java (84 lines)
@@ -20,7 +20,7 @@ To read a source file: `unzip -p sources.jar <path>`
   - Level.java (56 lines)
   - LoggingEvent.java (49 lines)
   - SubstituteLoggingEvent.java (115 lines)
-- org.slf4j.helpers (22 files)
+- org/slf4j/helpers/ (22 files)
   - AbstractLogger.java (423 lines)
   - BasicMDCAdapter.java (170 lines)
   - BasicMarker.java (170 lines)
@@ -43,7 +43,7 @@ To read a source file: `unzip -p sources.jar <path>`
   - SubstituteServiceProvider.java (50 lines)
   - ThreadLocalMapOfStacks.java (89 lines)
   - Util.java (144 lines)
-- org.slf4j.spi (10 files)
+- org/slf4j/spi/ (10 files)
   - CallerBoundaryAware.java (25 lines)
   - DefaultLoggingEventBuilder.java (277 lines)
   - LocationAwareLogger.java (65 lines)

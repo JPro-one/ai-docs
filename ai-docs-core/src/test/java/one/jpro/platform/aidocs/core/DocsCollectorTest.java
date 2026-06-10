@@ -252,7 +252,7 @@ class DocsCollectorTest {
         // Check index content
         String index = Files.readString(outputDir.resolve("com.example/my-lib/sources-index.md"));
         assertThat(index).contains("my-lib (1.0.0) — Source Index");
-        assertThat(index).contains("com.example.mylib (2 files)");
+        assertThat(index).contains("com/example/mylib/ (2 files)");
         assertThat(index).contains("MyClass.java");
         assertThat(index).contains("MyService.java");
     }

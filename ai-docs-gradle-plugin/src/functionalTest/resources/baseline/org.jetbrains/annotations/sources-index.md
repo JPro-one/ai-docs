@@ -1,9 +1,9 @@
 # annotations (26.1.0) — Source Index
 Source jar: sources.jar
-To read a source file: `unzip -p sources.jar <path>`
+To read a source file: `unzip -p sources.jar <directory><file>`, e.g. `unzip -p sources.jar org/intellij/lang/annotations/Flow.java`
 
 ## Packages
-- org.intellij.lang.annotations (9 files)
+- org/intellij/lang/annotations/ (9 files)
   - Flow.java (125 lines)
   - Identifier.java (20 lines)
   - JdkConstants.java (98 lines)
@@ -13,7 +13,7 @@ To read a source file: `unzip -p sources.jar <path>`
   - PrintFormat.java (73 lines)
   - RegExp.java (48 lines)
   - Subst.java (47 lines)
-- org.jetbrains.annotations (22 files)
+- org/jetbrains/annotations/ (22 files)
   - ApiStatus.java (167 lines)
   - Async.java (54 lines)
   - Blocking.java (36 lines)

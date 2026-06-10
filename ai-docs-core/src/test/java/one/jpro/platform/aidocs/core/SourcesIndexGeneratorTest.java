@@ -27,12 +27,14 @@ class SourcesIndexGeneratorTest {
 
         assertThat(result).contains("# my-lib (1.0.0) — Source Index");
         assertThat(result).contains("Source jar: sources.jar");
-        assertThat(result).contains("unzip -p sources.jar");
+        // Header shows a concrete, copyable example command using a real file
+        assertThat(result).contains("e.g. `unzip -p sources.jar com/example/mylib/MyClass.java`");
         assertThat(result).contains("## Packages");
-        assertThat(result).contains("- com.example.mylib (2 files)");
+        // Package headers are directory paths so unzip paths can be assembled directly
+        assertThat(result).contains("- com/example/mylib/ (2 files)");
         assertThat(result).contains("  - MyClass.java (1 line)");
         assertThat(result).contains("  - MyService.java (1 line)");
-        assertThat(result).contains("- com.example.mylib.model (1 file)");
+        assertThat(result).contains("- com/example/mylib/model/ (1 file)");
         assertThat(result).contains("  - MyModel.java (1 line)");
     }
 
@@ -49,7 +51,7 @@ class SourcesIndexGeneratorTest {
         assertThat(indexFile).exists();
         String content = Files.readString(indexFile);
         assertThat(content).contains("foo-lib (2.0.0)");
-        assertThat(content).contains("com.example (1 file)");
+        assertThat(content).contains("com/example/ (1 file)");
         assertThat(content).contains("  - Foo.java (1 line)");
     }
 
@@ -108,8 +110,9 @@ class SourcesIndexGeneratorTest {
         var entry = DocEntry.of("com.example", "nopackage", "1.0.0");
         String result = SourcesIndexGenerator.generate(jar, entry);
 
-        assertThat(result).contains("(default package) (1 file)");
+        assertThat(result).contains("(root) (1 file)");
         assertThat(result).contains("  - Main.java (1 line)");
+        assertThat(result).contains("e.g. `unzip -p sources.jar Main.java`");
     }
 
     @Test
@@ -122,13 +125,13 @@ class SourcesIndexGeneratorTest {
 
         var result = SourcesIndexGenerator.listSourceFiles(jar);
 
-        assertThat(result).containsKeys("com.example", "com.other");
-        assertThat(result.get("com.example")).extracting(SourcesIndexGenerator.FileEntry::name)
+        assertThat(result).containsKeys("com/example/", "com/other/");
+        assertThat(result.get("com/example/")).extracting(SourcesIndexGenerator.FileEntry::name)
                 .containsExactly("A.java", "B.java");
-        assertThat(result.get("com.other")).extracting(SourcesIndexGenerator.FileEntry::name)
+        assertThat(result.get("com/other/")).extracting(SourcesIndexGenerator.FileEntry::name)
                 .containsExactly("C.java");
         // Verify line counts
-        assertThat(result.get("com.example")).extracting(SourcesIndexGenerator.FileEntry::lineCount)
+        assertThat(result.get("com/example/")).extracting(SourcesIndexGenerator.FileEntry::lineCount)
                 .containsExactly(1, 1);
     }
 

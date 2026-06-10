@@ -90,20 +90,31 @@ class DocsResolver {
         File changelog = resolveArtifact(configurations, dependencies, coordinate + ":CHANGELOG@md");
         File pom = resolveArtifact(configurations, dependencies, coordinate + "@pom");
 
+        // Walk the parent chain: queue the immediate parent for processing as its own
+        // module, and collect all parent POMs for metadata fallback
+        List<File> pomChain = new ArrayList<>();
         if (pom != null) {
-            // Queue parent for processing if not already seen
-            String[] parent = PomParser.parseParent(pom.toPath());
-            if (parent != null) {
+            pomChain.add(pom);
+            File current = pom;
+            boolean immediate = true;
+            while (pomChain.size() < 10) {
+                String[] parent = PomParser.parseParent(current.toPath());
+                if (parent == null) break;
                 String parentCoord = parent[0] + ":" + parent[1] + ":" + parent[2];
-                if (!seenCoordinates.contains(parentCoord)) {
+                if (immediate && !seenCoordinates.contains(parentCoord)) {
                     modulesToProcess.add(parent);
                     project.getLogger().debug("Discovered parent POM: {}", parentCoord);
                 }
+                immediate = false;
+                File parentPom = resolveArtifact(configurations, dependencies, parentCoord + "@pom");
+                if (parentPom == null) break;
+                pomChain.add(parentPom);
+                current = parentPom;
             }
         }
 
         if (doc != null || sources != null || changelog != null) {
-            specs.add(new ModuleSpec(group, name, version, doc, sources, changelog, pom));
+            specs.add(new ModuleSpec(group, name, version, doc, sources, changelog, pomChain));
         } else {
             project.getLogger().debug("No documentation artifacts for {}", coordinate);
         }

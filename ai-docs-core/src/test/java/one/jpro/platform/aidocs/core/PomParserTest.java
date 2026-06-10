@@ -214,4 +214,19 @@ class PomParserTest {
         assertThat(metadata.name()).isNull();
         assertThat(metadata.description()).isNull();
     }
+
+    @Test
+    void withFallbackFillsMissingFieldsButNotName() {
+        var own = new PomMetadata("Gson", null, null, "https://github.com/google/gson/scm", null);
+        var parent = new PomMetadata("Gson Parent", "Gson JSON library", "https://github.com/google/gson",
+                "https://parent/scm", "Apache-2.0");
+
+        PomMetadata merged = own.withFallback(parent);
+
+        assertThat(merged.name()).isEqualTo("Gson");
+        assertThat(merged.description()).isEqualTo("Gson JSON library");
+        assertThat(merged.url()).isEqualTo("https://github.com/google/gson");
+        assertThat(merged.scmUrl()).isEqualTo("https://github.com/google/gson/scm");
+        assertThat(merged.license()).isEqualTo("Apache-2.0");
+    }
 }

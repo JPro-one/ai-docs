@@ -70,8 +70,12 @@ public abstract class CollectDocsPartialTask extends DefaultTask {
                 enriched = enriched.withHasChangelog(true);
                 getLogger().lifecycle("Collected changelog: {}:{}", spec.group(), spec.name());
             }
-            if (spec.pom() != null) {
-                enriched = enriched.withPomMetadata(PomParser.parse(spec.pom().toPath()));
+            if (!spec.pomChain().isEmpty()) {
+                var metadata = PomParser.parse(spec.pomChain().get(0).toPath());
+                for (var parentPom : spec.pomChain().subList(1, spec.pomChain().size())) {
+                    metadata = metadata.withFallback(PomParser.parse(parentPom.toPath()));
+                }
+                enriched = enriched.withPomMetadata(metadata);
             }
             entries.add(enriched);
         }

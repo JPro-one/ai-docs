@@ -115,7 +115,7 @@ Sources: org.scala-lang/scala-reflect/sources-index.md
 
 ## org.slf4j:slf4j-api:2.0.17 (SLF4J API Module)
 The slf4j API
-[Homepage](http://www.slf4j.org)
+[Homepage](http://www.slf4j.org) · [Repository](https://github.com/qos-ch/slf4j) · MIT
 Sources: org.slf4j/slf4j-api/sources-index.md
 
 

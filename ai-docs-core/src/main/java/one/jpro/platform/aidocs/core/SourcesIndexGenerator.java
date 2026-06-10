@@ -50,7 +50,17 @@ public class SourcesIndexGenerator {
         var sb = new StringBuilder();
         sb.append("# ").append(entry.displayName()).append(" (").append(entry.version()).append(") — Source Index\n");
         sb.append("Source jar: sources.jar\n");
-        sb.append("To read a source file: `unzip -p sources.jar <path>`\n\n");
+        sb.append("To read a source file: `unzip -p sources.jar <directory><file>`");
+        // Prefer a packaged file as the example — it demonstrates the directory prefix
+        var examplePkg = packageToFiles.entrySet().stream()
+                .filter(e -> !e.getKey().equals(ROOT_LABEL)).findFirst()
+                .or(() -> packageToFiles.entrySet().stream().findFirst());
+        if (examplePkg.isPresent()) {
+            String dir = examplePkg.get().getKey();
+            String examplePath = (dir.equals(ROOT_LABEL) ? "" : dir) + examplePkg.get().getValue().get(0).name();
+            sb.append(", e.g. `unzip -p sources.jar ").append(examplePath).append("`");
+        }
+        sb.append("\n\n");
         sb.append("## Packages\n");
 
         for (var pkgEntry : packageToFiles.entrySet()) {
@@ -68,9 +78,12 @@ public class SourcesIndexGenerator {
         return sb.toString();
     }
 
+    static final String ROOT_LABEL = "(root)";
+
     /**
-     * Lists all source files in a jar, grouped by package (derived from directory path).
-     * Returns a sorted map of package name to sorted list of file names.
+     * Lists all source files in a jar, grouped by directory path (e.g. "com/example/"),
+     * so entries can be concatenated directly into unzip paths.
+     * Returns a sorted map of directory path to sorted list of file names.
      */
     static Map<String, List<FileEntry>> listSourceFiles(Path jarPath) throws IOException {
         Map<String, List<FileEntry>> result = new TreeMap<>();
@@ -91,10 +104,10 @@ public class SourcesIndexGenerator {
                 String pkg;
                 String fileName;
                 if (lastSlash >= 0) {
-                    pkg = name.substring(0, lastSlash).replace('/', '.');
+                    pkg = name.substring(0, lastSlash + 1);
                     fileName = name.substring(lastSlash + 1);
                 } else {
-                    pkg = "(default package)";
+                    pkg = ROOT_LABEL;
                     fileName = name;
                 }
 

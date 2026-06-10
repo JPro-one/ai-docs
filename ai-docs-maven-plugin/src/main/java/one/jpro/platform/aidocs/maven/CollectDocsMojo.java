@@ -155,19 +155,32 @@ public class CollectDocsMojo extends AbstractMojo {
         // Always resolve POM to discover parent chain
         File pomFile = resolveArtifact(group, name, version, "", "pom");
         if (pomFile != null) {
-            if (hasDocs || enriched.hasSources() || enriched.hasChangelog()) {
-                var pomMetadata = PomParser.parse(pomFile.toPath());
-                enriched = enriched.withPomMetadata(pomMetadata);
-            }
+            boolean hasArtifacts = hasDocs || enriched.hasSources() || enriched.hasChangelog();
+            var pomMetadata = hasArtifacts ? PomParser.parse(pomFile.toPath()) : null;
 
-            // Queue parent for processing if not already seen
-            String[] parent = PomParser.parseParent(pomFile.toPath());
-            if (parent != null) {
+            // Walk the parent chain: queue the immediate parent for processing as its own
+            // module, and fall back to parent metadata for missing fields
+            File current = pomFile;
+            boolean immediate = true;
+            for (int depth = 0; depth < 10; depth++) {
+                String[] parent = PomParser.parseParent(current.toPath());
+                if (parent == null) break;
                 String parentCoord = parent[0] + ":" + parent[1] + ":" + parent[2];
-                if (!seenCoordinates.contains(parentCoord)) {
+                if (immediate && !seenCoordinates.contains(parentCoord)) {
                     modulesToProcess.add(parent);
                     getLog().debug("Discovered parent POM: " + parentCoord);
                 }
+                immediate = false;
+                File parentPom = resolveArtifact(parent[0], parent[1], parent[2], "", "pom");
+                if (parentPom == null) break;
+                if (pomMetadata != null) {
+                    pomMetadata = pomMetadata.withFallback(PomParser.parse(parentPom.toPath()));
+                }
+                current = parentPom;
+            }
+
+            if (pomMetadata != null) {
+                enriched = enriched.withPomMetadata(pomMetadata);
             }
         }
 

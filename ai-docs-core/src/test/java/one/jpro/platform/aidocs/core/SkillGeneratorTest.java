@@ -44,6 +44,14 @@ class SkillGeneratorTest {
     }
 
     @Test
+    void containsPluginVersion() throws IOException {
+        String result = SkillGenerator.generate("build/ai-docs", BuildTool.GRADLE);
+
+        assertThat(result).contains("(version ");
+        assertThat(result).doesNotContain("(version unknown)");
+    }
+
+    @Test
     void startsWithFrontmatter() throws IOException {
         String result = SkillGenerator.generate("build/ai-docs", BuildTool.GRADLE);
 

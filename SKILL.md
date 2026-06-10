@@ -21,13 +21,23 @@ When `gradle collectDocs` has been run, the `build/ai-docs/` directory contains 
 
 - **`build/ai-docs/{group}/{artifact}/DOCUMENTATION.md`** — The full documentation for a library. The line ranges from `overview.md` can be used to read only specific chapters instead of the entire file.
 
-- **`build/ai-docs/{group}/{artifact}/sources-index.md`** — (Optional) Lists all source files in the library's sources jar, organized by package. To read a specific source file, run: `unzip -p build/ai-docs/{group}/{artifact}/sources.jar <path>`
+- **`build/ai-docs/{group}/{artifact}/sources-index.md`** — (Optional) Lists all source files in the library's sources jar, organized by package. The jar lives in the local artifact cache; its path is stored in the sibling `sources.jar.link` file.
 
 ## Reading Strategies
 
 **Few dependencies:** Start with `context.md` — it contains everything in one file.
 
 **Many dependencies:** Start with `index.md` to find the library you need, then read its `overview.md` to find the right chapter, then read the specific line range from `DOCUMENTATION.md`.
+
+## Library Sources and Javadoc
+
+Javadoc lives in the source files — never decompile and don't search the web; read the sources instead:
+
+1. Open the library's `sources-index.md` to see all source files. The sibling `sources.jar.link` holds the jar's path in the local artifact cache.
+2. To read one known file (from the library's directory): `unzip -p "$(cat sources.jar.link)" <directory><file>`
+3. To find a method, its javadoc, or anything you'd need to search for: extract the sources once via `unzip -q "$(cat sources.jar.link)" -d sources` (run in the library's directory). Then grep and read the extracted files like normal project code.
+
+If the path in `sources.jar.link` doesn't exist (cache was cleaned), re-run `gradle collectDocs` to refresh the references.
 
 ## If Documentation Hasn't Been Collected Yet
 

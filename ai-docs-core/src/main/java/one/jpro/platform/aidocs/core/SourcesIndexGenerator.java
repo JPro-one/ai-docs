@@ -15,10 +15,15 @@ import java.util.zip.ZipFile;
 
 /**
  * Generates a sources-index.md file from a sources jar, listing all source files
- * (.java, .scala, .kt, .groovy) organized by package. This allows AI agents to discover
- * and selectively read source files using {@code unzip -p sources.jar <path>}.
+ * (.java, .scala, .kt, .groovy) organized by package. The jar itself stays in the
+ * local artifact cache; its absolute path is stored in the sibling sources.jar.link
+ * file, keeping the index machine-independent. AI agents read single files via
+ * {@code unzip -p "$(cat sources.jar.link)" <path>} or extract everything for
+ * method-level lookup.
  */
 public class SourcesIndexGenerator {
+
+    public static final String LINK_FILE = "sources.jar.link";
 
     private static final List<String> SOURCE_EXTENSIONS = List.of(".java", ".scala", ".kt", ".groovy");
 
@@ -49,8 +54,9 @@ public class SourcesIndexGenerator {
 
         var sb = new StringBuilder();
         sb.append("# ").append(entry.displayName()).append(" (").append(entry.version()).append(") — Source Index\n");
-        sb.append("Source jar: sources.jar\n");
-        sb.append("To read a source file: `unzip -p sources.jar <directory><file>`");
+        sb.append("Source jar: in the local artifact cache, path stored in `").append(LINK_FILE)
+                .append("` (next to this file). Run the commands below from this directory.\n");
+        sb.append("Read one file: `unzip -p \"$(cat ").append(LINK_FILE).append(")\" <directory><file>`");
         // Prefer a packaged file as the example — it demonstrates the directory prefix
         var examplePkg = packageToFiles.entrySet().stream()
                 .filter(e -> !e.getKey().equals(ROOT_LABEL)).findFirst()
@@ -58,9 +64,11 @@ public class SourcesIndexGenerator {
         if (examplePkg.isPresent()) {
             String dir = examplePkg.get().getKey();
             String examplePath = (dir.equals(ROOT_LABEL) ? "" : dir) + examplePkg.get().getValue().get(0).name();
-            sb.append(", e.g. `unzip -p sources.jar ").append(examplePath).append("`");
+            sb.append(", e.g. `unzip -p \"$(cat ").append(LINK_FILE).append(")\" ").append(examplePath).append("`");
         }
-        sb.append("\n\n");
+        sb.append("\n");
+        sb.append("Extract all (best for finding methods and their javadoc): `unzip -q \"$(cat ")
+                .append(LINK_FILE).append(")\" -d sources`\n\n");
         sb.append("## Packages\n");
 
         for (var pkgEntry : packageToFiles.entrySet()) {

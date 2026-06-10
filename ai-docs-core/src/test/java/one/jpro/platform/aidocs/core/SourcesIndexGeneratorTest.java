@@ -26,9 +26,13 @@ class SourcesIndexGeneratorTest {
         String result = SourcesIndexGenerator.generate(jar, entry);
 
         assertThat(result).contains("# my-lib (1.0.0) — Source Index");
-        assertThat(result).contains("Source jar: sources.jar");
-        // Header shows a concrete, copyable example command using a real file
-        assertThat(result).contains("e.g. `unzip -p sources.jar com/example/mylib/MyClass.java`");
+        // The jar stays in the local artifact cache; its path is stored in sources.jar.link,
+        // so the index itself is machine-independent
+        assertThat(result).contains("sources.jar.link");
+        assertThat(result).doesNotContain(jar.toAbsolutePath().toString());
+        // Header shows copyable commands using the link file, with a real-file example
+        assertThat(result).contains("e.g. `unzip -p \"$(cat sources.jar.link)\" com/example/mylib/MyClass.java`");
+        assertThat(result).contains("`unzip -q \"$(cat sources.jar.link)\" -d sources`");
         assertThat(result).contains("## Packages");
         // Package headers are directory paths so unzip paths can be assembled directly
         assertThat(result).contains("- com/example/mylib/ (2 files)");
@@ -112,7 +116,7 @@ class SourcesIndexGeneratorTest {
 
         assertThat(result).contains("(root) (1 file)");
         assertThat(result).contains("  - Main.java (1 line)");
-        assertThat(result).contains("e.g. `unzip -p sources.jar Main.java`");
+        assertThat(result).contains("\" Main.java`");
     }
 
     @Test

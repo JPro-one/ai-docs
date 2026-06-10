@@ -86,7 +86,9 @@ public class DocsCollector {
     }
 
     /**
-     * Copies a sources jar into the output structure and generates its sources-index.md.
+     * Generates a sources-index.md plus a sources.jar.link file holding the absolute path
+     * of the sources jar in the local artifact cache. The jar is not copied — commands in
+     * the index reference it via {@code $(cat sources.jar.link)}.
      *
      * @param outputDir the root output directory (e.g. build/ai-docs)
      * @param sourcesJar the resolved sources jar file
@@ -96,11 +98,11 @@ public class DocsCollector {
         Path libDir = outputDir.resolve(entry.group()).resolve(entry.name());
         Files.createDirectories(libDir);
 
-        Path jarTarget = libDir.resolve("sources.jar");
-        Files.copy(sourcesJar, jarTarget, StandardCopyOption.REPLACE_EXISTING);
+        Files.writeString(libDir.resolve(SourcesIndexGenerator.LINK_FILE),
+                sourcesJar.toAbsolutePath() + "\n");
 
         Path indexTarget = libDir.resolve("sources-index.md");
-        SourcesIndexGenerator.generate(indexTarget, jarTarget, entry);
+        SourcesIndexGenerator.generate(indexTarget, sourcesJar, entry);
     }
 
     /**

@@ -1,6 +1,7 @@
 # config (1.4.3) — Source Index
-Source jar: sources.jar
-To read a source file: `unzip -p sources.jar <directory><file>`, e.g. `unzip -p sources.jar com/typesafe/config/Config.java`
+Source jar: in the local artifact cache, path stored in `sources.jar.link` (next to this file). Run the commands below from this directory.
+Read one file: `unzip -p "$(cat sources.jar.link)" <directory><file>`, e.g. `unzip -p "$(cat sources.jar.link)" com/typesafe/config/Config.java`
+Extract all (best for finding methods and their javadoc): `unzip -q "$(cat sources.jar.link)" -d sources`
 
 ## Packages
 - com/typesafe/config/ (28 files)

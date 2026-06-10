@@ -59,8 +59,8 @@ build/ai-docs/
 │       ├── overview.md             # Auto-generated chapter index with line ranges
 │       ├── DOCUMENTATION.md        # Full documentation copied from the artifact
 │       ├── CHANGELOG.md            # If published, plus changelog-overview.md
-│       ├── sources.jar             # If published, plus...
-│       └── sources-index.md        # ...source files by package with line counts
+│       ├── sources.jar.link        # Absolute path of the sources jar in the local cache (not copied)
+│       └── sources-index.md        # Source files by package with line counts + unzip commands
 .claude/skills/docs/SKILL.md    # Generated skill telling agents how to navigate the docs
 ```
 
@@ -73,7 +73,7 @@ ai-docs-core/src/main/java/one/jpro/platform/aidocs/core/
 ├── IndexGenerator.java         # Generates index.md (line ranges into context.md)
 ├── ContextGenerator.java       # Generates combined context.md
 ├── OverviewGenerator.java      # Parses headings → overview.md with line ranges
-├── SourcesIndexGenerator.java  # Lists source files in sources.jar by package
+├── SourcesIndexGenerator.java  # Lists source files of the sources jar by package (jar referenced via sources.jar.link)
 ├── SkillGenerator.java         # Generates SKILL.md from the template (Gradle/Maven variants)
 ├── PomParser.java              # Extracts POM metadata + parent coordinates
 ├── PomMetadata.java            # Record: name, description, url, scmUrl, license

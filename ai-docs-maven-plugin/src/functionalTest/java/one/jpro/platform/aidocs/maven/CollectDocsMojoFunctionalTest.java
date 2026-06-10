@@ -141,10 +141,10 @@ class CollectDocsMojoFunctionalTest {
         assertThat(context).contains("one.jpro.platform:jpro-routing-core");
         assertThat(context).contains("Chapters");
 
-        // sources.jar
-        Path sourcesJar = aiDocs.resolve("one.jpro.platform/jpro-routing-core/sources.jar");
-        assertThat(sourcesJar).exists();
-        assertThat(Files.size(sourcesJar)).isGreaterThan(0);
+        // sources.jar.link points at an existing jar in the local cache (no copy)
+        assertThat(aiDocs.resolve("one.jpro.platform/jpro-routing-core/sources.jar")).doesNotExist();
+        String link = Files.readString(aiDocs.resolve("one.jpro.platform/jpro-routing-core/sources.jar.link"));
+        assertThat(Path.of(link.strip())).exists();
 
         // sources-index.md
         Path sourcesIndex = aiDocs.resolve("one.jpro.platform/jpro-routing-core/sources-index.md");
@@ -218,8 +218,7 @@ class CollectDocsMojoFunctionalTest {
 
         // slf4j has sources but no DOCUMENTATION.md — should still appear with sources
         assertThat(index).contains("slf4j");
-        Path slf4jSourcesJar = aiDocs.resolve("org.slf4j/slf4j-api/sources.jar");
-        assertThat(slf4jSourcesJar).exists();
+        assertThat(aiDocs.resolve("org.slf4j/slf4j-api/sources.jar.link")).exists();
         Path slf4jSourcesIndex = aiDocs.resolve("org.slf4j/slf4j-api/sources-index.md");
         assertThat(slf4jSourcesIndex).exists();
 

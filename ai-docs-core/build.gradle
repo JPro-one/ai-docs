@@ -5,15 +5,28 @@ plugins {
 def generatedResources = layout.buildDirectory.dir('generated-resources/skill')
 
 tasks.register('copySkillTemplate', Copy) {
-    from rootProject.file('SKILL.md')
-    into generatedResources.map { it.dir('one/jpro/platform/aidocs/core') }
+    into generatedResources
+    from(rootProject.file('SKILL.md')) {
+        into 'one/jpro/platform/aidocs/core'
+    }
 }
 
-sourceSets.main.resources.srcDir generatedResources
+def versionResources = layout.buildDirectory.dir('generated-resources/version')
 
-tasks.named('processResources') {
-    dependsOn 'copySkillTemplate'
+tasks.register('writeVersionResource') {
+    def outputDir = versionResources
+    def projectVersion = project.version.toString()
+    inputs.property('version', projectVersion)
+    outputs.dir(outputDir)
+    doLast {
+        def dir = outputDir.get().dir('one/jpro/platform/aidocs/core').asFile
+        dir.mkdirs()
+        new File(dir, 'version.properties').text = "version=${projectVersion}\n"
+    }
 }
+
+sourceSets.main.resources.srcDir tasks.named('copySkillTemplate')
+sourceSets.main.resources.srcDir tasks.named('writeVersionResource')
 
 publishing {
     publications {

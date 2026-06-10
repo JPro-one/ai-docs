@@ -245,13 +245,18 @@ class DocsCollectorTest {
         var entry = DocEntry.of("com.example", "my-lib", "1.0.0");
         DocsCollector.collectSources(outputDir, jar, entry);
 
-        // Check files were created
-        assertThat(outputDir.resolve("com.example/my-lib/sources.jar")).exists();
+        // The jar is referenced from the cache, not copied into the output
+        assertThat(outputDir.resolve("com.example/my-lib/sources.jar")).doesNotExist();
         assertThat(outputDir.resolve("com.example/my-lib/sources-index.md")).exists();
+
+        // sources.jar.link holds the absolute jar path, usable via $(cat sources.jar.link)
+        String link = Files.readString(outputDir.resolve("com.example/my-lib/sources.jar.link"));
+        assertThat(link.strip()).isEqualTo(jar.toAbsolutePath().toString());
 
         // Check index content
         String index = Files.readString(outputDir.resolve("com.example/my-lib/sources-index.md"));
         assertThat(index).contains("my-lib (1.0.0) — Source Index");
+        assertThat(index).contains("sources.jar.link");
         assertThat(index).contains("com/example/mylib/ (2 files)");
         assertThat(index).contains("MyClass.java");
         assertThat(index).contains("MyService.java");

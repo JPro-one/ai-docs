@@ -57,8 +57,8 @@ build/ai-docs/
 │       ├── overview.md                   # Chapter titles + line ranges
 │       ├── DOCUMENTATION.md              # Full documentation
 │       ├── CHANGELOG.md                  # If published, plus changelog-overview.md
-│       ├── sources.jar                   # If published, plus...
-│       └── sources-index.md              # ...all source files by package
+│       ├── sources.jar.link              # Path of the sources jar in the local cache
+│       └── sources-index.md              # All source files by package, with unzip commands
 ```
 
 A `SKILL.md` is also generated at `.claude/skills/docs/` so AI agents discover the documentation automatically.
@@ -117,7 +117,7 @@ The generated `.claude/skills/docs/SKILL.md` contains a marker comment — remov
 1. **Read `context.md`** — combined overview of all libraries (best for small-to-medium projects), or `index.md` to find the right library's line range first
 2. **Read `overview.md`** for the relevant library — see chapter structure with line ranges
 3. **Read specific lines** from `DOCUMENTATION.md` — load only the chapter needed
-4. **Dig into sources** when docs aren't enough — `sources-index.md` lists every source file, readable via `unzip -p sources.jar <path>`
+4. **Dig into sources** when docs aren't enough — `sources-index.md` lists every source file (javadoc included); read one via `unzip -p "$(cat sources.jar.link)" <path>` or extract them all for grepping
 
 ## For Library Authors
 

@@ -134,13 +134,6 @@ class CrossPluginComparisonTest {
                 .as("DOCUMENTATION.md should be byte-identical")
                 .isEqualTo(Files.readAllBytes(gradleDoc));
 
-        // sources.jar files are byte-identical
-        Path gradleSources = gradleOut.resolve("one.jpro.platform/jpro-routing-core/sources.jar");
-        Path mavenSources = mavenOut.resolve("one.jpro.platform/jpro-routing-core/sources.jar");
-        assertThat(Files.readAllBytes(mavenSources))
-                .as("sources.jar should be byte-identical")
-                .isEqualTo(Files.readAllBytes(gradleSources));
-
         // overview.md files are identical (same core generator)
         Path gradleOverview = gradleOut.resolve("one.jpro.platform/jpro-routing-core/overview.md");
         Path mavenOverview = mavenOut.resolve("one.jpro.platform/jpro-routing-core/overview.md");
@@ -148,12 +141,15 @@ class CrossPluginComparisonTest {
                 .as("overview.md should be identical")
                 .isEqualTo(Files.readString(gradleOverview));
 
-        // sources-index.md files are identical
+        // sources-index.md files are identical — the machine-specific jar path lives in
+        // sources.jar.link (Gradle resolves to ~/.gradle, Maven to ~/.m2)
         Path gradleSrcIndex = gradleOut.resolve("one.jpro.platform/jpro-routing-core/sources-index.md");
         Path mavenSrcIndex = mavenOut.resolve("one.jpro.platform/jpro-routing-core/sources-index.md");
         assertThat(Files.readString(mavenSrcIndex))
                 .as("sources-index.md should be identical")
                 .isEqualTo(Files.readString(gradleSrcIndex));
+        assertThat(mavenOut.resolve("one.jpro.platform/jpro-routing-core/sources.jar.link")).exists();
+        assertThat(gradleOut.resolve("one.jpro.platform/jpro-routing-core/sources.jar.link")).exists();
 
         // index.md — both should contain jpro-routing-core
         String gradleIndex = Files.readString(gradleOut.resolve("index.md"));

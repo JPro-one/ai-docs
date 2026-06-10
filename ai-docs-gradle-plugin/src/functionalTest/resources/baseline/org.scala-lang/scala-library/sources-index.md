@@ -1,6 +1,7 @@
 # scala-library (2.12.18) — Source Index
-Source jar: sources.jar
-To read a source file: `unzip -p sources.jar <directory><file>`, e.g. `unzip -p sources.jar scala/AnyVal.scala`
+Source jar: in the local artifact cache, path stored in `sources.jar.link` (next to this file). Run the commands below from this directory.
+Read one file: `unzip -p "$(cat sources.jar.link)" <directory><file>`, e.g. `unzip -p "$(cat sources.jar.link)" scala/AnyVal.scala`
+Extract all (best for finding methods and their javadoc): `unzip -q "$(cat sources.jar.link)" -d sources`
 
 ## Packages
 - scala/ (121 files)

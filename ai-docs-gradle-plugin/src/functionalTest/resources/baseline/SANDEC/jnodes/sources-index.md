@@ -1,6 +1,7 @@
 # jnodes (0.8.3) — Source Index
-Source jar: sources.jar
-To read a source file: `unzip -p sources.jar <directory><file>`, e.g. `unzip -p sources.jar de/sandec/jnodes/context/ContextManager.scala`
+Source jar: in the local artifact cache, path stored in `sources.jar.link` (next to this file). Run the commands below from this directory.
+Read one file: `unzip -p "$(cat sources.jar.link)" <directory><file>`, e.g. `unzip -p "$(cat sources.jar.link)" de/sandec/jnodes/context/ContextManager.scala`
+Extract all (best for finding methods and their javadoc): `unzip -q "$(cat sources.jar.link)" -d sources`
 
 ## Packages
 - (root) (1 file)

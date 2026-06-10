@@ -128,9 +128,9 @@ class IndexGeneratorTest {
         String result = IndexGenerator.generate(entries, context);
 
         // lib-a: lines 3-5 (heading through content, trailing blank trimmed before next ##)
-        assertThat(result).contains("lib-a:1.0.0 (3 lines 3-5)");
+        assertThat(result).contains("lib-a:1.0.0 (lines 3-5)");
         // lib-b: lines 7-9 (heading through content, trailing blank trimmed)
-        assertThat(result).contains("lib-b:2.0.0 (3 lines 7-9)");
+        assertThat(result).contains("lib-b:2.0.0 (lines 7-9)");
     }
 
     @Test

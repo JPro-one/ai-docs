@@ -1,5 +1,6 @@
 package one.jpro.platform.aidocs.gradle;
 
+import one.jpro.platform.aidocs.core.BuildTool;
 import one.jpro.platform.aidocs.core.DocEntry;
 import one.jpro.platform.aidocs.core.DocsCollector;
 import one.jpro.platform.aidocs.core.PomParser;
@@ -70,7 +71,7 @@ public abstract class CollectDocsTask extends DefaultTask {
 
         Path skillDir = getProject().getRootDir().toPath().resolve(".claude/skills/docs");
         String relativeDocsDir = getProject().getRootDir().toPath().relativize(outputDir).toString();
-        DocsCollector.generateSkill(skillDir, relativeDocsDir);
+        DocsCollector.generateSkill(skillDir, relativeDocsDir, BuildTool.GRADLE);
         getLogger().lifecycle("Generated AI skill at .claude/skills/docs/SKILL.md");
 
         getLogger().lifecycle("Collected documentation for {} libraries into {}", entries.size(), outputDir);

@@ -1,6 +1,6 @@
 # AI Docs
 
-A Gradle plugin that collects `DOCUMENTATION.md` artifacts from your project's dependencies and organizes them into an AI-navigable file structure — so AI coding assistants can deeply understand every library you use without blowing up their context window.
+Gradle and Maven plugins that collect `DOCUMENTATION.md` artifacts, changelogs, and sources from your project's dependencies and organize them into an AI-navigable file structure — so AI coding assistants can deeply understand every library you use without blowing up their context window.
 
 ## The Problem
 
@@ -11,12 +11,12 @@ When an AI agent works on a Java project with many dependencies, it either loads
 **AI Docs** introduces a simple convention:
 
 1. **Library authors** publish a `DOCUMENTATION.md` alongside their jar (as a Maven artifact with classifier `DOCUMENTATION`)
-2. **Projects** apply this plugin and run `./gradlew collectDocs`
+2. **Projects** apply this plugin and run `./gradlew collectDocs` (or `mvn ai-docs:collect-docs`)
 3. **AI agents** navigate the output efficiently: index → overview → specific lines
 
 Three small reads instead of dumping everything into context.
 
-## Quick Start
+## Quick Start (Gradle)
 
 ### 1. Apply the Plugin
 
@@ -50,39 +50,64 @@ This collects all dependency docs into `build/ai-docs/` and installs a skill fil
 
 ```
 build/ai-docs/
-├── index.md                              # All libraries at a glance
+├── context.md                            # Combined overview of all libraries
+├── index.md                              # Compact ToC with line ranges into context.md
 ├── one.jpro.platform/
 │   └── jpro-routing-core/
 │       ├── overview.md                   # Chapter titles + line ranges
-│       └── DOCUMENTATION.md              # Full documentation
+│       ├── DOCUMENTATION.md              # Full documentation
+│       ├── CHANGELOG.md                  # If published, plus changelog-overview.md
+│       ├── sources.jar                   # If published, plus...
+│       └── sources-index.md              # ...all source files by package
 ```
 
-**index.md** — lightweight entry point:
+A `SKILL.md` is also generated at `.claude/skills/docs/` so AI agents discover the documentation automatically.
+
+**index.md** — lightweight entry point with line ranges into `context.md`:
 ```markdown
 # AI Documentation Index
 
-## Available Libraries
-- one.jpro.platform:jpro-routing-core:0.5.8 — [overview](one.jpro.platform/jpro-routing-core/overview.md)
+## Libraries
+- one.jpro.platform:jpro-routing-core:0.5.8 (JPro Routing Core) (lines 91-106) — A framework for building JPro/JavaFX applications...
 ```
 
-**overview.md** — chapter structure with line ranges:
+**overview.md** — chapter structure with line ranges and summaries:
 ```markdown
-# jpro-routing-core (0.5.8)
-Full documentation: DOCUMENTATION.md
+# JPro Routing Core (0.5.8)
+Full content: DOCUMENTATION.md
 
 ## Chapters
-- Overview (lines 1-25)
-- Getting Started (lines 26-80)
-- Filters API (lines 81-150)
+- Overview (lines 1-25) — A framework for building JPro/JavaFX applications.
+- Getting Started (lines 26-80) — Add the dependency to your build.
+- Filters API (lines 81-150) — Filters transform routes.
 ```
 
-An AI agent reads `index.md` to discover what's available, then reads `overview.md` for a specific library to see its structure, then reads only the relevant lines from `DOCUMENTATION.md`.
+## Quick Start (Maven)
+
+Add the plugin to your `pom.xml`:
+
+```xml
+<plugin>
+    <groupId>one.jpro.aidocs</groupId>
+    <artifactId>ai-docs-maven-plugin</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+</plugin>
+```
+
+Then run:
+
+```bash
+mvn one.jpro.aidocs:ai-docs-maven-plugin:collect-docs
+```
+
+The output is collected into `target/ai-docs/` with the same structure.
 
 ## How AI Agents Navigate This
 
-1. **Read `index.md`** — see all available libraries (always small and cheap)
+1. **Read `context.md`** — combined overview of all libraries (best for small-to-medium projects), or `index.md` to find the right library's line range first
 2. **Read `overview.md`** for the relevant library — see chapter structure with line ranges
 3. **Read specific lines** from `DOCUMENTATION.md` — load only the chapter needed
+4. **Dig into sources** when docs aren't enough — `sources-index.md` lists every source file, readable via `unzip -p sources.jar <path>`
 
 ## For Library Authors
 
@@ -138,8 +163,9 @@ cat build/ai-docs/index.md
 |--------|-------------|
 | `ai-docs-core` | Reusable library for document collection and index/overview generation |
 | `ai-docs-gradle-plugin` | Gradle plugin providing the `collectDocs` task |
-| `ai-docs-maven-plugin` | Maven plugin (planned) |
-| `example/` | Standalone project demonstrating real-world usage with JPro libraries |
+| `ai-docs-maven-plugin` | Maven plugin providing the `collect-docs` goal |
+| `example/` | Standalone Gradle project demonstrating real-world usage with JPro libraries |
+| `example-maven/` | Standalone Maven project demonstrating the Maven plugin |
 
 ## License
 

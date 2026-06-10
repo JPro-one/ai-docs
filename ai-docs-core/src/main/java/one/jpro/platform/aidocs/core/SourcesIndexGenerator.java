@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -13,11 +14,13 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /**
- * Generates a sources-index.md file from a sources jar, listing all .java files
- * organized by package. This allows AI agents to discover and selectively read
- * source files using {@code unzip -p sources.jar <path>}.
+ * Generates a sources-index.md file from a sources jar, listing all source files
+ * (.java, .scala, .kt, .groovy) organized by package. This allows AI agents to discover
+ * and selectively read source files using {@code unzip -p sources.jar <path>}.
  */
 public class SourcesIndexGenerator {
+
+    private static final List<String> SOURCE_EXTENSIONS = List.of(".java", ".scala", ".kt", ".groovy");
 
     record FileEntry(String name, int lineCount) implements Comparable<FileEntry> {
         @Override
@@ -42,7 +45,7 @@ public class SourcesIndexGenerator {
      * Generates sources-index.md content from a sources jar.
      */
     static String generate(Path sourcesJar, DocEntry entry) throws IOException {
-        Map<String, List<FileEntry>> packageToFiles = listJavaFiles(sourcesJar);
+        Map<String, List<FileEntry>> packageToFiles = listSourceFiles(sourcesJar);
 
         var sb = new StringBuilder();
         sb.append("# ").append(entry.displayName()).append(" (").append(entry.version()).append(") — Source Index\n");
@@ -66,10 +69,10 @@ public class SourcesIndexGenerator {
     }
 
     /**
-     * Lists all .java files in a jar, grouped by package (derived from directory path).
+     * Lists all source files in a jar, grouped by package (derived from directory path).
      * Returns a sorted map of package name to sorted list of file names.
      */
-    static Map<String, List<FileEntry>> listJavaFiles(Path jarPath) throws IOException {
+    static Map<String, List<FileEntry>> listSourceFiles(Path jarPath) throws IOException {
         Map<String, List<FileEntry>> result = new TreeMap<>();
 
         try (var zipFile = new ZipFile(jarPath.toFile())) {
@@ -77,10 +80,10 @@ public class SourcesIndexGenerator {
             while (entries.hasMoreElements()) {
                 ZipEntry ze = entries.nextElement();
                 String name = ze.getName();
-                if (ze.isDirectory() || !name.endsWith(".java")) continue;
+                if (ze.isDirectory() || SOURCE_EXTENSIONS.stream().noneMatch(name::endsWith)) continue;
 
                 int lineCount;
-                try (var reader = new BufferedReader(new InputStreamReader(zipFile.getInputStream(ze)))) {
+                try (var reader = new BufferedReader(new InputStreamReader(zipFile.getInputStream(ze), StandardCharsets.UTF_8))) {
                     lineCount = (int) reader.lines().count();
                 }
 

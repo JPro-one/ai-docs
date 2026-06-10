@@ -359,7 +359,7 @@ class CollectDocsFunctionalTest {
     }
 
     @Test
-    void collectDocsIsIdempotent() throws IOException {
+    void collectDocsPicksUpDependencyChanges() throws IOException {
         Files.writeString(projectDir.resolve("build.gradle"), """
                 plugins {
                     id 'java'
@@ -376,13 +376,29 @@ class CollectDocsFunctionalTest {
                 .withArguments("collectDocs")
                 .withPluginClasspath();
 
-        // Run twice — both should succeed, second run should produce same output
         runner.build();
+        // The task must re-execute — the dependency graph is not a tracked input,
+        // so an UP-TO-DATE outcome would mean stale docs after dependency changes
         BuildResult second = runner.build();
-        assertThat(second.task(":collectDocs")).isNotNull();
+        assertThat(second.task(":collectDocs").getOutcome()).isEqualTo(SUCCESS);
 
-        // Output should still be valid after second run
+        // Adding a dependency must be reflected in the regenerated index
+        Files.writeString(projectDir.resolve("build.gradle"), """
+                plugins {
+                    id 'java'
+                    id 'one.jpro.aidocs'
+                }
+                """ + JPRO_REPOS + """
+                dependencies {
+                    implementation 'one.jpro.platform:jpro-routing-core:0.5.8'
+                    implementation 'org.slf4j:slf4j-api:2.0.17'
+                }
+                """);
+        BuildResult third = runner.build();
+        assertThat(third.task(":collectDocs").getOutcome()).isEqualTo(SUCCESS);
+
         String index = Files.readString(projectDir.resolve("build/ai-docs/index.md"));
         assertThat(index).contains("jpro-routing-core");
+        assertThat(index).contains("slf4j");
     }
 }

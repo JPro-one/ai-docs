@@ -66,7 +66,7 @@ class SourcesIndexGeneratorTest {
     }
 
     @Test
-    void nonJavaFilesAreIgnored(@TempDir Path tempDir) throws IOException {
+    void nonSourceFilesAreIgnored(@TempDir Path tempDir) throws IOException {
         Path jar = createTestJar(tempDir, Map.of(
                 "com/example/MyClass.java", "public class MyClass {}",
                 "com/example/README.md", "# Readme",
@@ -79,6 +79,24 @@ class SourcesIndexGeneratorTest {
         assertThat(result).contains("MyClass.java (1 line)");
         assertThat(result).doesNotContain("README.md");
         assertThat(result).doesNotContain("MANIFEST.MF");
+    }
+
+    @Test
+    void scalaKotlinGroovySourcesAreIncluded(@TempDir Path tempDir) throws IOException {
+        Path jar = createTestJar(tempDir, Map.of(
+                "scala/collection/List.scala", "class List {}",
+                "com/example/App.kt", "class App",
+                "com/example/Script.groovy", "class Script {}",
+                "com/example/MyClass.java", "public class MyClass {}"
+        ));
+
+        var entry = DocEntry.of("com.example", "poly-lib", "1.0.0");
+        String result = SourcesIndexGenerator.generate(jar, entry);
+
+        assertThat(result).contains("List.scala (1 line)");
+        assertThat(result).contains("App.kt (1 line)");
+        assertThat(result).contains("Script.groovy (1 line)");
+        assertThat(result).contains("MyClass.java (1 line)");
     }
 
     @Test
@@ -95,14 +113,14 @@ class SourcesIndexGeneratorTest {
     }
 
     @Test
-    void listJavaFiles(@TempDir Path tempDir) throws IOException {
+    void listSourceFiles(@TempDir Path tempDir) throws IOException {
         Path jar = createTestJar(tempDir, Map.of(
                 "com/example/A.java", "class A {}",
                 "com/example/B.java", "class B {}",
                 "com/other/C.java", "class C {}"
         ));
 
-        var result = SourcesIndexGenerator.listJavaFiles(jar);
+        var result = SourcesIndexGenerator.listSourceFiles(jar);
 
         assertThat(result).containsKeys("com.example", "com.other");
         assertThat(result.get("com.example")).extracting(SourcesIndexGenerator.FileEntry::name)

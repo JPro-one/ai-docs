@@ -185,6 +185,13 @@ class DocsCollectorTest {
                 "## Another heading"
         ))).isNull();
 
+        assertThat(DocsCollector.extractDescription(List.of(
+                "# Title",
+                "[![Build Status](https://example.com/badge.svg)](https://example.com)",
+                "![Logo](logo.png)",
+                "Actual description."
+        ))).isEqualTo("Actual description.");
+
         assertThat(DocsCollector.extractDescription(List.of())).isNull();
     }
 

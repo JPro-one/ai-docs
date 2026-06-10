@@ -33,9 +33,9 @@ class OverviewGeneratorTest {
 
         assertThat(result).contains("# my-lib (1.0.0)");
         assertThat(result).contains("Full content: DOCUMENTATION.md");
-        assertThat(result).contains("- My Library (11 lines 1-11) — Some intro text.");
-        assertThat(result).contains("  - Getting Started (4 lines 4-7) — Step 1: add dependency.");
-        assertThat(result).contains("  - API Reference (4 lines 8-11) — The main class is Foo.");
+        assertThat(result).contains("- My Library (lines 1-11) — Some intro text.");
+        assertThat(result).contains("  - Getting Started (lines 4-7) — Step 1: add dependency.");
+        assertThat(result).contains("  - API Reference (lines 8-11) — The main class is Foo.");
     }
 
     @Test
@@ -49,7 +49,7 @@ class OverviewGeneratorTest {
         String result = OverviewGenerator.generate(lines, entry, 1);
 
         // Top-level chapters are always kept regardless of size
-        assertThat(result).contains("- Overview (2 lines 1-2) — This is the only chapter.");
+        assertThat(result).contains("- Overview (lines 1-2) — This is the only chapter.");
     }
 
     @Test
@@ -100,10 +100,10 @@ class OverviewGeneratorTest {
 
         String result = OverviewGenerator.generate(lines, entry, 1);
 
-        assertThat(result).contains("- Top Level (14 lines 1-14) — Intro.");
-        assertThat(result).contains("  - Section A (8 lines 3-10) — Content A.");
-        assertThat(result).contains("    - Subsection A1 (4 lines 7-10) — Detail line 1.");
-        assertThat(result).contains("  - Section B (4 lines 11-14) — Content B.");
+        assertThat(result).contains("- Top Level (lines 1-14) — Intro.");
+        assertThat(result).contains("  - Section A (lines 3-10) — Content A.");
+        assertThat(result).contains("    - Subsection A1 (lines 7-10) — Detail line 1.");
+        assertThat(result).contains("  - Section B (lines 11-14) — Content B.");
     }
 
     @Test
@@ -127,12 +127,12 @@ class OverviewGeneratorTest {
         String result = OverviewGenerator.generate(lines, entry, 5);
 
         // All chapters are always shown
-        assertThat(result).contains("- Top Level (12 lines 1-12)");
+        assertThat(result).contains("- Top Level (lines 1-12)");
         // Big Section has 6 lines (>= 5), its children are shown
-        assertThat(result).contains("  - Big Section (6 lines 3-8)");
-        assertThat(result).contains("    - Sub of Big (2 lines 7-8)");
+        assertThat(result).contains("  - Big Section (lines 3-8)");
+        assertThat(result).contains("    - Sub of Big (lines 7-8)");
         // Small Section has 4 lines (< 5), shown but children collapsed
-        assertThat(result).contains("  - Small Section (4 lines 9-12)");
+        assertThat(result).contains("  - Small Section (lines 9-12)");
         assertThat(result).doesNotContain("Sub of Small");
     }
 
@@ -147,7 +147,7 @@ class OverviewGeneratorTest {
         String result = OverviewGenerator.generate(lines, entry, 1);
 
         // Top-level chapters are never filtered even if short
-        assertThat(result).contains("- Short Chapter (2 lines 1-2) — Brief.");
+        assertThat(result).contains("- Short Chapter (lines 1-2) — Brief.");
     }
 
     @Test
@@ -163,8 +163,8 @@ class OverviewGeneratorTest {
         String result = OverviewGenerator.generate(lines, entry, 1);
 
         // All at min depth — always kept regardless of size
-        assertThat(result).contains("- Chapter One (2 lines 1-2) — Content one.");
-        assertThat(result).contains("- Chapter Two (2 lines 3-4) — Content two.");
+        assertThat(result).contains("- Chapter One (lines 1-2) — Content one.");
+        assertThat(result).contains("- Chapter Two (lines 3-4) — Content two.");
     }
 
     @Test
@@ -191,7 +191,7 @@ class OverviewGeneratorTest {
 
         String result = OverviewGenerator.generate(lines, entry, 1);
 
-        assertThat(result).contains("- Only Heading (1 line 1-1)");
+        assertThat(result).contains("- Only Heading (lines 1-1)");
     }
 
     @Test
@@ -219,11 +219,11 @@ class OverviewGeneratorTest {
 
         String result = OverviewGenerator.generate(lines, entry, 1);
 
-        assertThat(result).contains("- Getting Started (17 lines 1-17) — Overview.");
-        assertThat(result).contains("  - Creating a project (11 lines 3-13) — Project setup.");
-        assertThat(result).contains("    - From index.html (4 lines 6-9) — HTML approach line 1.");
-        assertThat(result).contains("    - From Gradle (4 lines 10-13) — Gradle approach line 1.");
-        assertThat(result).contains("  - API Reference (4 lines 14-17) — API docs.");
+        assertThat(result).contains("- Getting Started (lines 1-17) — Overview.");
+        assertThat(result).contains("  - Creating a project (lines 3-13) — Project setup.");
+        assertThat(result).contains("    - From index.html (lines 6-9) — HTML approach line 1.");
+        assertThat(result).contains("    - From Gradle (lines 10-13) — Gradle approach line 1.");
+        assertThat(result).contains("  - API Reference (lines 14-17) — API docs.");
     }
 
     @Test

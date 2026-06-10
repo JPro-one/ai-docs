@@ -50,11 +50,12 @@ public class DocsCollector {
     }
 
     /**
-     * Extracts the first non-empty, non-heading line from the documentation as a description.
+     * Extracts the first non-empty, non-heading, non-badge line from the documentation as a description.
      */
     static String extractDescription(List<String> lines) {
         for (String line : lines) {
-            if (!line.isBlank() && !line.startsWith("#")) {
+            if (!line.isBlank() && !line.startsWith("#")
+                    && !line.startsWith("![") && !line.startsWith("[![")) {
                 String trimmed = line.strip();
                 if (trimmed.length() > 150) {
                     return trimmed.substring(0, 147) + "...";
@@ -121,9 +122,10 @@ public class DocsCollector {
      *
      * @param skillDir the directory to write SKILL.md into (e.g. .claude/skills/docs)
      * @param docsOutputDir the relative path to the docs output directory (e.g. "build/ai-docs")
+     * @param buildTool the build tool whose collect command should be referenced
      */
-    public static void generateSkill(Path skillDir, String docsOutputDir) throws IOException {
-        SkillGenerator.generate(skillDir.resolve("SKILL.md"), docsOutputDir);
+    public static void generateSkill(Path skillDir, String docsOutputDir, BuildTool buildTool) throws IOException {
+        SkillGenerator.generate(skillDir.resolve("SKILL.md"), docsOutputDir, buildTool);
     }
 
     /**

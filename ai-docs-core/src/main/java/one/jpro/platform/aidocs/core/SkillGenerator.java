@@ -17,6 +17,8 @@ import java.nio.file.Path;
 public class SkillGenerator {
 
     private static final String DEFAULT_DOCS_DIR = "build/ai-docs";
+    private static final String DEFAULT_TOOL_NAME = "Gradle";
+    private static final String DEFAULT_COLLECT_COMMAND = "gradle collectDocs";
     private static final String TEMPLATE_RESOURCE = "SKILL.md";
 
     /**
@@ -24,19 +26,24 @@ public class SkillGenerator {
      *
      * @param skillPath path to write the SKILL.md
      * @param docsOutputDir the relative path to the docs output directory (e.g. "build/ai-docs")
+     * @param buildTool the build tool whose collect command should be referenced
      */
-    public static void generate(Path skillPath, String docsOutputDir) throws IOException {
-        String content = generate(docsOutputDir);
+    public static void generate(Path skillPath, String docsOutputDir, BuildTool buildTool) throws IOException {
+        String content = generate(docsOutputDir, buildTool);
         Files.createDirectories(skillPath.getParent());
         Files.writeString(skillPath, content);
     }
 
     /**
-     * Generates SKILL.md content by loading the template and substituting the output directory.
+     * Generates SKILL.md content by loading the template and substituting the
+     * output directory and build tool references.
      */
-    static String generate(String docsOutputDir) throws IOException {
+    static String generate(String docsOutputDir, BuildTool buildTool) throws IOException {
         String template = loadTemplate();
-        return template.replace(DEFAULT_DOCS_DIR, docsOutputDir);
+        return template
+                .replace(DEFAULT_COLLECT_COMMAND, buildTool.collectCommand())
+                .replace(DEFAULT_TOOL_NAME, buildTool.displayName())
+                .replace(DEFAULT_DOCS_DIR, docsOutputDir);
     }
 
     private static String loadTemplate() throws IOException {

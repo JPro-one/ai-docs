@@ -1,5 +1,6 @@
 package one.jpro.platform.aidocs.maven;
 
+import one.jpro.platform.aidocs.core.BuildTool;
 import one.jpro.platform.aidocs.core.DocEntry;
 import one.jpro.platform.aidocs.core.DocsCollector;
 import one.jpro.platform.aidocs.core.PomParser;
@@ -93,7 +94,7 @@ public class CollectDocsMojo extends AbstractMojo {
 
             Path skillDir = project.getBasedir().toPath().resolve(".claude/skills/docs");
             String relativeDocsDir = project.getBasedir().toPath().relativize(outputDir).toString();
-            DocsCollector.generateSkill(skillDir, relativeDocsDir);
+            DocsCollector.generateSkill(skillDir, relativeDocsDir, BuildTool.MAVEN);
             getLog().info("Generated AI skill at .claude/skills/docs/SKILL.md");
 
             getLog().info("Collected documentation for " + entries.size() + " libraries into " + outputDir);

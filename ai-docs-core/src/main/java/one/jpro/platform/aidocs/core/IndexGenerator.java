@@ -14,9 +14,7 @@ import java.util.List;
  */
 public class IndexGenerator {
 
-    record LibrarySection(DocEntry entry, int startLine, int endLine) {
-        int lineCount() { return endLine - startLine + 1; }
-    }
+    record LibrarySection(DocEntry entry, int startLine, int endLine) {}
 
     /**
      * Generates an index.md file with line references into the given context.md content.
@@ -48,10 +46,8 @@ public class IndexGenerator {
             if (!entry.displayName().equals(entry.name())) {
                 sb.append(" (").append(entry.displayName()).append(")");
             }
-            sb.append(" (").append(section.lineCount())
-                    .append(section.lineCount() == 1 ? " line " : " lines ")
-                    .append(section.startLine()).append("-").append(section.endLine())
-                    .append(")");
+            sb.append(" (lines ").append(section.startLine())
+                    .append("-").append(section.endLine()).append(")");
             String desc = entry.effectiveDescription();
             if (desc != null) {
                 sb.append(" — ").append(desc);

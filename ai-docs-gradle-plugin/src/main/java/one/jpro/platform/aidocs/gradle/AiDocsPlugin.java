@@ -17,6 +17,8 @@ public class AiDocsPlugin implements Plugin<Project> {
             task.getOutputDirectory().convention(project.getLayout().getBuildDirectory().dir("ai-docs"));
             task.getOverviewMinLines().convention(15);
             task.getContextMinLines().convention(150);
+            // The dependency graph is not modeled as an input yet, so never skip
+            task.getOutputs().upToDateWhen(t -> false);
         });
     }
 }

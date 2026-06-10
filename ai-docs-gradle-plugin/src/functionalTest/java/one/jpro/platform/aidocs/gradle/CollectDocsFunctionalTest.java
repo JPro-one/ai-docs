@@ -12,6 +12,7 @@ import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS;
+import static org.gradle.testkit.runner.TaskOutcome.UP_TO_DATE;
 
 class CollectDocsFunctionalTest {
 
@@ -344,7 +345,6 @@ class CollectDocsFunctionalTest {
                 .build();
 
         assertThat(result.task(":collectDocs").getOutcome()).isEqualTo(SUCCESS);
-        assertThat(result.getOutput()).contains("Scanning subproject: :sub");
 
         Path aiDocs = projectDir.resolve("build/ai-docs");
 
@@ -377,12 +377,12 @@ class CollectDocsFunctionalTest {
                 .withPluginClasspath();
 
         runner.build();
-        // The task must re-execute — the dependency graph is not a tracked input,
-        // so an UP-TO-DATE outcome would mean stale docs after dependency changes
+        // With the dependency graph tracked as input, an unchanged second run may skip
         BuildResult second = runner.build();
-        assertThat(second.task(":collectDocs").getOutcome()).isEqualTo(SUCCESS);
+        assertThat(second.task(":collectDocs").getOutcome()).isIn(SUCCESS, UP_TO_DATE);
 
-        // Adding a dependency must be reflected in the regenerated index
+        // Adding a dependency (one not already in the transitive graph) must
+        // re-execute the task and be reflected in the regenerated index
         Files.writeString(projectDir.resolve("build.gradle"), """
                 plugins {
                     id 'java'
@@ -391,7 +391,7 @@ class CollectDocsFunctionalTest {
                 """ + JPRO_REPOS + """
                 dependencies {
                     implementation 'one.jpro.platform:jpro-routing-core:0.5.8'
-                    implementation 'org.slf4j:slf4j-api:2.0.17'
+                    implementation 'com.google.code.gson:gson:2.11.0'
                 }
                 """);
         BuildResult third = runner.build();
@@ -399,6 +399,52 @@ class CollectDocsFunctionalTest {
 
         String index = Files.readString(projectDir.resolve("build/ai-docs/index.md"));
         assertThat(index).contains("jpro-routing-core");
-        assertThat(index).contains("slf4j");
+        assertThat(index).contains("gson");
+    }
+
+    @Test
+    void worksWithConfigurationCache() throws IOException {
+        Files.writeString(projectDir.resolve("build.gradle"), """
+                plugins {
+                    id 'java'
+                    id 'one.jpro.aidocs'
+                }
+                """ + JPRO_REPOS + """
+                dependencies {
+                    implementation 'one.jpro.platform:jpro-routing-core:0.5.8'
+                }
+                """);
+
+        GradleRunner runner = GradleRunner.create()
+                .withProjectDir(projectDir.toFile())
+                .withArguments("collectDocs", "--configuration-cache")
+                .withPluginClasspath();
+
+        // First run: stores the configuration cache; any CC problem fails the build
+        BuildResult first = runner.build();
+        assertThat(first.task(":collectDocs").getOutcome()).isEqualTo(SUCCESS);
+
+        String index = Files.readString(projectDir.resolve("build/ai-docs/index.md"));
+        assertThat(index).contains("jpro-routing-core");
+
+        // Second run: must reuse the cache entry without problems
+        BuildResult second = runner.build();
+        assertThat(second.getOutput()).contains("Reusing configuration cache");
+
+        // A dependency change must invalidate the cache and refresh the docs
+        Files.writeString(projectDir.resolve("build.gradle"), """
+                plugins {
+                    id 'java'
+                    id 'one.jpro.aidocs'
+                }
+                """ + JPRO_REPOS + """
+                dependencies {
+                    implementation 'one.jpro.platform:jpro-routing-core:0.5.8'
+                    implementation 'com.google.code.gson:gson:2.11.0'
+                }
+                """);
+        runner.build();
+        String updated = Files.readString(projectDir.resolve("build/ai-docs/index.md"));
+        assertThat(updated).contains("gson");
     }
 }

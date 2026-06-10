@@ -40,7 +40,8 @@ cd example-maven && mvn one.jpro.aidocs:ai-docs-maven-plugin:collect-docs
 - Plugin ID: `one.jpro.aidocs`
 - Group: `one.jpro.aidocs`, Version: `0.1.0-SNAPSHOT`
 - Task output goes to `build/ai-docs/` (Maven: `target/ai-docs/`)
-- The `collectDocs` task only scans configurations whose name contains "classpath" (including buildscript and subproject configurations)
+- Gradle: each project gets a `collectDocsPartial` task (auto-applied to subprojects) writing to `build/ai-docs-partial/`; the `collectDocs` task aggregates all partials. Artifact resolution happens at configuration time (inside the task configuration action, so only when the task is requested) — the tasks themselves are configuration-cache compatible
+- Only configurations whose name contains "classpath" are scanned (including buildscript configurations)
 - Per dependency, the plugins try to resolve: `DOCUMENTATION@md`, `sources@jar`, `CHANGELOG@md`, and the POM (for metadata + parent-POM traversal)
 - Dependencies without any of these artifacts are silently skipped (logged at debug level)
 - A skill file is generated at `.claude/skills/docs/SKILL.md` from the root `SKILL.md` template (copied into ai-docs-core resources at build time)
@@ -74,11 +75,16 @@ ai-docs-core/src/main/java/one/jpro/platform/aidocs/core/
 ├── SkillGenerator.java         # Generates SKILL.md from the template (Gradle/Maven variants)
 ├── PomParser.java              # Extracts POM metadata + parent coordinates
 ├── PomMetadata.java            # Record: name, description, url, scmUrl, license
+├── EntriesFile.java            # Serializes DocEntry lists between partial and aggregate tasks
 └── BuildTool.java              # GRADLE/MAVEN, used to tailor SKILL.md
 
 ai-docs-gradle-plugin/src/main/java/one/jpro/platform/aidocs/gradle/
-├── AiDocsPlugin.java           # Plugin entry point, registers collectDocs task
-└── CollectDocsTask.java        # Task: scans configurations, resolves artifacts, traverses parent POMs
+├── AiDocsPlugin.java           # Entry point: applies partial plugin to self + subprojects, registers collectDocs
+├── AiDocsPartialPlugin.java    # Registers the per-project collectDocsPartial task
+├── DocsResolver.java           # Configuration-time artifact resolution + parent-POM traversal
+├── ModuleSpec.java             # Resolved module artifacts, encoded as task input strings
+├── CollectDocsPartialTask.java # Writes one project's docs into build/ai-docs-partial/
+└── CollectDocsTask.java        # Aggregates all partials into build/ai-docs/, generates index/context/skill
 
 ai-docs-maven-plugin/src/main/java/one/jpro/platform/aidocs/maven/
 └── CollectDocsMojo.java        # Mojo: same flow via Aether resolution

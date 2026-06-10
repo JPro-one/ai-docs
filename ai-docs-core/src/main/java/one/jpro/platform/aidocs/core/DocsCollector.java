@@ -129,6 +129,23 @@ public class DocsCollector {
     }
 
     /**
+     * Recursively copies a directory tree.
+     */
+    public static void copyDirectory(Path source, Path target) throws IOException {
+        Files.createDirectories(target);
+        try (var entries = Files.list(source)) {
+            for (Path entry : entries.toList()) {
+                Path dest = target.resolve(entry.getFileName().toString());
+                if (Files.isDirectory(entry)) {
+                    copyDirectory(entry, dest);
+                } else {
+                    Files.copy(entry, dest, StandardCopyOption.REPLACE_EXISTING);
+                }
+            }
+        }
+    }
+
+    /**
      * Cleans the output directory.
      */
     public static void cleanOutputDir(Path outputDir) throws IOException {

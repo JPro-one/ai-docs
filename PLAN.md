@@ -132,7 +132,6 @@ Publishing is just convention — no plugin needed. Library authors:
 
 ## Open Improvements
 
-- **Configuration-cache compatibility** — `CollectDocsTask` uses `getProject()` at execution time; rework with ArtifactView/lenient resolution captured at configuration time. Also fixes project-isolation violation (subproject scanning), batches per-module resolutions, and allows modeling the dependency graph as a proper task input (replacing the current `upToDateWhen(false)` workaround).
 - **Buildscript scanning opt-in** — the index currently lists the ai-docs plugin itself; needs a DSL extension to opt out.
 - **Snapshot regression test** — diff generated example output against `snapshots/baseline/` to catch generator regressions.
 - **SKILL.md overwrite protection** — don't silently overwrite a user-edited SKILL.md; declare it as a task output.

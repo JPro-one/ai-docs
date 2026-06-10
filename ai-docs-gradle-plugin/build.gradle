@@ -39,6 +39,7 @@ tasks.register('functionalTest', Test) {
     testClassesDirs = sourceSets.functionalTest.output.classesDirs
     classpath = sourceSets.functionalTest.runtimeClasspath
     useJUnitPlatform()
+    systemProperty 'updateBaseline', System.getProperty('updateBaseline', 'false')
 }
 
 tasks.named('check') {

@@ -102,6 +102,16 @@ mvn one.jpro.aidocs:ai-docs-maven-plugin:collect-docs
 
 The output is collected into `target/ai-docs/` with the same structure.
 
+## Configuration (Gradle)
+
+```gradle
+aiDocs {
+    includeBuildscript = true   // also document buildscript/plugin-classpath dependencies (default: false)
+}
+```
+
+The generated `.claude/skills/docs/SKILL.md` contains a marker comment — remove it to take ownership of the file; the plugin will then leave it untouched.
+
 ## How AI Agents Navigate This
 
 1. **Read `context.md`** — combined overview of all libraries (best for small-to-medium projects), or `index.md` to find the right library's line range first
@@ -169,4 +179,4 @@ cat build/ai-docs/index.md
 
 ## License
 
-TBD
+[Apache License 2.0](LICENSE)

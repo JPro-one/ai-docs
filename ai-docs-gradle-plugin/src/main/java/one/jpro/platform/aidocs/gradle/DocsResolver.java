@@ -24,14 +24,16 @@ import java.util.Set;
  */
 class DocsResolver {
 
-    static List<ModuleSpec> resolve(Project project) {
+    static List<ModuleSpec> resolve(Project project, boolean includeBuildscript) {
         List<ModuleSpec> specs = new ArrayList<>();
         Set<String> seenCoordinates = new HashSet<>();
 
         scanConfigurations(project, project.getConfigurations(), project.getDependencies(),
                 specs, seenCoordinates);
-        scanConfigurations(project, project.getBuildscript().getConfigurations(),
-                project.getBuildscript().getDependencies(), specs, seenCoordinates);
+        if (includeBuildscript) {
+            scanConfigurations(project, project.getBuildscript().getConfigurations(),
+                    project.getBuildscript().getDependencies(), specs, seenCoordinates);
+        }
 
         return specs;
     }

@@ -1,0 +1,105 @@
+# jpro-webapi (2025.3.1)
+Full content: DOCUMENTATION.md
+
+## Chapters
+- Getting Started (lines 1-682)
+  - Creating a project (lines 4-298) — The easiest way to set up a new JPro project for your apps is to use the **HelloJPro** project as your base,
+    - Starting an app from the index.html (lines 13-48) — The `index.html` file from the HelloJPro project looks like the following:
+    - jpro.conf (lines 49-110) — The `jpro.conf` of the HelloJPro project can be downloaded
+    - Starting an app from Gradle (lines 111-186) — 1. The `settings.gradle` file of the HelloJPro project can be downloaded
+    - Starting an app from Maven (lines 187-298) — The `pom.xml` file of the HelloJPro project can be downloaded
+  - Run JPro locally (lines 299-551)
+    - Using Gradle (lines 301-397) — The simplest way to begin is by using **Gradle** as your build tool.
+      - Step `1`. Install Gradle (lines 324-328) — Gradle can be downloaded and installed [here](https://gradle.org/install/).
+      - Step `2`. Create the Gradle scripts (lines 329-385) — Create the file `settings.gradle` and put it into your **project's root directory**.
+      - Step `3`. Run the app (lines 386-397) — Start a **Terminal session**, move to the **main project directory** and enter the command:
+    - Using Maven (lines 398-551) — JPro provides a plugin for Maven, which allows you to easily start JPro from an existing project,
+      - Step `1`. Install Maven (lines 428-432) — Maven can be downloaded and installed [here](https://maven.apache.org/).
+      - Step `2`. Create the Maven script (lines 433-539) — Create the file `pom.xml` and put it into your **project's root directory**.
+      - Step `3`. Run the app (lines 540-551) — Start a **Terminal session**, move to the **main project directory** and enter the command:
+  - Run JPro remotely (lines 552-628)
+    - Using Gradle (lines 555-590)
+      - Step `1`. Prepare your server (lines 557-566) — To run JPro on linux, the server must be configured correctly.
+      - Step `2`. Create the binary (lines 567-577) — Create a zip which contains the application with the following command:
+      - Step `3`. Run JPro (lines 578-590) — In the unzipped folder you can find a start-script: `bin/start.sh`
+    - Using Maven (lines 591-628)
+      - Step `1`. Prepare your server (lines 593-602) — To run JPro on linux, the server must be configured correctly.
+      - Step `2`. Create the binary (lines 603-614) — Create a zip which contains the application with the following command:
+      - Step `3`. Run JPro (lines 615-628) — In the unzipped folder you can find a start-script: `bin/start.sh`
+  - PC as a JPro server (lines 629-682) — After testing your app through localhost, a next practical step could be to make your PC host a JPro server
+    - Step `1`. Start JPro in localhost (lines 636-642) — Make sure the `index.html`, the `jpro.conf` and your tool specific file (either `gradle.build` or `pom.xml`)
+    - Step `2`. Start a local JPro server (lines 643-655) — Start the JPro server on your PC, to run in background, like this:
+    - Step `3`. Define the Port to be used for external access (lines 656-660) — Set up your in-house communication structure to support external access through one or more selected port numbers.
+    - Step `4`. Find out which IP address your PC is using (lines 661-667) — An easy way to find this out is to simply open the following URL from your browser:
+    - Step `5`. Access your JPro server from an external browser (lines 668-682) — Start the JPro app from an external browser, by using the URL:
+- JPro Docs (lines 683-1585)
+  - JPro commands (lines 686-772)
+    - Using Gradle (lines 688-733) — There are two ways of making Gradle accessible for your project:
+    - Using Maven (lines 734-772) — The following ***JPro commands*** are supported by the jpro-maven-plugin, to be started either from your IDE or
+  - Configuring JPro (lines 773-964)
+    - build.gradle and pom.xml (lines 775-888) — The Gradle plugin is configured under the `jpro` tag of `build.gradle`.
+      - A build.gradle example (lines 812-846) — Here an **example**:
+      - A pom.xml example (lines 847-888) — See the previous chapter for more comments associated with the properties.
+    - jpro.conf (lines 889-952) — The following properties can be set in the `jpro.conf`:
+      - Declaring runnable applications (lines 922-952) — A jpro server is capable of running a set of different applications.
+    - Changing the working directory after creating a release (lines 953-964) — We can change the working directory of a JPro application in different ways after creating a release by either calling
+  - Embedding JPro (lines 965-1090) — JPro can be **embedded into an existing html-page** by using the tag `<jpro-app>`.
+    - Supported attributes for the jpro-app tag (lines 977-1007) — The jpro-app tag has a set of **attributes**, which can be set to control the jpro-app's behaviour:
+    - Supported extra attributes (lines 1008-1028)
+      - Node (lines 1010-1019) — Extra **attributes** are supported by calling `node.getProperties().put("attributeName", attributeValue)` in the Java...
+      - Window (lines 1020-1028) — The following **attributes** are supported by calling `window.getProperties().put("attributeName", attributeValue)` i...
+    - A web-page template (lines 1029-1058) — Here, **an example** (of course, to see an example, you could also just inspect the source of **this web-page**):
+    - Make resources accessible as URLs (lines 1059-1082) — In order to **make resources publicly available as URLs**, you just need to understand and follow
+    - Publishing JPro applications (lines 1083-1090) — To make your JPro applications accessible via URL, you should create an “index.html” and place
+  - The WebAPI (lines 1091-1149) — The main purpose of the WebAPI is to let you create individual Javascript code for the browser,
+    - Using the WebAPI without JPro (lines 1114-1149)
+      - Using Gradle (lines 1115-1126) — The WebAPI can be imported as a jar, also when not using JPro. It can be introduced to the `build.gradle` by
+      - Using Maven (lines 1127-1143) — The WebAPI can be imported as a jar, also when not using JPro. It can be introduced to the `build.gradle` by
+      - Getting WebAPI as a Jar (lines 1144-1149) — You can download the WebAPI from our [repository](https://sandec.jfrog.io/ui/native/repo/com/sandec/jpro/jpro-webapi/).
+  - Custom HTTP Handlers (lines 1150-1194) — JPro allows you to attach custom request handlers to your website. To do so you have to add a request handler to the ...
+  - Debugging and testing (lines 1195-1262) — The following tags can be added to the original URL of your JPro server.
+  - Deploying JPro (lines 1263-1278)
+    - Deployment Requirements (lines 1265-1278) — Basically, JPro servers can run on any server with a JVM on it.  But, fact is, so far all our real world projects
+  - Linux & Docker (lines 1279-1353)
+    - All linux versions (lines 1281-1353) — Install Java17 or Java21 on your linux server. We recommend using [Temurin 21](https://adoptium.net/temurin/releases/):
+      - Ubuntu 24.04 (lines 1289-1308) — (22.04 and 20.04 also work)
+      - Debian Bookworm (lines 1309-1331)
+      - Fedora 39 (lines 1332-1353)
+  - Apache2 (lines 1354-1396) — We usually recommend using Nginx, but JPro can also be used with Apache as a webserver.
+    - Configure SSL (lines 1393-1396) — To configure the SSL we recommend the following tutorial for [Let's encrypt / Certbot](https://certbot.eff.org/)
+  - SSL by using NGINX (lines 1397-1447) — The setup defined below is tested with the nginx package contained in ubuntu 16.04.
+  - Close Instance Strategy (lines 1448-1492) — This documentation describes the JPro Close Instance Strategy configuration structure and explains each field in the ...
+    - Configuration Structure (lines 1453-1492) — The configuration is structured into three optional strategies: `short`, `medium`, and `long`. Each strategy contains...
+  - JPro screensharing (lines 1493-1528) — Set up your app to be shared among external users.
+    - Step `1`. Setup your PC as a JPro server (lines 1497-1501) — Make sure everything is prepared for your PC to host a JPro server, as explained
+    - Step `2`. Setup for starting through the index.html (lines 1502-1515) — Modify the `index.html` to start your app with **screensharing**, simply by
+    - Step `3`. Let people participate from external browsers (lines 1516-1528) — Start the JPro app from a number of external browsers, all of them using the URL:
+  - Logging (lines 1529-1585)
+    - Customizing Logback Configuration for JPro (lines 1531-1548) — To override the default JPro logging configuration, simply provide a new `logback.xml` file and specify its path
+    - Structured Logging (lines 1549-1585) — JPro provides a set of log messages, for which we guarantee stability.
+- JPro Loadbalancer (lines 1586-1782)
+  - Overview (lines 1588-1630) — The JPro Loadbalancer allows you to run multiple JPro Servers in parallel.
+    - Single Instance per JVM (lines 1600-1608) — With the JPro Loadbalancer you have the choice to set the **_maximum sessions to be accepted per JPro Server_** to 1, in
+    - Configure external servers (lines 1609-1630) — When configuring the `external servers` setup, ensure to set the `one.jpro.loadbalancer.localServerCount` property to 0.
+  - Usage (lines 1631-1659)
+    - Prerequisites (lines 1633-1638) — Make sure you already have a JPro project and a zip file, created with
+    - Steps (lines 1639-1659) — 1. Create for the JPro Loadbalancer a folder F.
+  - Configuration (lines 1660-1742)
+    - An application.properties example (lines 1662-1680) — The file `application.properties` might look like the following:
+    - The application.properties (lines 1681-1727) — The following parameters can be set in the `application.properties`:
+      - Configure `one.jpro.loadbalancer.userHome` property (lines 1706-1727) — The `one.jpro.loadbalancer.userHome` property controls how the user’s home directory is managed across JPro server
+    - Logging properties (lines 1728-1742) — It is also possible to configure different logging properties in the `application.properties`.
+      - Example (lines 1732-1742) — Because the JPro Loadbalancer is technically a simple [Spring Boot server](https://spring.io/projects/spring-boot), all
+  - Windows Service (lines 1743-1782) — To use the [Windows service wrapper](https://github.com/winsw/winsw), we have to do 2 things as a preparation.
+- Additional Information (lines 1783-1893)
+  - FAQ (lines 1784-1831) — * JPro works well with any java library.
+  - JPro checklist (lines 1832-1878) — When using JPro, please be aware of the following important aspects:
+    - Not yet supported JavaFX features (lines 1853-1878) — (this list refers to version 2025.3.1-SNAPSHOT)
+  - Performance tips (lines 1879-1887) — There are some things that can be done to improve the performance for JPro.
+  - [JPro Samples](https://github.com/JPro-one/JPro-Samples/) (lines 1888-1889)
+  - [Issue Tracker](https://github.com/JPro-one/JPro-Tickets) (lines 1890-1893)
+- Resources (lines 1894-1934)
+  - [JavaFX](https://openjfx.io/) (lines 1896-1897)
+  - [Curated JavaFX links](https://github.com/mhrimaz/AwesomeJavaFX#libraries-tools-and-projects) (lines 1898-1899)
+  - Useful projects (lines 1900-1923) — * [QF-Test](https://www.qfs.de/en/product/qf-test/java-testing/javafx.html) A commercial tool to test your JavaFX/JPr...
+  - Blogs & Tutorials (lines 1924-1934) — * The JavaFX Champion und JavaOne Rockstar [Dirk Lemmermann](https://dlsc.com/blog/)'s interesting blog.

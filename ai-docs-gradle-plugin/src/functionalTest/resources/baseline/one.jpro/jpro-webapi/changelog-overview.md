@@ -1,0 +1,213 @@
+# jpro-webapi (2025.3.1)
+Full content: CHANGELOG.md
+
+## Chapters
+- Changelog (lines 1-1713)
+  - 2025.3.1 (September 20, 2025) (lines 3-14)
+  - 2025.3.0 (September 10, 2025) (lines 15-41)
+      - Major (lines 17-24) — * Changed the web framework used internally from Play to Helidon.
+      - Features (lines 25-29) — * Every build is now automatically checked against the NVD (National Vulnerability Database) for security issues.
+      - Bugfixes (lines 30-41) — * Small bugfix for the Maven Plugin. When JAVA_HOME is an empty String, we now fall back to the default java command.
+  - 2025.2.x (lines 42-92)
+    - 2025.2.1 (June 3, 2025) (lines 44-72)
+      - Features (lines 46-53) — * Improved how shortcut key combinations are detected.
+      - Bugfixes (lines 54-72) — * Added a fix for context menus and modality (`Stage.initModality`) where it was previously
+    - 2025.2.0 (April 2, 2025) (lines 73-92)
+      - Features (lines 75-81) — * Added support for JavaFX 24.
+      - Bugfixes (lines 82-89) — * Fixed a regression with Text which happened in some cases when multiple `\n` or `\r` characters were used.
+      - Changes (lines 90-92) — * Updated core dependencies that create the javascript files of JPro.
+  - 2025.1.x (lines 93-120)
+    - 2025.1.0 (January 31, 2025) (lines 95-120)
+      - Features (lines 97-105) — * Added experimental 3D support. It can be activated in the jpro.conf with `jpro.beta.enable3D=true`.
+      - Bugfixes (lines 106-120) — * When `Stage.title` and `Stage.icon` are null, the title and icon of the html page are no longer overwritten.
+  - 2024.4.x (lines 121-167)
+    - 2024.4.1 (November 8, 2024) (lines 123-144)
+      - Changes (lines 125-144) — * Published the `jpro-webapi` artifact to the Maven Central Repository. The artifact is now available at the following
+    - 2024.4.0 (November 5, 2024) (lines 145-167)
+      - Feature (lines 147-160) — * JavaFX 23 (version 23.0.1) is now supported and set as the default version.
+      - Improvements (lines 161-163) — * The implementation JSFile is no longer an anonymous class - making debugging easier.
+      - Bugfixes (lines 164-167) — * Fixed Stages, when the StageStyle `Transparent`, `Unified`, or `Utility` is used.
+  - 2024.3.x (lines 168-275)
+    - 2024.3.3 (September 17, 2024) (lines 170-192)
+      - Features (lines 172-176) — * Added a new `WebAPI.openStageAsTab(Stage stage, String target)` method to the WebAPI. This allows a stage to be opened
+      - Changes (lines 177-181) — * The `WebAPI.registerWindow(Window)` method now returns the instance ID if called multiple times, instead of throwing
+      - Improvements (lines 182-184) — * Improved overall `WebAPI` javadoc documentation.
+      - Bugfixes (lines 185-192) — * Fixed an issue during the creation of the release zip file by preventing duplicate entries.
+    - 2024.3.2 (August 29, 2024) (lines 193-214)
+      - Features (lines 195-199) — * Windows now have Stage decoration and are resizable and movable.
+      - Changes (lines 200-205) — * The root of the JPro Rendering is now the starting stage, instead of its scene. This is only an implementation change
+      - Bugfixes (lines 206-214) — * Fixed an issue with changing the Scene of an additional Stage or Popup.
+    - 2024.3.1 (August 5, 2024) (lines 215-235)
+      - Features (lines 217-219) — * It's now possible to copy out text of **non-editable** TextFields with the keyboard.
+      - Improvements (lines 220-222) — * Removed an unnecessary layout pass when the application is started.
+      - Bugfixes (lines 223-235) — * Fixed issue [#182](https://github.com/JPro-one/JPro-Tickets/issues/182) about the SVG shapes and Path elements not ...
+    - 2024.3.0 (July 11, 2024) (lines 236-275)
+      - Release Notes (lines 238-247) — **If you update to this release, please make sure to update the [JPro Loadbalancer](https://sandec.jfrog.io/ui/native...
+      - Features (lines 248-255) — * Modularize `jpro.webapi` to be in compliance with the Java Platform Module System (JPMS).
+      - Improvements (lines 256-263) — * Rewrote the syntax for the ws connection. Previously it was using the character "!" in some cases,
+      - Bugfixes (lines 264-275) — * Fixed a bug, when the js-client sends very big messages and the JPro Loadbalancer is used.
+  - 2024.2.x (lines 276-353)
+    - 2024.2.1 (June 3, 2024) (lines 278-298)
+      - Features (lines 280-286) — * Added the class `JProTextInputControl`. This class can be used when you have written a custom class similar to
+      - Changes (lines 287-290) — * When using Gradle, the sandec repository is now added at the end of the repositories. This allows the user to
+      - Improvements (lines 291-294) — * The start scripts in the JPro-Release zip now check if a JavaFX build for the current platform is available. If not,
+      - Bugfixes (lines 295-298) — * In Gradle, when an application used the same dependency as JPro, it could sometimes affect the version used by JPro.
+    - 2024.2.0 (May 6, 2024) (lines 299-353)
+      - Release Notes (lines 301-311) — In this release, JPro introduces significant enhancements, including official support for **ARM64** architecture on
+      - Features (lines 312-333) — * ARM64 (aarch64) on Linux is now officially supported for JPro. You can include the Linux ARM64 platform in the release
+      - Improvements (lines 334-346) — * The Gradle plugin now enforces versions of the JPro server dependencies to prevent potential overrides by Maven
+      - Bugfixes (lines 347-353) — * Activation of the module system via the `useModuleSystem` property on the Gradle/Maven plugin and generation of the
+  - 2024.1.x (lines 354-376)
+    - 2024.1.0 (January 10, 2024) (lines 356-376) — This release contains an important Fix for the JavaFX Performance Regression in JavaFX21 [JDK-8322964](https://bugs.o...
+      - Features (lines 359-367) — * Added the method `WebAPI.getLocale()` and `WebAPI.getLocale()` to the WebAPI.
+      - Changes (lines 368-372) — * Updated the Dockerfiles in the JPro-Release zip and in the Documentation.
+      - Bugfixes (lines 373-376) — * Fixed the behaviour of virtual images. URLs containing query parameters work now correctly.
+  - 2023.x.x (lines 377-665)
+    - 2023.3.3 (December 13, 2023) (lines 379-411)
+      - Improvements (lines 381-384) — * Improved the performing when evaluating JS through the WebAPI.
+      - Features (lines 385-399) — * Added new methods to the WebAPI to interact with JavaScript - especially with promises and asynchronous code.
+      - Bugfixes (lines 400-411) — * Fixed Maven release artifacts path for ARM architectures when `mvn jpro:release` is called.
+    - 2023.3.2 (December 8, 2023) (lines 412-415) — * Don't use this version. Instead, update to version 2023.3.3.
+    - 2023.3.1 (October 26, 2023) (lines 416-435)
+      - Features (lines 418-424) — * It's now possible access the MimeTypes of a dragged file with the method `FileHandler.getFilesDragOverTypes()`.
+      - Bugfixes (lines 425-435) — * When a "Snapshot" of a page is created for indexing, then an exception is sometimes thrown since `2023.3.0`.
+    - 2023.3.0 (October 4, 2023) (lines 436-476)
+      - Features (lines 438-463) — * JavaFX21 is now supported and used by default.
+      - Changes (lines 464-466) — * Reduced the CPU usage of an idle JPro instance.
+      - Bugfixes (lines 467-476) — * Removed the accidental `throws Exception` from the method `WebAPI.executeScriptWithVariable`
+    - 2023.2.2 (August 16, 2023) (lines 477-502)
+      - Features (lines 479-487) — * Renamed the newly added method `WebAPI.getHTMLElement` to `WebAPI.getElement`.
+      - Bugfixes (lines 488-502) — * Resolved an issue where, if two or more Canvas nodes were utilized and the same image was rendered in the same frame,
+    - 2023.2.1 (July 3, 2023) (lines 503-515)
+    - 2023.2.0 (June 29, 2023) (lines 516-584)
+      - Features (lines 518-556) — * We now support **JavaFX20** and use it by default!
+      - Changes (lines 557-577) — * Improved the startup time of the JPro server. Several parts are now loaded in parallel.
+      - Bugfixes (lines 578-584) — * Fixed the JavaFX warning message `WARNING: Unsupported JavaFX configuration`
+    - 2023.1.0 (January 16, 2023) (lines 585-665)
+      - UPGRADE INSTRUCTIONS (lines 587-647) — We have completely rewritten the Gradle plugin and Gradle Kotlin DSL is now supported.
+      - Features (lines 648-658) — * Added `JSFile WebAPI.createJSFile(String objectURL, String filename, long size)`.
+      - Bugfixes: (lines 659-665) — * Fixed a bug, which caused JPro to not work, when the domain ended with `.app`.
+  - 2022.x.x (lines 666-858)
+    - 2022.1.8 (November 22, 2022) (lines 668-692)
+      - Features (lines 670-680) — * Added support for the property `Node.viewOrder`. Nodes with viewOrder are now rendered in the correct order. This
+      - Bug Fixes (lines 681-692) — * Fixed a very old bug, that when the Gradle task `jproRun` was stopped, the JPro server was not stopped correctly.
+    - 2022.1.7 (November 6, 2022) (lines 693-707)
+      - Features (lines 695-699) — * Added experimental support for the module system. When setting the property `useModuleSystem` on the Gradle/Maven
+      - Changes (lines 700-702) — * Doubled the default size of the logfiles to 2MB.
+      - Bugfixes (lines 703-707) — * Fixed regressions relating to the reconnect behaviour of the js client.
+    - 2022.1.6 (November 2, 2022) (lines 708-733)
+      - Features (lines 710-720) — * Added an API to upload multiple files at once. Check out the method `WebAPI.makeMultiFileUploadNode(Node)`.
+      - Improvements (lines 721-726) — * Improved logging. When an instance/view is closed, always the reason is reported, and the instanceID.
+      - Bug Fixes (lines 727-733) — * Instances, which are not opened once, are now closed after 1 minute. This could happen with the method
+    - 2022.1.5 (September 27, 2022) (lines 734-747)
+    - 2022.1.4 (August 24, 2022) (lines 748-759)
+    - 2022.1.3 (August 3, 2022) (lines 760-778) — Added support for Java18.
+      - Changes (lines 764-772) — * When using Gradle, by default the same java command is now used, as when running with the application plugin.
+      - Bugfixes (lines 773-778) — * Updated internal libraries and removed no longer needed JVM argument.
+    - 2022.1.2 (May 30, 2022) (lines 779-797) — JPro now also supports **ARM** for Mac and Linux!
+      - Improvements (lines 783-786) — * Fixed a performance issue. This was especially harmful when running the JPro Loadbalancer with multiple JPro servers
+      - Features (lines 787-792) — * JPro supports **ARM** for Mac and Linux!
+      - Bugfixes (lines 793-797) — * Fixed an issue with Apache as a Reverse Proxy. In some cases the URLs generated by JPro were manipulated in a way,
+    - 2022.1.1 (April 8, 2022) (lines 798-829) — Added support for JavaFX 18!
+      - Features (lines 803-816) — * Added the method `WebAPI.closeInstance()`.
+      - Bugfixes (lines 817-829) — * Fixed a bug related to TextInput, when switching the focus between different windows.
+    - 2022.1.0 (March 1, 2022) (lines 830-858) — This version provides a new and efficient way/API for loading and rendering what we call “virtual images” in JPro. When
+      - Features (lines 839-853) — * Added support for real time updates of changes taking place in WritableImages.
+      - Bugfixes (lines 854-858) — * The Gradle task `jproRun` is now part of the task group `jpro`.
+  - 2021.x.x (lines 859-1066)
+    - 2021.2.3 (February 9, 2022) (lines 861-901)
+      - Summary (lines 863-865) — this update focuses on features for our new JPro loadbalancer. It also provides many minor improvements and bug fixes.
+      - Features (lines 866-880) — * The new id can now be set as a query parameter when starting a new instance (`?newInstanceID=<newid>`). This is useful
+      - Changes (lines 881-891) — * The websocket connection is now done on the url /app/ws/<appname> instead of /app/<appname>. This is only an internal
+      - Bugfixes (lines 892-901) — * The white background of Stages with transparent fill and without `StageStyle.TRANSPARENT`, is now rendered correctly.
+    - 2021.2.2 (December 1, 2021) (lines 902-921)
+      - Features (lines 904-908) — * Merged our JavaFX17 fork with the latest JavaFX version 17.0.1
+      - Bugfixes (lines 909-921) — * Fixed a regression with the JavaFX17 build for Linux. It works again for Ubuntu18.04.
+    - 2021.2.1 (November 15, 2021) (lines 922-953)
+      - Features (lines 924-933) — * Added support for the property `Node.nodeOrientation`.
+      - Bugfixes (lines 934-953) — * Fixed the control accelerator memory
+    - 2021.2.0 (October 5, 2021) (lines 954-974)
+      - Features (lines 956-969) — * JPro now uses JavaFX17 by default!
+      - Bugfixes (lines 970-974) — * Fixed corner cases for `WebAPI.getWebAPI(Node node, WebAPIConsumer consumer)`.
+    - 2021.1.4 (September 2, 2021) (lines 975-988)
+    - 2021.1.3 (August 2, 2021) (lines 989-997)
+    - 2021.1.2 (July 5, 2021) (lines 998-1018)
+      - Features (lines 1000-1011) — * JPro now always uses UTF-8 as the default encoding for the JVM.
+      - Bugfixes (lines 1012-1018) — * Fixed the rendering of the padding for TextFlow. In some situations, the wrong padding was used.
+    - 2021.1.1 (May 19, 2021) (lines 1019-1034)
+      - Features (lines 1021-1027) — * Support for Java16.
+      - Bugfixes (lines 1028-1034) — * Fixed an issue with Gradle 7.x. In the zip created by JProRelease.
+    - 2021.1.0 (May 11, 2021) (lines 1035-1066)
+      - Features (lines 1037-1053) — * JPro now uses JavaFX16 by default.
+      - Bugfixes (lines 1054-1066) — * Fixed the rendering of diacritical letters and other glyphs composed of multiple characters.
+  - 2020.x.x (lines 1067-1186)
+    - 2020.1.6 (April 20, 2021) (lines 1069-1078) — * Moved to a new repository for hosting the artifacts because of
+    - 2020.1.5 (March 24, 2021) (lines 1079-1093)
+      - Features (lines 1081-1086) — * Added an error message to be thrown when an unsupported JVM which bundles JavaFX is used. A JVM which bundles JavaFX
+      - Bugfixes (lines 1087-1093) — * Fixes for MouseEvents. Now, when a Session is closed, a MouseExited-Event with the last mouse position is sent. Before
+    - 2020.1.4 (February 16, 2021) (lines 1094-1111)
+      - Features (lines 1096-1099) — * Added **Docker Compose** to the JProRelease.
+      - Bugfixes (lines 1100-1111) — * Fixed a startup error on Window. The Maven and Gradle Plugin now forwards the classpath for JPro Itself through a file
+    - 2020.1.3 (January 27, 2021) (lines 1112-1121)
+    - 2020.1.2 (January 5, 2021) (lines 1122-1133) — This release uses a new version of our JavaFX Fork.
+    - 2020.1.1 (December 7, 2020) (lines 1134-1157)
+      - Features (lines 1136-1143) — * JPro now automatically renders Stages with an Owner, as part of the application.
+      - Bugfixes (lines 1144-1154) — * Fixed a rare case where the FileHandler wasn't working with Safari.
+      - Regression (lines 1155-1157) — * With the current version, in some rare cases the mouse-cursor in Safari is wrong.
+    - 2020.1.0 (October 19, 2020) (lines 1158-1186) — JPro now supports **JavaFX14** and **JavaFX15**.
+      - Breaking Changes: (lines 1164-1168) — * The scripts in the bin folder of the JProReleaseZip now behave differently.
+      - Features (lines 1169-1177) — * JPro now always renders snapshot properly, without any configuration.
+      - Bugfixes (lines 1178-1186) — * JPro now supports Gradle 6.6.x
+  - 2019.x.x (lines 1187-1437)
+    - 2019.2.7 (August 13, 2020) (lines 1189-1205)
+      - Features (lines 1191-1199) — * New Cookie API!
+      - Bugfixes (lines 1200-1205) — * The way the `WebAPI.downloadURL()` works was changed. It's now simpler and fixes a bug with the Firefox Version 78.
+    - 2019.2.6 (July 21, 2020) (lines 1206-1216)
+    - 2019.2.5 (June 30, 2020) (lines 1217-1234)
+      - Features (lines 1219-1224) — * BoxShadows! JPro now uses box-shadows when possible.
+      - Bugfixes (lines 1225-1234) — * Fixed a bug in the Maven plugin.
+    - 2019.2.4 (June 2, 2020) (lines 1235-1251)
+      - Features (lines 1237-1241) — * Added the Method `getHeaders` to the WebAPI.
+      - Bugfixes (lines 1242-1251) — * The method `WebAPI.executeScript` no longer serializes the result of the provided javascript code.
+    - 2019.2.3 (April 20, 2020) (lines 1252-1260)
+    - Bugfixes (lines 1261-1270) — * Dotted lines in Regions are now rendered correctly with the new rendering engine.
+    - 2019.2.2 (February 4, 2020) (lines 1271-1293)
+      - Features (lines 1273-1275) — * Gradients, Images and Effects now implemented for Canvas, as well.
+      - Minors (lines 1276-1279) — * The WebAPI now supports a method (`WebAPI.setLossless(image,false)`) to mark an image which can transferred with a
+      - Bugfixes (lines 1280-1293) — * Fixed a rare rendering bug. In some situations border/background of a region was rendered above its children.
+    - 2019.2.1 (December 23, 2019) (lines 1294-1313)
+      - Minors (lines 1296-1301) — * Canvas now supports the methods ‘drawImage’ and ‘setGlobalAlpha’.
+      - Bugfixes (lines 1302-1313) — * Fixed a bug in the Canvas implementation. In some situations, Canvas elements were rendered without necessity.
+    - 2019.2.0 (December 4, 2019) (lines 1314-1332)
+      - Majors (lines 1316-1321) — * Canvas support!
+      - Minors (lines 1322-1326) — * Google indexing is now working.
+      - Bugfixes (lines 1327-1332) — * Fixed exception for the case that an application was opened without an initial Scene.
+    - 2019.1.3 (September 24, 2019) (lines 1333-1345)
+    - 2019.1.2 (September 11, 2019) (lines 1346-1363)
+      - Features: (lines 1348-1352) — * Added the property `selectedFileSize` to the [FileUploader](/api/2019.1.2/com/jpro/webapi/WebAPI.FileUploader.html).
+      - Bugfixes: (lines 1353-1363) — * Fixed a performance regression that was introduced in 2019.1.0. It has a significant impact when many nodes are
+    - 2019.1.1 (June 17, 2019) (lines 1364-1387)
+      - Features: (lines 1366-1372) — * Added the methods
+      - Bugfixes (lines 1373-1387) — * In the JPro renderer, reduced CPU usage by about 10%. Before this fix JPro could allocate upto 10% of the local CPU at
+    - 2019.1.0 (May 28, 2019) (lines 1388-1437) — This release by default uses a forked version of JavaFX11.
+      - Features for the forked JavaFX11 (lines 1398-1406) — * JPro now supports the method **snapshot** from Node.
+      - Big features (lines 1407-1424) — * For Linux, we now use different default fonts, because the Lucida fonts were removed from the OpenJDK, which resulted
+      - Small Features (lines 1425-1431) — * The JavaDoc and the source code of the WebAPI are now published as Maven artifacts. This should improve tooling for
+      - Bugfixes (lines 1432-1437) — * Fixed a rendering issue with Pie Chart. It happened to Regions with (a) width and height property equal zero and (b)
+  - 2018.x.x (lines 1438-1713)
+    - 2018.1.14 (May 15, 2019) (lines 1440-1444) — **JPro** fixes:
+    - 2018.1.13 (April 10, 2019) (lines 1445-1460) — **JPro** features:
+    - 2018.1.12 (March 17, 2019) (lines 1461-1480) — **JPro** features:
+    - 2018.1.11 (February 11, 2019) (lines 1481-1495) — **JPro** features:
+    - 2018.1.10 (January 7, 2019) (lines 1496-1527) — **JPro** features:
+    - 2018.1.9 (November 26, 2018) (lines 1528-1570) — **JPro** fixes:
+    - 2018.1.8 (November 12, 2018) (lines 1571-1597) — **JPro Supports now Java/JavaFX 11!**
+    - 2018.1.7 (October 22, 2018) (lines 1598-1609)
+    - 2018.1.6 (October 1, 2018) (lines 1610-1638)
+      - Bugfixes (lines 1612-1638) — * A memory-leak could happen inside of JavaFX, when a node was removed from the scene-graph while the rendering was
+    - 2018.1.5 (July 23, 2018) (lines 1639-1650) — * Maven : Added an experimental version for a
+    - 2018.1.4 (July 3, 2018) (lines 1651-1667) — * JPro  : Improved rendering when using `Region.setShape`.
+    - 2018.1.3 (June 4, 2018) (lines 1668-1689) — * JPro  : Significant performance improvements. The SVG-Dom is now much smaller.
+    - 2018.1.2 (April 19, 2018) (lines 1690-1703) — * ***Added Support for Java10!***
+    - 2018.1.1 (April 4, 2018) (lines 1704-1712) — * Improved error-message, when a file couldn't be found in the package jpro/html
+    - 2018.1.0 (March 13, 2018) (lines 1713-1713)

@@ -1,0 +1,30 @@
+# jpro-webapi (2025.3.1) — Source Index
+Source jar: sources.jar
+To read a source file: `unzip -p sources.jar <path>`
+
+## Packages
+- (default package) (1 file)
+  - module-info.java (12 lines)
+- com.jpro.webapi (14 files)
+  - HTMLView.java (128 lines)
+  - InstanceCloseListener.java (15 lines)
+  - InstanceInfo.java (136 lines)
+  - JProApplication.java (33 lines)
+  - JProTextInputControl.java (138 lines)
+  - JSVariable.java (231 lines)
+  - PromiseJSVariable.java (71 lines)
+  - SVGView.java (61 lines)
+  - ScriptResultListener.java (15 lines)
+  - ServerInfo.java (259 lines)
+  - StageView.java (81 lines)
+  - WebAPI.java (1116 lines)
+  - WebAPIConsumer.java (17 lines)
+  - WebCallback.java (17 lines)
+- com.jpro.webapi.annotation (1 file)
+  - Experimental.java (21 lines)
+- com.jpro.webapi.js (1 file)
+  - JS.java (39 lines)
+- com.jpro.webapi.server (3 files)
+  - Request.java (72 lines)
+  - Response.java (135 lines)
+  - ServerAPI.java (64 lines)

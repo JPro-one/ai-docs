@@ -73,8 +73,11 @@ public abstract class CollectDocsTask extends DefaultTask {
         DocsCollector.generateContextAndIndex(outputDir, entries, getContextMinLines().get());
 
         Path skillDir = Path.of(getSkillDirectory().get());
-        DocsCollector.generateSkill(skillDir, getRelativeDocsDir().get(), BuildTool.GRADLE);
-        getLogger().lifecycle("Generated AI skill at .claude/skills/docs/SKILL.md");
+        if (DocsCollector.generateSkill(skillDir, getRelativeDocsDir().get(), BuildTool.GRADLE)) {
+            getLogger().lifecycle("Generated AI skill at .claude/skills/docs/SKILL.md");
+        } else {
+            getLogger().lifecycle("Skipped .claude/skills/docs/SKILL.md (user-modified)");
+        }
 
         getLogger().lifecycle("Collected documentation for {} libraries into {}", entries.size(), outputDir);
     }

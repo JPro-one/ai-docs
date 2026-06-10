@@ -266,9 +266,7 @@ class CollectDocsFunctionalTest {
     }
 
     @Test
-    void collectDocsFromBuildscriptDependency() throws IOException {
-        // Put jpro-routing-core in the buildscript classpath (not project dependencies)
-        // to verify that buildscript scanning picks it up
+    void buildscriptDependenciesSkippedByDefault() throws IOException {
         Files.writeString(projectDir.resolve("build.gradle"), """
                 buildscript {
                 """ + JPRO_REPOS + """
@@ -282,6 +280,40 @@ class CollectDocsFunctionalTest {
                 }
                 repositories {
                     mavenCentral()
+                }
+                """);
+
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(projectDir.toFile())
+                .withArguments("collectDocs")
+                .withPluginClasspath()
+                .build();
+
+        assertThat(result.task(":collectDocs").getOutcome()).isEqualTo(SUCCESS);
+
+        // Buildscript-only dependencies are not documented by default
+        String index = Files.readString(projectDir.resolve("build/ai-docs/index.md"));
+        assertThat(index).doesNotContain("jpro-routing-core");
+    }
+
+    @Test
+    void collectDocsFromBuildscriptDependencyWhenEnabled() throws IOException {
+        Files.writeString(projectDir.resolve("build.gradle"), """
+                buildscript {
+                """ + JPRO_REPOS + """
+                    dependencies {
+                        classpath 'one.jpro.platform:jpro-routing-core:0.5.8'
+                    }
+                }
+                plugins {
+                    id 'java'
+                    id 'one.jpro.aidocs'
+                }
+                repositories {
+                    mavenCentral()
+                }
+                aiDocs {
+                    includeBuildscript = true
                 }
                 """);
 

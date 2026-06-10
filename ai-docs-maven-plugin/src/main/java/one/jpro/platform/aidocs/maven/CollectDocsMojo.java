@@ -94,8 +94,11 @@ public class CollectDocsMojo extends AbstractMojo {
 
             Path skillDir = project.getBasedir().toPath().resolve(".claude/skills/docs");
             String relativeDocsDir = project.getBasedir().toPath().relativize(outputDir).toString();
-            DocsCollector.generateSkill(skillDir, relativeDocsDir, BuildTool.MAVEN);
-            getLog().info("Generated AI skill at .claude/skills/docs/SKILL.md");
+            if (DocsCollector.generateSkill(skillDir, relativeDocsDir, BuildTool.MAVEN)) {
+                getLog().info("Generated AI skill at .claude/skills/docs/SKILL.md");
+            } else {
+                getLog().info("Skipped .claude/skills/docs/SKILL.md (user-modified)");
+            }
 
             getLog().info("Collected documentation for " + entries.size() + " libraries into " + outputDir);
         } catch (IOException e) {

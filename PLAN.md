@@ -132,7 +132,4 @@ Publishing is just convention — no plugin needed. Library authors:
 
 ## Open Improvements
 
-- **Buildscript scanning opt-in** — the index currently lists the ai-docs plugin itself; needs a DSL extension to opt out.
-- **Snapshot regression test** — diff generated example output against `snapshots/baseline/` to catch generator regressions.
-- **SKILL.md overwrite protection** — don't silently overwrite a user-edited SKILL.md; declare it as a task output.
-- **License + publishing prep** — pick a license, add POM metadata, publish to Plugin Portal / Maven Central.
+- **Publishing** — publish to Gradle Plugin Portal / Maven Central (license: Apache-2.0, done).

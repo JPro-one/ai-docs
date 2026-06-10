@@ -69,4 +69,23 @@ class SkillGeneratorTest {
 
         assertThat(skillFile).exists();
     }
+
+    @Test
+    void overwritesPreviouslyGeneratedFile(@TempDir Path tempDir) throws IOException {
+        Path skillFile = tempDir.resolve("SKILL.md");
+        assertThat(SkillGenerator.generate(skillFile, "build/ai-docs", BuildTool.GRADLE)).isTrue();
+
+        assertThat(SkillGenerator.generate(skillFile, "other/dir", BuildTool.GRADLE)).isTrue();
+        assertThat(Files.readString(skillFile)).contains("other/dir/");
+    }
+
+    @Test
+    void leavesUserModifiedFileUntouched(@TempDir Path tempDir) throws IOException {
+        Path skillFile = tempDir.resolve("SKILL.md");
+        String userContent = "# My own skill\nHand-written, no marker.\n";
+        Files.writeString(skillFile, userContent);
+
+        assertThat(SkillGenerator.generate(skillFile, "build/ai-docs", BuildTool.GRADLE)).isFalse();
+        assertThat(Files.readString(skillFile)).isEqualTo(userContent);
+    }
 }

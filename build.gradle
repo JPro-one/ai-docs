@@ -14,7 +14,7 @@ subprojects {
         mavenCentral()
         gradlePluginPortal()
         maven {
-            url "https://sandec.jfrog.io/artifactory/repo"
+            url = "https://sandec.jfrog.io/artifactory/repo"
         }
     }
 
@@ -24,8 +24,18 @@ subprojects {
                 name = "artifactory"
                 url = "https://sandec.jfrog.io/artifactory/repo"
                 credentials {
-                    username System.getenv("SANDEC_ARTIFACTORY_USERNAME")
-                    password System.getenv("SANDEC_ARTIFACTORY_PASSWORD")
+                    username = System.getenv("SANDEC_ARTIFACTORY_USERNAME")
+                    password = System.getenv("SANDEC_ARTIFACTORY_PASSWORD")
+                }
+            }
+        }
+        publications.withType(MavenPublication).configureEach {
+            pom {
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
                 }
             }
         }

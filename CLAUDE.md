@@ -41,7 +41,9 @@ cd example-maven && mvn one.jpro.aidocs:ai-docs-maven-plugin:collect-docs
 - Group: `one.jpro.aidocs`, Version: `0.1.0-SNAPSHOT`
 - Task output goes to `build/ai-docs/` (Maven: `target/ai-docs/`)
 - Gradle: each project gets a `collectDocsPartial` task (auto-applied to subprojects) writing to `build/ai-docs-partial/`; the `collectDocs` task aggregates all partials. Artifact resolution happens at configuration time (inside the task configuration action, so only when the task is requested) — the tasks themselves are configuration-cache compatible
-- Only configurations whose name contains "classpath" are scanned (including buildscript configurations)
+- Only configurations whose name contains "classpath" are scanned; buildscript configurations only with `aiDocs { includeBuildscript = true }` (default off)
+- The generated SKILL.md contains a marker comment; if a user removes it (took ownership), the plugins never overwrite the file
+- Generator regressions are caught by `BaselineRegressionTest`, which diffs generated output for pinned release deps against `ai-docs-gradle-plugin/src/functionalTest/resources/baseline/` (regenerate with `-DupdateBaseline=true`)
 - Per dependency, the plugins try to resolve: `DOCUMENTATION@md`, `sources@jar`, `CHANGELOG@md`, and the POM (for metadata + parent-POM traversal)
 - Dependencies without any of these artifacts are silently skipped (logged at debug level)
 - A skill file is generated at `.claude/skills/docs/SKILL.md` from the root `SKILL.md` template (copied into ai-docs-core resources at build time)

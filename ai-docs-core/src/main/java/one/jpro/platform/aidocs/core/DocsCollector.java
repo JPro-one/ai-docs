@@ -123,9 +123,10 @@ public class DocsCollector {
      * @param skillDir the directory to write SKILL.md into (e.g. .claude/skills/docs)
      * @param docsOutputDir the relative path to the docs output directory (e.g. "build/ai-docs")
      * @param buildTool the build tool whose collect command should be referenced
+     * @return true if the file was written, false if a user-owned file was left untouched
      */
-    public static void generateSkill(Path skillDir, String docsOutputDir, BuildTool buildTool) throws IOException {
-        SkillGenerator.generate(skillDir.resolve("SKILL.md"), docsOutputDir, buildTool);
+    public static boolean generateSkill(Path skillDir, String docsOutputDir, BuildTool buildTool) throws IOException {
+        return SkillGenerator.generate(skillDir.resolve("SKILL.md"), docsOutputDir, buildTool);
     }
 
     /**

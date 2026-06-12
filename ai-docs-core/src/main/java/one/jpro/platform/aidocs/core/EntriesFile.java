@@ -33,7 +33,8 @@ public class EntriesFile {
                     enc(pom == null ? null : pom.description()),
                     enc(pom == null ? null : pom.url()),
                     enc(pom == null ? null : pom.scmUrl()),
-                    enc(pom == null ? null : pom.license())
+                    enc(pom == null ? null : pom.license()),
+                    String.valueOf(e.testOnly())
             )).append("\n");
         }
         Files.writeString(file, sb.toString());
@@ -51,6 +52,9 @@ public class EntriesFile {
                     .withHasSources(Boolean.parseBoolean(f[4]))
                     .withHasChangelog(Boolean.parseBoolean(f[5]))
                     .withJavadocGuideTitles(guideTitles);
+            if (f.length > 12) {
+                entry = entry.withTestOnly(Boolean.parseBoolean(f[12]));
+            }
             var pom = new PomMetadata(dec(f[7]), dec(f[8]), dec(f[9]), dec(f[10]), dec(f[11]));
             if (pom.name() != null || pom.description() != null || pom.url() != null
                     || pom.scmUrl() != null || pom.license() != null) {

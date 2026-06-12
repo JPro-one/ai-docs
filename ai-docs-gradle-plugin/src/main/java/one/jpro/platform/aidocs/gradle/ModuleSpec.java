@@ -14,14 +14,16 @@ import java.util.stream.Stream;
  * The POM chain holds the module's own POM first, then its parents upward.
  */
 record ModuleSpec(String group, String name, String version,
-                  File doc, File sources, File changelog, File javadoc, List<File> pomChain) {
+                  File doc, File sources, File changelog, File javadoc, List<File> pomChain,
+                  boolean testOnly) {
 
     String encode() {
         String poms = pomChain.stream().map(ModuleSpec::encFile)
                 .reduce((a, b) -> a + ";" + b).orElse("");
         return String.join("\t",
                 enc(group), enc(name), enc(version),
-                encFile(doc), encFile(sources), encFile(changelog), encFile(javadoc), poms);
+                encFile(doc), encFile(sources), encFile(changelog), encFile(javadoc), poms,
+                String.valueOf(testOnly));
     }
 
     static ModuleSpec decode(String encoded) {
@@ -29,7 +31,8 @@ record ModuleSpec(String group, String name, String version,
         List<File> poms = f[7].isEmpty() ? List.of()
                 : Stream.of(f[7].split(";")).map(ModuleSpec::decFile).toList();
         return new ModuleSpec(dec(f[0]), dec(f[1]), dec(f[2]),
-                decFile(f[3]), decFile(f[4]), decFile(f[5]), decFile(f[6]), poms);
+                decFile(f[3]), decFile(f[4]), decFile(f[5]), decFile(f[6]), poms,
+                f.length > 8 && Boolean.parseBoolean(f[8]));
     }
 
     List<File> files() {

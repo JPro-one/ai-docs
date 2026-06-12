@@ -36,6 +36,40 @@ class IndexGeneratorTest {
     }
 
     @Test
+    void testDependenciesListedInOwnSection() {
+        var mainLib = DocEntry.of("com.example", "app-lib", "1.0");
+        var testLib = DocEntry.of("org.junit", "junit-x", "5.0").withTestOnly(true);
+        String context = """
+                # Project Documentation Context
+
+                ## com.example:app-lib:1.0
+                Full docs: x
+
+                # Test Dependencies
+
+                ## org.junit:junit-x:5.0
+                Sources: y
+                """;
+
+        String result = IndexGenerator.generate(List.of(testLib, mainLib), context);
+
+        assertThat(result).contains("## Libraries");
+        assertThat(result).contains("## Test Dependencies");
+        assertThat(result.indexOf("app-lib")).isLessThan(result.indexOf("## Test Dependencies"));
+        assertThat(result.indexOf("## Test Dependencies")).isLessThan(result.indexOf("junit-x"));
+    }
+
+    @Test
+    void noTestSectionWithoutTestDependencies() {
+        var mainLib = DocEntry.of("com.example", "app-lib", "1.0");
+        String context = "## com.example:app-lib:1.0\nFull docs: x\n";
+
+        String result = IndexGenerator.generate(List.of(mainLib), context);
+
+        assertThat(result).doesNotContain("Test Dependencies");
+    }
+
+    @Test
     void multipleEntries() {
         var entries = List.of(
                 DocEntry.of("one.jpro.platform", "jpro-file", "0.5.8").withDescription("File handling library."),

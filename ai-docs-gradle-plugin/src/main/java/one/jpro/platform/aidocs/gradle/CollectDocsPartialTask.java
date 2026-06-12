@@ -53,7 +53,7 @@ public abstract class CollectDocsPartialTask extends DefaultTask {
         List<DocEntry> entries = new ArrayList<>();
         for (String encoded : getModuleSpecs().get()) {
             ModuleSpec spec = ModuleSpec.decode(encoded);
-            var entry = DocEntry.of(spec.group(), spec.name(), spec.version());
+            var entry = DocEntry.of(spec.group(), spec.name(), spec.version()).withTestOnly(spec.testOnly());
             DocEntry enriched = entry;
 
             if (spec.doc() != null) {

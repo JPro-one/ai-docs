@@ -20,6 +20,7 @@ class EntriesFileTest {
                 .withHasSources(true)
                 .withHasChangelog(true)
                 .withJavadocGuideTitles(List.of("CSS Reference Guide", "FXML Intro"))
+                .withTestOnly(true)
                 .withPomMetadata(pom);
         var minimal = DocEntry.of("org.other", "bare", "2.0");
 

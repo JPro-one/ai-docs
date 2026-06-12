@@ -566,6 +566,39 @@ class CollectDocsFunctionalTest {
     }
 
     @Test
+    void testDependenciesAreListedSeparately() throws IOException {
+        Files.writeString(projectDir.resolve("build.gradle"), """
+                plugins {
+                    id 'java'
+                    id 'one.jpro.aidocs'
+                }
+                """ + JPRO_REPOS + """
+                dependencies {
+                    implementation 'one.jpro.platform:jpro-routing-core:0.5.8'
+                    testImplementation 'com.google.code.gson:gson:2.11.0'
+                }
+                """);
+
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(projectDir.toFile())
+                .withArguments("collectDocs")
+                .withPluginClasspath()
+                .build();
+
+        assertThat(result.task(":collectDocs").getOutcome()).isEqualTo(SUCCESS);
+
+        String index = Files.readString(projectDir.resolve("build/ai-docs/index.md"));
+        assertThat(index).contains("## Test Dependencies");
+        // gson is test-only and must appear after the section header; routing before it
+        assertThat(index.indexOf("jpro-routing-core")).isLessThan(index.indexOf("## Test Dependencies"));
+        assertThat(index.indexOf("## Test Dependencies")).isLessThan(index.indexOf("gson"));
+
+        String context = Files.readString(projectDir.resolve("build/ai-docs/context.md"));
+        assertThat(context).contains("# Test Dependencies");
+        assertThat(context.indexOf("# Test Dependencies")).isLessThan(context.indexOf("com.google.code.gson"));
+    }
+
+    @Test
     void worksWithConfigurationCache() throws IOException {
         Files.writeString(projectDir.resolve("build.gradle"), """
                 plugins {

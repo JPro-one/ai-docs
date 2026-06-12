@@ -7,33 +7,37 @@ import java.util.List;
  */
 public record DocEntry(String group, String name, String version, String description,
                        boolean hasSources, boolean hasChangelog, List<String> javadocGuideTitles,
-                       PomMetadata pomMetadata) {
+                       PomMetadata pomMetadata, boolean testOnly) {
 
     /**
      * Creates a DocEntry with the required fields. Use {@code with*()} methods to set optional fields.
      */
     public static DocEntry of(String group, String name, String version) {
-        return new DocEntry(group, name, version, null, false, false, List.of(), null);
+        return new DocEntry(group, name, version, null, false, false, List.of(), null, false);
     }
 
     public DocEntry withDescription(String description) {
-        return new DocEntry(group, name, version, description, hasSources, hasChangelog, javadocGuideTitles, pomMetadata);
+        return new DocEntry(group, name, version, description, hasSources, hasChangelog, javadocGuideTitles, pomMetadata, testOnly);
     }
 
     public DocEntry withHasSources(boolean hasSources) {
-        return new DocEntry(group, name, version, description, hasSources, hasChangelog, javadocGuideTitles, pomMetadata);
+        return new DocEntry(group, name, version, description, hasSources, hasChangelog, javadocGuideTitles, pomMetadata, testOnly);
     }
 
     public DocEntry withHasChangelog(boolean hasChangelog) {
-        return new DocEntry(group, name, version, description, hasSources, hasChangelog, javadocGuideTitles, pomMetadata);
+        return new DocEntry(group, name, version, description, hasSources, hasChangelog, javadocGuideTitles, pomMetadata, testOnly);
     }
 
     public DocEntry withJavadocGuideTitles(List<String> javadocGuideTitles) {
-        return new DocEntry(group, name, version, description, hasSources, hasChangelog, javadocGuideTitles, pomMetadata);
+        return new DocEntry(group, name, version, description, hasSources, hasChangelog, javadocGuideTitles, pomMetadata, testOnly);
     }
 
     public DocEntry withPomMetadata(PomMetadata pomMetadata) {
-        return new DocEntry(group, name, version, description, hasSources, hasChangelog, javadocGuideTitles, pomMetadata);
+        return new DocEntry(group, name, version, description, hasSources, hasChangelog, javadocGuideTitles, pomMetadata, testOnly);
+    }
+
+    public DocEntry withTestOnly(boolean testOnly) {
+        return new DocEntry(group, name, version, description, hasSources, hasChangelog, javadocGuideTitles, pomMetadata, testOnly);
     }
 
     public boolean hasJavadocGuides() {

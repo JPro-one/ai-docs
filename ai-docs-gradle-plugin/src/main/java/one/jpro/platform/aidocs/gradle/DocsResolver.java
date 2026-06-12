@@ -12,6 +12,7 @@ import org.gradle.api.artifacts.result.ResolvedArtifactResult;
 import org.gradle.api.artifacts.result.ResolvedComponentResult;
 import org.gradle.api.artifacts.result.ResolvedDependencyResult;
 import org.gradle.api.component.Artifact;
+import org.gradle.api.invocation.Gradle;
 import org.gradle.jvm.JvmLibrary;
 import org.gradle.language.base.artifact.SourcesArtifact;
 import org.gradle.language.java.artifact.JavadocArtifact;
@@ -19,28 +20,60 @@ import org.gradle.language.java.artifact.JavadocArtifact;
 import java.io.File;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Resolves documentation artifacts (DOCUMENTATION.md, sources.jar, CHANGELOG.md, POM)
- * for all dependencies of a project. Runs at configuration time, so the resulting
+ * Resolves documentation artifacts (DOCUMENTATION.md, sources.jar, CHANGELOG.md, javadoc
+ * jar, POM) for all dependencies of a project. Runs at configuration time, so the resulting
  * {@link ModuleSpec}s can be wired into the task as plain, configuration-cache-safe inputs.
+ *
+ * Per-coordinate resolution results are shared across all projects of one build invocation
+ * — in multi-module builds most coordinates appear in many subprojects.
  */
 class DocsResolver {
+
+    /** Resolved artifacts of one module, cacheable across projects within one build. */
+    private record ResolvedModule(File doc, File sources, File changelog, File javadoc,
+                                  List<File> pomChain, String[] parent) {}
+
+    /**
+     * Cache keyed by the build invocation (Gradle instance), so a long-lived daemon
+     * never serves stale results to a later build. Entries are weakly referenced.
+     */
+    private static final Map<Gradle, Map<String, ResolvedModule>> RESOLUTION_CACHE =
+            Collections.synchronizedMap(new WeakHashMap<>());
 
     static List<ModuleSpec> resolve(Project project, boolean includeBuildscript) {
         List<ModuleSpec> specs = new ArrayList<>();
         Set<String> seenCoordinates = new HashSet<>();
         List<String> shadowedByMavenLocal = new ArrayList<>();
 
-        scanConfigurations(project, project.getConfigurations(), project.getDependencies(),
-                specs, seenCoordinates, shadowedByMavenLocal);
+        // Gather coordinates first: a coordinate is test-only when it appears in
+        // test classpaths but no main classpath
+        Map<String, String[]> mainCoords = new LinkedHashMap<>();
+        Map<String, String[]> testCoords = new LinkedHashMap<>();
+        gatherCoordinates(project.getConfigurations(), mainCoords, testCoords);
+        testCoords.keySet().removeAll(mainCoords.keySet());
+
+        processQueue(project, project.getConfigurations(), project.getDependencies(),
+                mainCoords.values(), false, specs, seenCoordinates, shadowedByMavenLocal);
+        processQueue(project, project.getConfigurations(), project.getDependencies(),
+                testCoords.values(), true, specs, seenCoordinates, shadowedByMavenLocal);
+
         if (includeBuildscript) {
-            scanConfigurations(project, project.getBuildscript().getConfigurations(),
-                    project.getBuildscript().getDependencies(), specs, seenCoordinates, shadowedByMavenLocal);
+            // Buildscript dependencies resolve against the buildscript's own repositories
+            Map<String, String[]> buildscriptCoords = new LinkedHashMap<>();
+            gatherCoordinates(project.getBuildscript().getConfigurations(), buildscriptCoords, new LinkedHashMap<>());
+            processQueue(project, project.getBuildscript().getConfigurations(), project.getBuildscript().getDependencies(),
+                    buildscriptCoords.values(), false, specs, seenCoordinates, shadowedByMavenLocal);
         }
 
         if (!shadowedByMavenLocal.isEmpty()) {
@@ -55,6 +88,128 @@ class DocsResolver {
         }
 
         return specs;
+    }
+
+    /**
+     * Collects all module coordinates of the resolvable classpath configurations,
+     * classified by whether they appear on a non-test classpath.
+     */
+    private static void gatherCoordinates(ConfigurationContainer configurations,
+                                          Map<String, String[]> mainCoords, Map<String, String[]> testCoords) {
+        for (Configuration config : configurations) {
+            if (!config.isCanBeResolved()) continue;
+            String configName = config.getName().toLowerCase();
+            if (!configName.contains("classpath")) continue;
+            boolean isTest = configName.contains("test");
+
+            Set<Object> visitedComponents = new HashSet<>();
+            ResolvedComponentResult root = config.getIncoming().getResolutionResult().getRoot();
+            Deque<ResolvedComponentResult> queue = new ArrayDeque<>();
+            queue.add(root);
+            while (!queue.isEmpty()) {
+                ResolvedComponentResult component = queue.poll();
+                if (!visitedComponents.add(component.getId())) continue;
+
+                for (var depResult : component.getDependencies()) {
+                    if (depResult instanceof ResolvedDependencyResult resolved) {
+                        queue.add(resolved.getSelected());
+                    }
+                }
+
+                if (!(component.getId() instanceof ModuleComponentIdentifier moduleId)) {
+                    continue;
+                }
+                String[] coord = {moduleId.getGroup(), moduleId.getModule(), moduleId.getVersion()};
+                String key = coord[0] + ":" + coord[1] + ":" + coord[2];
+                (isTest ? testCoords : mainCoords).putIfAbsent(key, coord);
+            }
+        }
+    }
+
+    private static void processQueue(Project project,
+                                     ConfigurationContainer configurations, DependencyHandler dependencies,
+                                     java.util.Collection<String[]> coords, boolean testOnly,
+                                     List<ModuleSpec> specs, Set<String> seenCoordinates,
+                                     List<String> shadowedByMavenLocal) {
+        Deque<String[]> modulesToProcess = new ArrayDeque<>(coords);
+        while (!modulesToProcess.isEmpty()) {
+            String[] module = modulesToProcess.poll();
+            processModule(project, configurations, dependencies, module[0], module[1], module[2], testOnly,
+                    specs, seenCoordinates, modulesToProcess, shadowedByMavenLocal);
+        }
+    }
+
+    private static void processModule(Project project,
+                                      ConfigurationContainer configurations, DependencyHandler dependencies,
+                                      String group, String name, String version, boolean testOnly,
+                                      List<ModuleSpec> specs, Set<String> seenCoordinates,
+                                      Deque<String[]> modulesToProcess, List<String> shadowedByMavenLocal) {
+        String coordinate = group + ":" + name + ":" + version;
+        if (!seenCoordinates.add(coordinate)) return;
+
+        Map<String, ResolvedModule> cache = RESOLUTION_CACHE
+                .computeIfAbsent(project.getGradle(), g -> new ConcurrentHashMap<>());
+        ResolvedModule resolved = cache.computeIfAbsent(coordinate,
+                c -> resolveModule(configurations, dependencies, group, name, version));
+
+        // Queue the immediate parent for processing as its own module (parents
+        // inherit the test classification of their discoverer)
+        if (resolved.parent() != null) {
+            String parentCoord = resolved.parent()[0] + ":" + resolved.parent()[1] + ":" + resolved.parent()[2];
+            if (!seenCoordinates.contains(parentCoord)) {
+                modulesToProcess.add(resolved.parent());
+                project.getLogger().debug("Discovered parent POM: {}", parentCoord);
+            }
+        }
+
+        if (resolved.doc() != null || resolved.sources() != null
+                || resolved.changelog() != null || resolved.javadoc() != null) {
+            specs.add(new ModuleSpec(group, name, version, resolved.doc(), resolved.sources(),
+                    resolved.changelog(), resolved.javadoc(), resolved.pomChain(), testOnly));
+        } else {
+            // The POM's location reveals which repository served the module's metadata —
+            // a mavenLocal-served module with no artifacts is the classic incomplete-~/.m2 trap
+            if (!resolved.pomChain().isEmpty()) {
+                var pomPath = resolved.pomChain().get(0).toPath();
+                if (mavenLocalRoots(project).stream().anyMatch(pomPath::startsWith)) {
+                    shadowedByMavenLocal.add(coordinate);
+                }
+            }
+            project.getLogger().debug("No documentation artifacts for {}", coordinate);
+        }
+    }
+
+    private static ResolvedModule resolveModule(ConfigurationContainer configurations, DependencyHandler dependencies,
+                                                String group, String name, String version) {
+        String coordinate = group + ":" + name + ":" + version;
+
+        File doc = resolveArtifact(configurations, dependencies, coordinate + ":DOCUMENTATION@md");
+        File changelog = resolveArtifact(configurations, dependencies, coordinate + ":CHANGELOG@md");
+        File pom = resolveArtifact(configurations, dependencies, coordinate + "@pom");
+        // Sources/javadoc via ArtifactResolutionQuery — classifier requests on detached
+        // configurations fail for modules with Gradle Module Metadata (e.g. JavaFX),
+        // whose variants require OS/arch attributes
+        File sources = resolveViaQuery(dependencies, group, name, version, SourcesArtifact.class);
+        File javadoc = resolveViaQuery(dependencies, group, name, version, JavadocArtifact.class);
+
+        // Walk the parent chain for metadata fallback
+        List<File> pomChain = new ArrayList<>();
+        String[] parent = null;
+        if (pom != null) {
+            pomChain.add(pom);
+            parent = PomParser.parseParent(pom.toPath());
+            File current = pom;
+            String[] next = parent;
+            while (next != null && pomChain.size() < 10) {
+                File parentPom = resolveArtifact(configurations, dependencies,
+                        next[0] + ":" + next[1] + ":" + next[2] + "@pom");
+                if (parentPom == null) break;
+                pomChain.add(parentPom);
+                current = parentPom;
+                next = PomParser.parseParent(current.toPath());
+            }
+        }
+        return new ResolvedModule(doc, sources, changelog, javadoc, pomChain, parent);
     }
 
     /**
@@ -73,101 +228,6 @@ class DocsResolver {
             }
         }
         return roots;
-    }
-
-    private static void scanConfigurations(Project project,
-                                           ConfigurationContainer configurations, DependencyHandler dependencies,
-                                           List<ModuleSpec> specs, Set<String> seenCoordinates,
-                                           List<String> shadowedByMavenLocal) {
-        for (Configuration config : configurations) {
-            if (!config.isCanBeResolved()) continue;
-            if (!config.getName().toLowerCase().contains("classpath")) continue;
-
-            // Collect all module coordinates from the dependency graph via BFS
-            Deque<String[]> modulesToProcess = new ArrayDeque<>();
-            Set<Object> visitedComponents = new HashSet<>();
-            ResolvedComponentResult root = config.getIncoming().getResolutionResult().getRoot();
-            Deque<ResolvedComponentResult> queue = new ArrayDeque<>();
-            queue.add(root);
-            while (!queue.isEmpty()) {
-                ResolvedComponentResult component = queue.poll();
-                if (!visitedComponents.add(component.getId())) continue;
-
-                for (var depResult : component.getDependencies()) {
-                    if (depResult instanceof ResolvedDependencyResult resolved) {
-                        queue.add(resolved.getSelected());
-                    }
-                }
-
-                if (!(component.getId() instanceof ModuleComponentIdentifier moduleId)) {
-                    continue;
-                }
-                String coordinate = moduleId.getGroup() + ":" + moduleId.getModule() + ":" + moduleId.getVersion();
-                if (seenCoordinates.contains(coordinate)) continue;
-                modulesToProcess.add(new String[]{moduleId.getGroup(), moduleId.getModule(), moduleId.getVersion()});
-            }
-
-            // Process modules, discovering and queuing parent POMs as we go
-            while (!modulesToProcess.isEmpty()) {
-                String[] module = modulesToProcess.poll();
-                processModule(project, module[0], module[1], module[2], configurations, dependencies,
-                        specs, seenCoordinates, modulesToProcess, shadowedByMavenLocal);
-            }
-        }
-    }
-
-    private static void processModule(Project project, String group, String name, String version,
-                                      ConfigurationContainer configurations, DependencyHandler dependencies,
-                                      List<ModuleSpec> specs, Set<String> seenCoordinates,
-                                      Deque<String[]> modulesToProcess, List<String> shadowedByMavenLocal) {
-        String coordinate = group + ":" + name + ":" + version;
-        if (!seenCoordinates.add(coordinate)) return;
-
-        File doc = resolveArtifact(configurations, dependencies, coordinate + ":DOCUMENTATION@md");
-        File changelog = resolveArtifact(configurations, dependencies, coordinate + ":CHANGELOG@md");
-        File pom = resolveArtifact(configurations, dependencies, coordinate + "@pom");
-        // Sources/javadoc via ArtifactResolutionQuery — classifier requests on detached
-        // configurations fail for modules with Gradle Module Metadata (e.g. JavaFX),
-        // whose variants require OS/arch attributes
-        File sources = resolveViaQuery(dependencies, group, name, version, SourcesArtifact.class);
-        File javadoc = resolveViaQuery(dependencies, group, name, version, JavadocArtifact.class);
-
-        // Walk the parent chain: queue the immediate parent for processing as its own
-        // module, and collect all parent POMs for metadata fallback
-        List<File> pomChain = new ArrayList<>();
-        if (pom != null) {
-            pomChain.add(pom);
-            File current = pom;
-            boolean immediate = true;
-            while (pomChain.size() < 10) {
-                String[] parent = PomParser.parseParent(current.toPath());
-                if (parent == null) break;
-                String parentCoord = parent[0] + ":" + parent[1] + ":" + parent[2];
-                if (immediate && !seenCoordinates.contains(parentCoord)) {
-                    modulesToProcess.add(parent);
-                    project.getLogger().debug("Discovered parent POM: {}", parentCoord);
-                }
-                immediate = false;
-                File parentPom = resolveArtifact(configurations, dependencies, parentCoord + "@pom");
-                if (parentPom == null) break;
-                pomChain.add(parentPom);
-                current = parentPom;
-            }
-        }
-
-        if (doc != null || sources != null || changelog != null || javadoc != null) {
-            specs.add(new ModuleSpec(group, name, version, doc, sources, changelog, javadoc, pomChain));
-        } else {
-            // The POM's location reveals which repository served the module's metadata —
-            // a mavenLocal-served module with no artifacts is the classic incomplete-~/.m2 trap
-            if (pom != null) {
-                var pomPath = pom.toPath();
-                if (mavenLocalRoots(project).stream().anyMatch(pomPath::startsWith)) {
-                    shadowedByMavenLocal.add(coordinate);
-                }
-            }
-            project.getLogger().debug("No documentation artifacts for {}", coordinate);
-        }
     }
 
     private static File resolveArtifact(ConfigurationContainer configurations,

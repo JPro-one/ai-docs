@@ -36,7 +36,7 @@ import java.util.Set;
  */
 @Mojo(name = "collect-docs",
         defaultPhase = LifecyclePhase.GENERATE_RESOURCES,
-        requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
+        requiresDependencyResolution = ResolutionScope.TEST)
 public class CollectDocsMojo extends AbstractMojo {
 
     private final RepositorySystem repoSystem;
@@ -77,16 +77,25 @@ public class CollectDocsMojo extends AbstractMojo {
         List<DocEntry> entries = new ArrayList<>();
         Set<String> seenCoordinates = new HashSet<>();
 
-        // Seed the processing queue with all project artifacts
+        // Seed the processing queue with all project artifacts; main-scoped artifacts
+        // are processed first so shared parents are not classified as test-only
         Deque<String[]> modulesToProcess = new ArrayDeque<>();
         for (Artifact artifact : project.getArtifacts()) {
-            modulesToProcess.add(new String[]{artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion()});
+            if (!Artifact.SCOPE_TEST.equals(artifact.getScope())) {
+                modulesToProcess.add(new String[]{artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), "main"});
+            }
+        }
+        for (Artifact artifact : project.getArtifacts()) {
+            if (Artifact.SCOPE_TEST.equals(artifact.getScope())) {
+                modulesToProcess.add(new String[]{artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), "test"});
+            }
         }
 
         // Process modules, discovering and queuing parent POMs as we go
         while (!modulesToProcess.isEmpty()) {
             String[] module = modulesToProcess.poll();
-            processModule(module[0], module[1], module[2], outputDir, entries, seenCoordinates, modulesToProcess);
+            processModule(module[0], module[1], module[2], "test".equals(module[3]),
+                    outputDir, entries, seenCoordinates, modulesToProcess);
         }
 
         try {
@@ -106,13 +115,13 @@ public class CollectDocsMojo extends AbstractMojo {
         }
     }
 
-    private void processModule(String group, String name, String version,
+    private void processModule(String group, String name, String version, boolean testOnly,
                                Path outputDir, List<DocEntry> entries, Set<String> seenCoordinates,
                                Deque<String[]> modulesToProcess) {
         String coordinate = group + ":" + name + ":" + version;
         if (!seenCoordinates.add(coordinate)) return;
 
-        var entry = DocEntry.of(group, name, version);
+        var entry = DocEntry.of(group, name, version).withTestOnly(testOnly);
         DocEntry enriched = entry;
         boolean hasDocs = false;
 
@@ -181,7 +190,7 @@ public class CollectDocsMojo extends AbstractMojo {
                 if (parent == null) break;
                 String parentCoord = parent[0] + ":" + parent[1] + ":" + parent[2];
                 if (immediate && !seenCoordinates.contains(parentCoord)) {
-                    modulesToProcess.add(parent);
+                    modulesToProcess.add(new String[]{parent[0], parent[1], parent[2], testOnly ? "test" : "main"});
                     getLog().debug("Discovered parent POM: " + parentCoord);
                 }
                 immediate = false;

@@ -14,6 +14,53 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ContextGeneratorTest {
 
     @Test
+    void testDependenciesGetOwnSection(@TempDir Path tempDir) throws IOException {
+        Path outputDir = tempDir.resolve("ai-docs");
+        Files.createDirectories(outputDir);
+        var mainLib = DocEntry.of("com.example", "app-lib", "1.0").withDescription("Main lib.");
+        var testLib = DocEntry.of("org.junit", "junit-x", "5.0").withDescription("Test lib.").withTestOnly(true);
+
+        String result = ContextGenerator.generate(outputDir, List.of(testLib, mainLib), 30);
+
+        assertThat(result).contains("# Test Dependencies");
+        assertThat(result.indexOf("com.example:app-lib")).isLessThan(result.indexOf("# Test Dependencies"));
+        assertThat(result.indexOf("# Test Dependencies")).isLessThan(result.indexOf("org.junit:junit-x"));
+    }
+
+    @Test
+    void noTestSectionWithoutTestDependencies(@TempDir Path tempDir) throws IOException {
+        Path outputDir = tempDir.resolve("ai-docs");
+        Files.createDirectories(outputDir);
+        var mainLib = DocEntry.of("com.example", "app-lib", "1.0");
+
+        String result = ContextGenerator.generate(outputDir, List.of(mainLib), 30);
+
+        assertThat(result).doesNotContain("Test Dependencies");
+    }
+
+    @Test
+    void duplicateGuideSetsAreCollapsed(@TempDir Path tempDir) throws IOException {
+        Path outputDir = tempDir.resolve("ai-docs");
+        Files.createDirectories(outputDir);
+        var base = DocEntry.of("org.openjfx", "javafx-base", "21")
+                .withJavadocGuideTitles(List.of("CSS Reference", "FXML Intro"));
+        var controls = DocEntry.of("org.openjfx", "javafx-controls", "21")
+                .withJavadocGuideTitles(List.of("CSS Reference", "FXML Intro"));
+        var other = DocEntry.of("org.x", "other", "1")
+                .withJavadocGuideTitles(List.of("Other Guide"));
+
+        String result = ContextGenerator.generate(outputDir, List.of(controls, base, other), 30);
+
+        // First occurrence (alphabetically javafx-base) lists the guides in full
+        assertThat(result).contains("Guides (CSS Reference, FXML Intro): org.openjfx/javafx-base/javadoc-index.md");
+        // Identical set on javafx-controls is collapsed to a reference
+        assertThat(result).contains("Guides: same as org.openjfx:javafx-base");
+        assertThat(result).doesNotContain("Guides (CSS Reference, FXML Intro): org.openjfx/javafx-controls");
+        // A different set is listed in full
+        assertThat(result).contains("Guides (Other Guide): org.x/other/javadoc-index.md");
+    }
+
+    @Test
     void singleLibrary(@TempDir Path tempDir) throws IOException {
         Path outputDir = tempDir.resolve("ai-docs");
         Path libDir = outputDir.resolve("com.example/my-lib");

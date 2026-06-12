@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Generates a combined context.md file that gives an AI agent a single file
@@ -39,8 +41,31 @@ public class ContextGenerator {
         var sorted = entries.stream()
                 .sorted(Comparator.comparing(DocEntry::coordinate))
                 .toList();
+        var mainEntries = sorted.stream().filter(e -> !e.testOnly()).toList();
+        var testEntries = sorted.stream().filter(DocEntry::testOnly).toList();
 
-        for (DocEntry entry : sorted) {
+        // Identical guide sets (e.g. the full JavaFX docs mirrored in every module's
+        // javadoc jar) are listed once and referenced afterwards
+        Map<List<String>, String> seenGuideSets = new HashMap<>();
+
+        for (DocEntry entry : mainEntries) {
+            writeEntry(sb, outputDir, entry, contextMinLines, seenGuideSets);
+        }
+
+        if (!testEntries.isEmpty()) {
+            sb.append("# Test Dependencies\n\n");
+            sb.append("Libraries that only appear on test classpaths.\n\n");
+            for (DocEntry entry : testEntries) {
+                writeEntry(sb, outputDir, entry, contextMinLines, seenGuideSets);
+            }
+        }
+
+        return sb.toString();
+    }
+
+    private static void writeEntry(StringBuilder sb, Path outputDir, DocEntry entry,
+                                   int contextMinLines, Map<List<String>, String> seenGuideSets) throws IOException {
+        {
             sb.append("## ").append(entry.coordinate());
             if (!entry.displayName().equals(entry.name())) {
                 sb.append(" (").append(entry.displayName()).append(")");
@@ -80,8 +105,13 @@ public class ContextGenerator {
                 sb.append("Changelog: ").append(entry.relativePath()).append("/changelog-overview.md\n");
             }
             if (entry.hasJavadocGuides()) {
-                sb.append("Guides (").append(String.join(", ", entry.javadocGuideTitles()))
-                        .append("): ").append(entry.relativePath()).append("/javadoc-index.md\n");
+                String firstWithSameGuides = seenGuideSets.putIfAbsent(entry.javadocGuideTitles(), entry.coordinate());
+                if (firstWithSameGuides != null) {
+                    sb.append("Guides: same as ").append(firstWithSameGuides).append("\n");
+                } else {
+                    sb.append("Guides (").append(String.join(", ", entry.javadocGuideTitles()))
+                            .append("): ").append(entry.relativePath()).append("/javadoc-index.md\n");
+                }
             }
             sb.append("\n");
 
@@ -101,7 +131,5 @@ public class ContextGenerator {
             }
             sb.append("\n");
         }
-
-        return sb.toString();
     }
 }

@@ -41,21 +41,36 @@ public class IndexGenerator {
         sb.append("## Libraries\n");
 
         for (LibrarySection section : sections) {
-            DocEntry entry = section.entry();
-            sb.append("- ").append(entry.coordinate());
-            if (!entry.displayName().equals(entry.name())) {
-                sb.append(" (").append(entry.displayName()).append(")");
+            if (!section.entry().testOnly()) {
+                appendSection(sb, section);
             }
-            sb.append(" (lines ").append(section.startLine())
-                    .append("-").append(section.endLine()).append(")");
-            String desc = entry.effectiveDescription();
-            if (desc != null) {
-                sb.append(" — ").append(desc);
+        }
+
+        if (sections.stream().anyMatch(s -> s.entry().testOnly())) {
+            sb.append("\n## Test Dependencies\n");
+            for (LibrarySection section : sections) {
+                if (section.entry().testOnly()) {
+                    appendSection(sb, section);
+                }
             }
-            sb.append("\n");
         }
 
         return sb.toString();
+    }
+
+    private static void appendSection(StringBuilder sb, LibrarySection section) {
+        DocEntry entry = section.entry();
+        sb.append("- ").append(entry.coordinate());
+        if (!entry.displayName().equals(entry.name())) {
+            sb.append(" (").append(entry.displayName()).append(")");
+        }
+        sb.append(" (lines ").append(section.startLine())
+                .append("-").append(section.endLine()).append(")");
+        String desc = entry.effectiveDescription();
+        if (desc != null) {
+            sb.append(" — ").append(desc);
+        }
+        sb.append("\n");
     }
 
     /**

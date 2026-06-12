@@ -216,6 +216,25 @@ class PomParserTest {
     }
 
     @Test
+    void multiLineDescriptionIsFlattened(@TempDir Path tempDir) throws IOException {
+        Path pom = tempDir.resolve("pom.xml");
+        Files.writeString(pom, """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project>
+                    <groupId>net.bytebuddy</groupId>
+                    <artifactId>byte-buddy</artifactId>
+                    <version>1.0</version>
+                    <description>Byte Buddy is a library.
+                        This artifact is repackaged.</description>
+                </project>
+                """);
+
+        PomMetadata metadata = PomParser.parse(pom);
+
+        assertThat(metadata.description()).isEqualTo("Byte Buddy is a library. This artifact is repackaged.");
+    }
+
+    @Test
     void withFallbackFillsMissingFieldsButNotName() {
         var own = new PomMetadata("Gson", null, null, "https://github.com/google/gson/scm", null);
         var parent = new PomMetadata("Gson Parent", "Gson JSON library", "https://github.com/google/gson",

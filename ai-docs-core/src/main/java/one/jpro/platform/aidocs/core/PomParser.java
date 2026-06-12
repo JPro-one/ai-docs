@@ -76,14 +76,15 @@ public class PomParser {
     }
 
     /**
-     * Gets the text content of a direct child element of the given parent.
+     * Gets the text content of a direct child element of the given parent, with all
+     * whitespace runs (including newlines from indented POMs) collapsed to single spaces.
      * Returns null if the element doesn't exist or has empty text.
      */
     private static String getDirectChildText(Element parent, String tagName) {
         NodeList children = parent.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             if (children.item(i) instanceof Element el && el.getTagName().equals(tagName)) {
-                String text = el.getTextContent().strip();
+                String text = el.getTextContent().strip().replaceAll("\\s+", " ");
                 return text.isEmpty() ? null : text;
             }
         }

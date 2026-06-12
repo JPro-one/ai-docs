@@ -22,6 +22,7 @@ class SkillGeneratorTest {
         assertThat(result).contains("DOCUMENTATION.md");
         assertThat(result).contains("gradle collectDocs");
         assertThat(result).contains("Reading Strategies");
+        assertThat(result).contains("stale");
     }
 
     @Test

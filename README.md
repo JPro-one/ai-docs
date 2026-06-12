@@ -152,6 +152,23 @@ Read the documentation in build/ai-docs/ to understand the frameworks.
 
 The agent discovers the available libraries, learns their APIs from the collected docs, and generates the application — without any prior knowledge of these frameworks.
 
+## Troubleshooting
+
+**Docs/sources silently missing for some libraries (Gradle):** If `mavenLocal()` is in your `repositories`, remember that Gradle fetches artifacts only from the repository that supplied a module's metadata. A partially populated `~/.m2` — e.g. jar+pom cached by any earlier Maven run — then hides that library's `DOCUMENTATION`, sources, and javadoc artifacts without any error. Remove `mavenLocal()`, or restrict it to the artifacts you actually publish locally:
+
+```gradle
+repositories {
+    mavenLocal {
+        content {
+            includeGroupByRegex 'com\\.mycompany.*'
+        }
+    }
+    mavenCentral()
+}
+```
+
+(Maven is not affected — it treats `~/.m2` as a cache and falls through to remote repositories for missing files.)
+
 ## Building from Source
 
 **Requirements:** Java 17+, Gradle 9.2+

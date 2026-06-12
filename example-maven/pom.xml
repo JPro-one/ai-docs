@@ -10,10 +10,6 @@
 
     <repositories>
         <repository>
-            <id>mavenLocal</id>
-            <url>file://${user.home}/.m2/repository</url>
-        </repository>
-        <repository>
             <id>sandec</id>
             <url>https://sandec.jfrog.io/artifactory/repo</url>
         </repository>
@@ -30,7 +26,7 @@
         <dependency>
             <groupId>one.jpro.platform</groupId>
             <artifactId>jpro-routing-core</artifactId>
-            <version>0.6.0-SNAPSHOT</version>
+            <version>0.6.3</version>
             <exclusions>
                 <!-- jpro-platform is pom-packaged, no jar available -->
                 <exclusion>
@@ -42,7 +38,7 @@
         <dependency>
             <groupId>one.jpro.platform</groupId>
             <artifactId>jpro-file</artifactId>
-            <version>0.6.0-SNAPSHOT</version>
+            <version>0.6.3</version>
             <exclusions>
                 <exclusion>
                     <groupId>one.jpro.platform</groupId>
@@ -53,7 +49,7 @@
         <dependency>
             <groupId>one.jpro</groupId>
             <artifactId>jpro-webapi</artifactId>
-            <version>2026.1.2-SNAPSHOT</version>
+            <version>2026.2.0</version>
         </dependency>
     </dependencies>
 

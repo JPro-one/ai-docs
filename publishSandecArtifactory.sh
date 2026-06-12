@@ -5,6 +5,11 @@
 set -e
 cd "$(dirname "$0")"
 
+if [ -z "$SANDEC_ARTIFACTORY_USERNAME" ]; then
+    echo "error: SANDEC_ARTIFACTORY_USERNAME/PASSWORD not set"
+    exit 1
+fi
+
 VERSION=$(./gradlew -q :ai-docs-core:properties | grep "^version:" | awk '{print $2}')
 echo "Publishing version $VERSION to Sandec Artifactory"
 

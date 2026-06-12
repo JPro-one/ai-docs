@@ -54,12 +54,17 @@ subprojects {
 
     publishing {
         repositories {
-            maven {
-                name = "artifactory"
-                url = "https://sandec.jfrog.io/artifactory/repo"
-                credentials {
-                    username = System.getenv("SANDEC_ARTIFACTORY_USERNAME")
-                    password = System.getenv("SANDEC_ARTIFACTORY_PASSWORD")
+            // Only registered when credentials are present: publishToMavenCentralPortal
+            // depends on the aggregate 'publish' task, which would otherwise fail
+            // credential validation in contexts without the Artifactory secrets
+            if (System.getenv("SANDEC_ARTIFACTORY_USERNAME") != null) {
+                maven {
+                    name = "artifactory"
+                    url = "https://sandec.jfrog.io/artifactory/repo"
+                    credentials {
+                        username = System.getenv("SANDEC_ARTIFACTORY_USERNAME")
+                        password = System.getenv("SANDEC_ARTIFACTORY_PASSWORD")
+                    }
                 }
             }
             maven {

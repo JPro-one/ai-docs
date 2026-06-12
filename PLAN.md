@@ -105,7 +105,7 @@ Publishing is just convention — no plugin needed. Library authors:
 - ✅ Javadoc-jar guides: hand-written `doc-files/*.html` documents (e.g. the JavaFX CSS Reference Guide) are indexed with chapter line ranges into `javadoc-index.md`
 - If a dependency doesn't publish `DOCUMENTATION.md`, fall back to:
   1. Check if the dependency has a `README.md` in its source jar
-  2. Check if there's an `llms.txt` at the project's website (worth investigating — unclear how many libraries publish one and how useful the content is; needs network at collect time + caching)
+  2. ~~Check if there's an `llms.txt` at the project's website~~ — investigated (June 2026): probed the homepages of all 130 dependencies of jpro-platform; **zero** publish a real `llms.txt` (the JVM ecosystem hasn't adopted the standard). Also fragile: SPA sites serve HTML 200 for any path, so hits need content validation. Not worth network probing at collect time — revisit only if ecosystem adoption appears. The community-docs-packs direction covers the same need Maven-natively.
 
 ### Third-party documentation (promising direction)
 - **Project-local doc supplements** — merge `ai-docs-extra/{group}/{artifact}/DOCUMENTATION.md` from the repo into the output, so a team can write curated notes for any dependency that publishes nothing.

@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # full history + tags, required for the git-derived version
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Print release version
+        run: ./gradlew -q :ai-docs-core:properties | grep "^version:"
+
+      - name: Build and test
+        run: ./gradlew build
+
+      - name: Publish to Artifactory and assemble Central bundle
+        run: ./gradlew publish
+        env:
+          SANDEC_ARTIFACTORY_USERNAME: ${{ secrets.SANDEC_ARTIFACTORY_USERNAME }}
+          SANDEC_ARTIFACTORY_PASSWORD: ${{ secrets.SANDEC_ARTIFACTORY_PASSWORD }}
+          SANDEC_SIGNING_KEY_ID: ${{ secrets.SANDEC_SIGNING_KEY_ID }}
+          SANDEC_SIGNING_SECRET_KEY: ${{ secrets.SANDEC_SIGNING_SECRET_KEY }}
+          SANDEC_SIGNING_PASSWORD: ${{ secrets.SANDEC_SIGNING_PASSWORD }}
+
+      - name: Publish to Maven Central
+        run: ./gradlew publishToMavenCentralPortal
+        env:
+          MAVEN_CENTRAL_AUTH_TOKEN: ${{ secrets.MAVEN_CENTRAL_AUTH_TOKEN }}
+
+      - name: Publish to Gradle Plugin Portal
+        run: ./gradlew :ai-docs-gradle-plugin:publishPlugins
+        env:
+          GRADLE_PUBLISH_KEY: ${{ secrets.GRADLE_PUBLISH_KEY }}
+          GRADLE_PUBLISH_SECRET: ${{ secrets.GRADLE_PUBLISH_SECRET }}
+          SANDEC_SIGNING_KEY_ID: ${{ secrets.SANDEC_SIGNING_KEY_ID }}
+          SANDEC_SIGNING_SECRET_KEY: ${{ secrets.SANDEC_SIGNING_SECRET_KEY }}
+          SANDEC_SIGNING_PASSWORD: ${{ secrets.SANDEC_SIGNING_PASSWORD }}

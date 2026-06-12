@@ -7,9 +7,26 @@ buildscript {
     }
 }
 
+// The version is derived from the latest reachable git tag (vX.Y.Z):
+//   - HEAD exactly on the tag -> X.Y.Z (release build)
+//   - commits after the tag   -> X.Y.(Z+1)-SNAPSHOT
+//   - no tag / no git         -> 0.1.0-SNAPSHOT
+def gitDescribe = providers.exec {
+    commandLine 'git', 'describe', '--tags', '--match', 'v[0-9]*'
+    ignoreExitValue = true
+}.standardOutput.asText.map { it.trim() }
+
+def derivedVersion = {
+    def matcher = gitDescribe.getOrElse('') =~ /^v(\d+)\.(\d+)\.(\d+)(-\d+-g[0-9a-f]+)?$/
+    if (!matcher.matches()) return '0.1.0-SNAPSHOT'
+    def (major, minor, patch) = [matcher.group(1), matcher.group(2), matcher.group(3).toInteger()]
+    matcher.group(4) == null ? "${major}.${minor}.${patch}" : "${major}.${minor}.${patch + 1}-SNAPSHOT"
+}()
+logger.lifecycle("Version derived from git tags: {} (git describe: {})", derivedVersion, gitDescribe.getOrElse('') ?: '<no tag found>')
+
 subprojects {
     group = 'one.jpro.aidocs'
-    version = findProperty('releaseVersion') ?: '0.1.0-SNAPSHOT'
+    version = derivedVersion
 
     apply plugin: 'java'
     apply plugin: 'maven-publish'

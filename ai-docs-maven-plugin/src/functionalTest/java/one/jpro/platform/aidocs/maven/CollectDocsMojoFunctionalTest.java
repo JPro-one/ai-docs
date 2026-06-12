@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class CollectDocsMojoFunctionalTest {
 
-    private static final String PLUGIN_VERSION = "0.1.0-SNAPSHOT";
+    private static final String PLUGIN_VERSION = System.getProperty("aidocs.version", "0.1.0-SNAPSHOT");
 
     private static final String POM_HEADER = """
             <?xml version="1.0" encoding="UTF-8"?>

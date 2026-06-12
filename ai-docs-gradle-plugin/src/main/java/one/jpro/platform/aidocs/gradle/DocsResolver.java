@@ -34,20 +34,51 @@ class DocsResolver {
     static List<ModuleSpec> resolve(Project project, boolean includeBuildscript) {
         List<ModuleSpec> specs = new ArrayList<>();
         Set<String> seenCoordinates = new HashSet<>();
+        List<String> shadowedByMavenLocal = new ArrayList<>();
 
         scanConfigurations(project, project.getConfigurations(), project.getDependencies(),
-                specs, seenCoordinates);
+                specs, seenCoordinates, shadowedByMavenLocal);
         if (includeBuildscript) {
             scanConfigurations(project, project.getBuildscript().getConfigurations(),
-                    project.getBuildscript().getDependencies(), specs, seenCoordinates);
+                    project.getBuildscript().getDependencies(), specs, seenCoordinates, shadowedByMavenLocal);
+        }
+
+        if (!shadowedByMavenLocal.isEmpty()) {
+            project.getLogger().warn(
+                    "The following dependencies were resolved from mavenLocal (~/.m2) and provided no "
+                            + "documentation artifacts. An incomplete local copy (e.g. jar+pom cached by a Maven run) "
+                            + "may be hiding their DOCUMENTATION/sources/javadoc artifacts — Gradle only fetches "
+                            + "artifacts from the repository that supplied a module's metadata. "
+                            + "Consider removing mavenLocal() or restricting it with a content filter "
+                            + "(see the Troubleshooting section of the ai-docs README):\n  "
+                            + String.join("\n  ", shadowedByMavenLocal));
         }
 
         return specs;
     }
 
+    /**
+     * Returns the local roots of all mavenLocal-style repositories (file-backed Maven repos)
+     * declared on the project or its buildscript.
+     */
+    private static List<java.nio.file.Path> mavenLocalRoots(Project project) {
+        List<java.nio.file.Path> roots = new ArrayList<>();
+        List<org.gradle.api.artifacts.repositories.ArtifactRepository> repos = new ArrayList<>();
+        repos.addAll(project.getRepositories());
+        repos.addAll(project.getBuildscript().getRepositories());
+        for (var repo : repos) {
+            if (repo instanceof org.gradle.api.artifacts.repositories.MavenArtifactRepository maven
+                    && "file".equalsIgnoreCase(maven.getUrl().getScheme())) {
+                roots.add(java.nio.file.Path.of(maven.getUrl()));
+            }
+        }
+        return roots;
+    }
+
     private static void scanConfigurations(Project project,
                                            ConfigurationContainer configurations, DependencyHandler dependencies,
-                                           List<ModuleSpec> specs, Set<String> seenCoordinates) {
+                                           List<ModuleSpec> specs, Set<String> seenCoordinates,
+                                           List<String> shadowedByMavenLocal) {
         for (Configuration config : configurations) {
             if (!config.isCanBeResolved()) continue;
             if (!config.getName().toLowerCase().contains("classpath")) continue;
@@ -80,7 +111,7 @@ class DocsResolver {
             while (!modulesToProcess.isEmpty()) {
                 String[] module = modulesToProcess.poll();
                 processModule(project, module[0], module[1], module[2], configurations, dependencies,
-                        specs, seenCoordinates, modulesToProcess);
+                        specs, seenCoordinates, modulesToProcess, shadowedByMavenLocal);
             }
         }
     }
@@ -88,7 +119,7 @@ class DocsResolver {
     private static void processModule(Project project, String group, String name, String version,
                                       ConfigurationContainer configurations, DependencyHandler dependencies,
                                       List<ModuleSpec> specs, Set<String> seenCoordinates,
-                                      Deque<String[]> modulesToProcess) {
+                                      Deque<String[]> modulesToProcess, List<String> shadowedByMavenLocal) {
         String coordinate = group + ":" + name + ":" + version;
         if (!seenCoordinates.add(coordinate)) return;
 
@@ -127,6 +158,14 @@ class DocsResolver {
         if (doc != null || sources != null || changelog != null || javadoc != null) {
             specs.add(new ModuleSpec(group, name, version, doc, sources, changelog, javadoc, pomChain));
         } else {
+            // The POM's location reveals which repository served the module's metadata —
+            // a mavenLocal-served module with no artifacts is the classic incomplete-~/.m2 trap
+            if (pom != null) {
+                var pomPath = pom.toPath();
+                if (mavenLocalRoots(project).stream().anyMatch(pomPath::startsWith)) {
+                    shadowedByMavenLocal.add(coordinate);
+                }
+            }
             project.getLogger().debug("No documentation artifacts for {}", coordinate);
         }
     }

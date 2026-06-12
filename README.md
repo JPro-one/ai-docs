@@ -154,7 +154,7 @@ The agent discovers the available libraries, learns their APIs from the collecte
 
 ## Troubleshooting
 
-**Docs/sources silently missing for some libraries (Gradle):** If `mavenLocal()` is in your `repositories`, remember that Gradle fetches artifacts only from the repository that supplied a module's metadata. A partially populated `~/.m2` — e.g. jar+pom cached by any earlier Maven run — then hides that library's `DOCUMENTATION`, sources, and javadoc artifacts without any error. Remove `mavenLocal()`, or restrict it to the artifacts you actually publish locally:
+**Docs/sources silently missing for some libraries (Gradle):** The plugin warns when this likely happened ("resolved from mavenLocal ... provided no documentation artifacts"). If `mavenLocal()` is in your `repositories`, remember that Gradle fetches artifacts only from the repository that supplied a module's metadata. A partially populated `~/.m2` — e.g. jar+pom cached by any earlier Maven run — then hides that library's `DOCUMENTATION`, sources, and javadoc artifacts without any error. Remove `mavenLocal()`, or restrict it to the artifacts you actually publish locally:
 
 ```gradle
 repositories {

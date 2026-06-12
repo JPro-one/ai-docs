@@ -515,6 +515,57 @@ class CollectDocsFunctionalTest {
     }
 
     @Test
+    void warnsWhenMavenLocalShadowsDocumentation() throws IOException {
+        // Simulate the mavenLocal trap: ~/.m2 contains a partial copy (jar+pom, as cached
+        // by any Maven run) of a library that publishes docs remotely. Gradle then serves
+        // the metadata from mavenLocal and never finds the DOCUMENTATION/sources artifacts.
+        Path fakeM2 = projectDir.resolve("fake-m2");
+        Path moduleDir = fakeM2.resolve("one/jpro/platform/jpro-routing-core/0.5.8");
+        Files.createDirectories(moduleDir);
+        Files.writeString(moduleDir.resolve("jpro-routing-core-0.5.8.pom"), """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project xmlns="http://maven.apache.org/POM/4.0.0">
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>one.jpro.platform</groupId>
+                    <artifactId>jpro-routing-core</artifactId>
+                    <version>0.5.8</version>
+                </project>
+                """);
+        Files.write(moduleDir.resolve("jpro-routing-core-0.5.8.jar"), new byte[]{0x50, 0x4b, 0x05, 0x06,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
+
+        Files.writeString(projectDir.resolve("build.gradle"), """
+                plugins {
+                    id 'java'
+                    id 'one.jpro.aidocs'
+                }
+                repositories {
+                    mavenLocal()
+                    mavenCentral()
+                    maven { url = "https://sandec.jfrog.io/artifactory/repo" }
+                }
+                dependencies {
+                    implementation 'one.jpro.platform:jpro-routing-core:0.5.8'
+                }
+                """);
+
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(projectDir.toFile())
+                .withArguments("collectDocs", "-Dmaven.repo.local=" + fakeM2.toAbsolutePath())
+                .withPluginClasspath()
+                .build();
+
+        assertThat(result.task(":collectDocs").getOutcome()).isEqualTo(SUCCESS);
+
+        // The trap silently hides the docs...
+        String index = Files.readString(projectDir.resolve("build/ai-docs/index.md"));
+        assertThat(index).doesNotContain("jpro-routing-core");
+        // ...but the plugin must warn about it
+        assertThat(result.getOutput()).contains("mavenLocal");
+        assertThat(result.getOutput()).contains("one.jpro.platform:jpro-routing-core:0.5.8");
+    }
+
+    @Test
     void worksWithConfigurationCache() throws IOException {
         Files.writeString(projectDir.resolve("build.gradle"), """
                 plugins {

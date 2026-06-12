@@ -4,7 +4,7 @@ A Gradle and Maven plugin that collects `DOCUMENTATION.md` artifacts from projec
 
 ## Vision
 
-Any Java/JVM library can publish a `DOCUMENTATION.md` alongside its jar. Any project using that library can automatically collect all available documentation and feed it to AI agents — giving them deep understanding of every dependency.
+Any Java/JVM library can publish its documentation (`DOCUMENTATION.md` — typically the same content that powers its README or website) as a version-matched artifact alongside its jar. The artifact is consumer-neutral; this project's plugins are one consumer, collecting all dependency documentation and organizing it so AI agents gain deep understanding of every dependency.
 
 ---
 

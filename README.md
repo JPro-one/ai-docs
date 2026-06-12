@@ -123,7 +123,9 @@ The generated `.claude/skills/docs/SKILL.md` contains a marker comment — remov
 
 ## For Library Authors
 
-To make your library's documentation available to AI agents, publish a `DOCUMENTATION.md` as a Maven artifact:
+`DOCUMENTATION.md` is not agent-specific — it's simply your library's regular documentation (typically the README or the source of your docs website), cross-published as a Maven artifact so that any consumer can fetch the version that matches the jar. This plugin is one such consumer; documentation websites, IDEs, or other tooling can use the same artifact.
+
+To publish it:
 
 - **Classifier:** `DOCUMENTATION`
 - **Extension:** `md`

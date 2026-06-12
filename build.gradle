@@ -63,7 +63,7 @@ subprojects {
                 }
             }
             maven {
-                name = 'publish-bundle'
+                name = 'centralBundle'
                 url = layout.buildDirectory.dir('publish-bundle')
             }
         }

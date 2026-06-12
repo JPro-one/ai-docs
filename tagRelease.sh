@@ -1,11 +1,11 @@
 #!/bin/bash
-# Releases the given version by tagging the current commit.
+# Tags the current commit as release vX.Y.Z (no publishing happens locally).
 # The tag push triggers .github/workflows/release.yml, which builds and publishes.
 set -e
 
 VERSION=$1
 if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    echo "usage: ./release.sh X.Y.Z"
+    echo "usage: ./tagRelease.sh X.Y.Z"
     exit 1
 fi
 

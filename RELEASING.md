@@ -9,20 +9,22 @@ The version is **derived from git tags** — it exists nowhere in the repository
 ## Releasing a version
 
 ```bash
-./release.sh 0.1.0
+./tagRelease.sh 0.1.0
 ```
 
-The script verifies a clean tree on an up-to-date `main`, then tags and pushes `v0.1.0`.
-The tag push triggers `.github/workflows/release.yml`, which builds, tests, and publishes to:
+The script only tags: it verifies a clean tree on an up-to-date `main`, then tags and
+pushes `v0.1.0` — no publishing happens locally. The tag push triggers
+`.github/workflows/release.yml`, which builds, tests, and runs the publish scripts:
 
-| Registry | What |
-|---|---|
-| Sandec Artifactory | all modules (CI also publishes snapshots on every main push) |
-| Maven Central | `ai-docs-core`, `ai-docs-maven-plugin`, `ai-docs-gradle-plugin` + plugin marker |
-| Gradle Plugin Portal | `ai-docs-gradle-plugin` (`plugins { id 'one.jpro.aidocs' version 'X.Y.Z' }`) |
+| Script | Registry | Versions |
+|---|---|---|
+| `publishSandecArtifactory.sh` | Sandec Artifactory | snapshots (every main push, via CI) and releases |
+| `publishMavenCentral.sh` | Maven Central | releases only (refuses snapshots) |
+| `publishGradlePluginPortal.sh` | Gradle Plugin Portal | releases only (refuses snapshots) |
 
-There is no version bump and no bump-back — after the release, builds automatically
-become `X.Y.(Z+1)-SNAPSHOT`.
+The scripts are the shared entry points for CI and manual use; each prints the derived
+version before publishing. There is no version bump and no bump-back — after the release,
+builds automatically become `X.Y.(Z+1)-SNAPSHOT`.
 
 ## Required repository secrets
 

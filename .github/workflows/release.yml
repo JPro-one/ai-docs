@@ -27,8 +27,8 @@ jobs:
       - name: Build and test
         run: ./gradlew build
 
-      - name: Publish to Artifactory and assemble Central bundle
-        run: ./gradlew publish
+      - name: Publish to Sandec Artifactory
+        run: ./publishSandecArtifactory.sh
         env:
           SANDEC_ARTIFACTORY_USERNAME: ${{ secrets.SANDEC_ARTIFACTORY_USERNAME }}
           SANDEC_ARTIFACTORY_PASSWORD: ${{ secrets.SANDEC_ARTIFACTORY_PASSWORD }}
@@ -37,12 +37,15 @@ jobs:
           SANDEC_SIGNING_PASSWORD: ${{ secrets.SANDEC_SIGNING_PASSWORD }}
 
       - name: Publish to Maven Central
-        run: ./gradlew publishToMavenCentralPortal
+        run: ./publishMavenCentral.sh
         env:
           MAVEN_CENTRAL_AUTH_TOKEN: ${{ secrets.MAVEN_CENTRAL_AUTH_TOKEN }}
+          SANDEC_SIGNING_KEY_ID: ${{ secrets.SANDEC_SIGNING_KEY_ID }}
+          SANDEC_SIGNING_SECRET_KEY: ${{ secrets.SANDEC_SIGNING_SECRET_KEY }}
+          SANDEC_SIGNING_PASSWORD: ${{ secrets.SANDEC_SIGNING_PASSWORD }}
 
       - name: Publish to Gradle Plugin Portal
-        run: ./gradlew :ai-docs-gradle-plugin:publishPlugins
+        run: ./publishGradlePluginPortal.sh
         env:
           GRADLE_PUBLISH_KEY: ${{ secrets.GRADLE_PUBLISH_KEY }}
           GRADLE_PUBLISH_SECRET: ${{ secrets.GRADLE_PUBLISH_SECRET }}

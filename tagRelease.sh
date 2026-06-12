@@ -9,8 +9,10 @@ if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     exit 1
 fi
 
-if [ -n "$(git status --porcelain)" ]; then
-    echo "error: working tree is not clean"
+# Only tracked modifications matter: the tag points at HEAD, so uncommitted
+# edits would be silently missing from the release. Untracked files are fine.
+if [ -n "$(git status --porcelain -uno)" ]; then
+    echo "error: uncommitted changes to tracked files"
     exit 1
 fi
 

@@ -8,3 +8,4 @@ target/
 .tmp/
 example/.claude/
 example-maven/.claude/
+*.asc

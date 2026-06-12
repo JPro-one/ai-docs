@@ -2,6 +2,8 @@ plugins {
     id 'java-library'
 }
 
+description = 'Core library for collecting and indexing dependency documentation, used by the AI Docs Gradle and Maven plugins'
+
 def generatedResources = layout.buildDirectory.dir('generated-resources/skill')
 
 tasks.register('copySkillTemplate', Copy) {

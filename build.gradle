@@ -1,13 +1,29 @@
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath "tech.yanand.gradle:maven-central-publish:1.3.0"
+    }
+}
+
 subprojects {
     group = 'one.jpro.aidocs'
-    version = '0.1.0-SNAPSHOT'
+    version = findProperty('releaseVersion') ?: '0.1.0-SNAPSHOT'
 
     apply plugin: 'java'
     apply plugin: 'maven-publish'
+    apply plugin: 'tech.yanand.maven-central-publish'
 
     java {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        withSourcesJar()
+        withJavadocJar()
+    }
+
+    javadoc {
+        options.addStringOption('Xdoclint:none', '-quiet')
     }
 
     repositories {
@@ -28,17 +44,66 @@ subprojects {
                     password = System.getenv("SANDEC_ARTIFACTORY_PASSWORD")
                 }
             }
+            maven {
+                name = 'publish-bundle'
+                url = layout.buildDirectory.dir('publish-bundle')
+            }
         }
         publications.withType(MavenPublication).configureEach {
             pom {
+                name = provider { project.name }
+                description = provider { project.description ?: 'AI Docs — dependency documentation for AI coding agents' }
+                url = 'https://github.com/JPro-one/ai-docs'
+
                 licenses {
                     license {
                         name = 'The Apache License, Version 2.0'
                         url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
                     }
                 }
+
+                developers {
+                    developer {
+                        id = 'jpro'
+                        name = 'JPro Team'
+                        email = 'info@jpro.one'
+                        organization = 'JPro-one'
+                        organizationUrl = 'https://www.jpro.one'
+                    }
+                }
+
+                scm {
+                    connection = 'scm:git:https://github.com/JPro-one/ai-docs.git'
+                    developerConnection = 'scm:git:https://github.com/JPro-one/ai-docs.git'
+                    url = "https://github.com/JPro-one/ai-docs/tree/main/$project.name"
+                }
+
+                issueManagement {
+                    system = 'GitHub'
+                    url = 'https://github.com/JPro-one/ai-docs/issues'
+                }
             }
         }
+    }
+
+    // Signing only when the keys are present (release builds) — regular CI publishes
+    // unsigned snapshots to Artifactory
+    if (System.getenv("SANDEC_SIGNING_KEY_ID") != null) {
+        apply plugin: 'signing'
+        signing {
+            useInMemoryPgpKeys(
+                    System.getenv("SANDEC_SIGNING_KEY_ID"),
+                    System.getenv("SANDEC_SIGNING_SECRET_KEY"),
+                    System.getenv("SANDEC_SIGNING_PASSWORD")
+            )
+            sign publishing.publications
+        }
+    }
+
+    mavenCentral {
+        repoDir = layout.buildDirectory.dir('publish-bundle')
+        authToken = System.getenv("MAVEN_CENTRAL_AUTH_TOKEN")
+        publishingType = System.getenv("MAVEN_CENTRAL_PUBLISHING_TYPE") ?: 'AUTOMATIC'
     }
 
     test {

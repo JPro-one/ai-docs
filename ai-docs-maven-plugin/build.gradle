@@ -2,6 +2,8 @@ plugins {
     id 'org.gradlex.maven-plugin-development' version '1.0.3'
 }
 
+description = 'Maven plugin that collects dependency documentation into an AI-navigable structure (goal: collect-docs)'
+
 sourceSets {
     functionalTest {
         java.srcDir 'src/functionalTest/java'

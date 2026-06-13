@@ -9,9 +9,10 @@ The version is **derived from git tags** — it exists nowhere in the repository
 ## Releasing a version
 
 ```bash
-./tagRelease.sh 0.1.0
+./tagRelease.sh ai-docs 0.1.0
 ```
 
+The first argument is the project name, guarding against running this in the wrong repo.
 The script only tags: it verifies a clean tree on an up-to-date `main`, then tags and
 pushes `v0.1.0` — no publishing happens locally. The tag push triggers
 `.github/workflows/release.yml`, which builds, tests, and runs the publish scripts:
